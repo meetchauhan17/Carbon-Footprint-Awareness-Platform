@@ -411,7 +411,7 @@ function About() {
               style={creditsTilt.style}
               className="glass-card rounded-2xl p-6 space-y-3"
             >
-              <h4 className="text-sm font-bold text-white uppercase font-display">Data &amp; Methodology</h4>
+              <h3 className="text-sm font-bold text-white uppercase font-display">Data &amp; Methodology</h3>
               <p className="text-xs text-[#94A3B8] leading-relaxed font-sans font-medium">
                 Emission factors and carbon conversions are modeled in equivalence values (CO₂e) based on established governmental and scientific datasets, including the **EPA** (Environmental Protection Agency), **IPCC** (Intergovernmental Panel on Climate Change), and UK **DEFRA** conversions.
               </p>
@@ -425,7 +425,7 @@ function About() {
               style={techTilt.style}
               className="glass-card rounded-2xl p-6 space-y-3"
             >
-              <h4 className="text-sm font-bold text-white uppercase font-display">Technical Information</h4>
+              <h3 className="text-sm font-bold text-white uppercase font-display">Technical Information</h3>
               <div className="space-y-1.5 text-xs text-[#94A3B8] font-medium font-sans">
                 <p>App Version: <span className="text-white font-bold font-mono">1.1.0 (Production)</span></p>
                 <p>Core Framework: <span className="text-white font-bold font-mono">React 19 &amp; Vite</span></p>
@@ -455,7 +455,7 @@ function About() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider font-display">Setup Milestone</p>
-                <h3 className="text-base font-bold text-white mt-0.5 font-display">Profile Setup Completion</h3>
+                <h2 className="text-base font-bold text-white mt-0.5 font-display">Profile Setup Completion</h2>
               </div>
               <span className="text-sm font-bold text-[#F7931A] font-mono">{profileCompletion}% Complete</span>
             </div>
@@ -717,10 +717,10 @@ function About() {
             className="border border-red-500/25 bg-red-500/5 rounded-3xl p-6 md:p-8 space-y-5 shadow-[0_0_20px_-5px_rgba(239,68,68,0.1)]"
           >
             <div>
-              <h3 className="text-base font-bold text-red-500 uppercase tracking-wider flex items-center gap-2.5 font-display">
+              <h2 className="text-base font-bold text-red-500 uppercase tracking-wider flex items-center gap-2.5 font-display">
                 <ShieldAlert className="w-5.5 h-5.5 text-red-500" />
                 System Management (Danger Zone)
-              </h3>
+              </h2>
               <p className="text-xs text-[#94A3B8] leading-relaxed mt-1 font-sans font-medium">
                 Perform diagnostics and reset system parameters. Clearing local data wipes all history.
               </p>

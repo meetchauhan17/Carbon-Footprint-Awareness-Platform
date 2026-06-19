@@ -338,7 +338,7 @@ function Dashboard() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7931A] opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F7931A]"></span>
                   </span>
-                  <h3 className="text-sm font-bold text-clay-text font-display">Complete your profile to unlock local tips!</h3>
+                  <h2 className="text-sm font-bold text-clay-text font-display">Complete your profile to unlock local tips!</h2>
                 </div>
                 <p className="text-xs text-clay-muted font-medium font-sans">
                   Your profile setup is <span className="font-extrabold text-[#F7931A]">{profileCompletion}%</span> complete. Fill in your details to refine carbon estimates.
@@ -784,7 +784,7 @@ function Dashboard() {
                 <Settings className="w-5 h-5 text-clay-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white font-display">Profile & Goals</h3>
+                <h2 className="text-lg font-bold text-white font-display">Profile & Goals</h2>
                 <p className="text-xs text-clay-muted font-bold font-sans">Configure your dashboard preferences</p>
               </div>
             </div>
@@ -876,7 +876,7 @@ function Dashboard() {
                   <Award className="w-5 h-5 text-clay-primary animate-clay-breathe" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white font-display">Achievements Showcase</h3>
+                  <h2 className="text-base font-bold text-white font-display">Achievements Showcase</h2>
                   <p className="text-xs text-clay-muted font-bold font-sans">You've unlocked {badges?.length || 0} of 17 milestones</p>
                 </div>
               </div>

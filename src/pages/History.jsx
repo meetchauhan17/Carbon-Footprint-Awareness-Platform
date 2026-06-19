@@ -650,7 +650,7 @@ function History() {
 
                     {/* Breakdown of Categories */}
                     <div className="space-y-3">
-                      <h4 className="text-[10px] font-bold text-clay-muted uppercase tracking-wider font-display">Category Breakdown</h4>
+                      <h3 className="text-[10px] font-bold text-clay-muted uppercase tracking-wider font-display">Category Breakdown</h3>
                       <div className="grid grid-cols-2 gap-3">
                         {/* Transport */}
                         <div className="glass-card p-4 shadow-sm border border-white/5 rounded-2xl">
@@ -684,7 +684,7 @@ function History() {
             ) : (
               <div className="py-16 text-center text-clay-muted space-y-3.5 my-auto">
                 <Clock className="w-10 h-10 mx-auto text-[#94A3B8] animate-pulse" />
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-display">Select a Day</h4>
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider font-display">Select a Day</h3>
                 <p className="text-xs max-w-[200px] mx-auto leading-relaxed text-clay-muted font-sans font-medium">
                   Click on any day in the heatmap calendar to see its specific footprint breakdown.
                 </p>
@@ -879,7 +879,7 @@ function History() {
                             <tr>
                               <td colSpan="8" className="bg-[#030304]/40 px-6 py-4">
                                 <div className="space-y-3.5 animate-fade-in-up">
-                                  <h4 className="text-[10px] font-bold text-clay-muted uppercase tracking-wider font-display">Logged Activities Breakdown</h4>
+                                  <h3 className="text-[10px] font-bold text-clay-muted uppercase tracking-wider font-display">Logged Activities Breakdown</h3>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                     {day.entries.map((entry, idx) => (
                                       <ActivityBreakdownCard key={idx} entry={entry} />

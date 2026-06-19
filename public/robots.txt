@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://carbon-footprint-awareness-platform-alpha.vercel.app/sitemap.xml
