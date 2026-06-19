@@ -76,7 +76,7 @@ export const BADGE_DEFINITIONS = [
     id: 'streak-1',
     name: 'First Step',
     description: 'Log your very first carbon entry to start your tracking journey.',
-    icon: '🌱',
+    icon: 'Leaf',
     category: 'streak',
     check: (entries) => entries.length >= 1,
     getEarnedDate: (entries) => {
@@ -88,7 +88,7 @@ export const BADGE_DEFINITIONS = [
     id: 'streak-3',
     name: '3-Day Streak',
     description: 'Log carbon footprint entries on 3 consecutive days.',
-    icon: '🔥',
+    icon: 'Flame',
     category: 'streak',
     check: (entries) => getLoggingStreak(entries) >= 3,
     getEarnedDate: (entries) => {
@@ -101,7 +101,7 @@ export const BADGE_DEFINITIONS = [
     id: 'streak-7',
     name: 'Week Warrior',
     description: 'Log your daily footprints for 7 consecutive days.',
-    icon: '💪',
+    icon: 'Zap',
     category: 'streak',
     check: (entries) => getLoggingStreak(entries) >= 7,
     getEarnedDate: (entries) => {
@@ -113,7 +113,7 @@ export const BADGE_DEFINITIONS = [
     id: 'streak-30',
     name: 'Monthly Master',
     description: 'Log your carbon footprint for 30 consecutive days.',
-    icon: '🏆',
+    icon: 'Trophy',
     category: 'streak',
     check: (entries) => getLoggingStreak(entries) >= 30,
     getEarnedDate: (entries) => {
@@ -127,7 +127,7 @@ export const BADGE_DEFINITIONS = [
     id: 'emission-low-5',
     name: 'Green Day',
     description: 'Log a day with total emissions under 5 kg CO₂.',
-    icon: '🌿',
+    icon: 'Leaf',
     category: 'emission',
     check: (entries) => {
       const days = groupEntriesByDay(entries)
@@ -143,7 +143,7 @@ export const BADGE_DEFINITIONS = [
     id: 'emission-low-3',
     name: 'Super Green',
     description: 'Achieve a daily emission of less than 3 kg CO₂.',
-    icon: '⚡',
+    icon: 'Zap',
     category: 'emission',
     check: (entries) => {
       const days = groupEntriesByDay(entries)
@@ -159,7 +159,7 @@ export const BADGE_DEFINITIONS = [
     id: 'emission-carfree',
     name: 'Car-Free Day',
     description: 'Log a day with zero transport emissions.',
-    icon: '🚗',
+    icon: 'Car',
     category: 'emission',
     check: (entries) => {
       const days = groupEntriesByDay(entries)
@@ -176,7 +176,7 @@ export const BADGE_DEFINITIONS = [
     id: 'emission-vegan',
     name: 'Plant-Powered',
     description: 'Eat entirely vegan meals on any logged day.',
-    icon: '🥦',
+    icon: 'Leaf',
     category: 'emission',
     check: (entries, completedTips) => {
       // Checked if user marked the "skipped-meat" quick log or has a vegan item, OR finished vegan tips
@@ -193,7 +193,7 @@ export const BADGE_DEFINITIONS = [
     id: 'emission-noflight',
     name: 'Grounded',
     description: 'Maintain zero flight emissions over the last 7 days of logging.',
-    icon: '✈️',
+    icon: 'Plane',
     category: 'emission',
     check: (entries) => {
       if (entries.length === 0) return false
@@ -214,7 +214,7 @@ export const BADGE_DEFINITIONS = [
     id: 'improve-10',
     name: 'Getting Better',
     description: 'Reduce your daily average footprint by 10% compared to the previous week.',
-    icon: '📉',
+    icon: 'TrendingDown',
     category: 'improvement',
     check: (entries) => {
       const days = groupEntriesByDay(entries).sort((a, b) => b.date.localeCompare(a.date))
@@ -234,7 +234,7 @@ export const BADGE_DEFINITIONS = [
     id: 'improve-goal',
     name: 'Goal Crusher',
     description: 'Finish the current month within your monthly carbon goal.',
-    icon: '🎯',
+    icon: 'Target',
     category: 'improvement',
     check: (entries, completedTips, goal) => {
       const now = new Date()
@@ -251,7 +251,7 @@ export const BADGE_DEFINITIONS = [
     id: 'improve-half',
     name: 'Half Carbon',
     description: 'Maintain a footprint 50% below the global daily average of 11 kg CO₂.',
-    icon: '💚',
+    icon: 'Heart',
     category: 'improvement',
     check: (entries) => {
       const days = groupEntriesByDay(entries)
@@ -268,7 +268,7 @@ export const BADGE_DEFINITIONS = [
     id: 'tips-student',
     name: 'Eco Student',
     description: 'Complete and mark 5 ecological tips as completed.',
-    icon: '📚',
+    icon: 'BookOpen',
     category: 'tips',
     check: (entries, completedTips) => completedTips.length >= 5,
     getEarnedDate: () => new Date().toISOString()
@@ -277,7 +277,7 @@ export const BADGE_DEFINITIONS = [
     id: 'tips-champion',
     name: 'Eco Champion',
     description: 'Complete and mark 20 ecological tips as completed.',
-    icon: '🌍',
+    icon: 'Globe',
     category: 'tips',
     check: (entries, completedTips) => completedTips.length >= 20,
     getEarnedDate: () => new Date().toISOString()
@@ -288,7 +288,7 @@ export const BADGE_DEFINITIONS = [
     id: 'utility-solar',
     name: 'Solar Powered',
     description: 'Mark the renewable solar energy tariff tip as completed.',
-    icon: '☀️',
+    icon: 'Sun',
     category: 'tips',
     check: (entries, completedTips) => completedTips.includes('e-solar'),
     getEarnedDate: () => new Date().toISOString()
@@ -297,7 +297,7 @@ export const BADGE_DEFINITIONS = [
     id: 'utility-commute',
     name: 'Active Commute',
     description: 'Log a cycling or walking trip, or mark the walking short trips tip as completed.',
-    icon: '🚲',
+    icon: 'Bike',
     category: 'streak',
     check: (entries, completedTips) => {
       const hasActiveLog = entries.some(e => e.item === 'bicycle' || e.item === 'walking')
@@ -313,7 +313,7 @@ export const BADGE_DEFINITIONS = [
     id: 'utility-minimalist',
     name: 'Minimalist',
     description: 'Log a tracking day with zero shopping emissions.',
-    icon: '🛍️',
+    icon: 'ShoppingBag',
     category: 'emission',
     check: (entries) => {
       const days = groupEntriesByDay(entries)

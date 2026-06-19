@@ -2,18 +2,33 @@ import { useState, useEffect, useCallback } from 'react'
 import { useCarbon } from '../context/CarbonContext.jsx'
 import { useCarbonStats } from '../hooks/useCarbonStats.js'
 import {
-  Leaf, Info, User, HelpCircle, AlertTriangle, ShieldCheck,
-  CheckCircle, Save, Trash2, ArrowRight, ShieldAlert,
-  Globe, Sparkles, Bell, ToggleLeft, ToggleRight, MapPin, Gauge
+  Info, User, CheckCircle, Save, Trash2, ShieldAlert,
+  ToggleLeft, ToggleRight, Lightbulb
 } from 'lucide-react'
 
 import ToastNotification from '../components/ToastNotification.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
+import LocationAutocomplete from '../components/LocationAutocomplete.jsx'
+import { use3DTilt } from '../hooks/use3DTilt.js'
+import { canNotify, checkWeeklyDigest, checkGoalAlert, checkDailyTipSuggestion } from '../utils/notifications.js'
+import { TIPS_DATA } from '../data/tipsData.js'
 
 function About() {
   const { state, updateProfile, clearHistory } = useCarbon()
   const { profileCompletion, userProfile } = useCarbonStats()
+
+  // 3D tilt interaction hooks for About page panels
+  const footprintTilt = use3DTilt({ maxTilt: 6, scale: 1.01 })
+  const globalAvgTilt = use3DTilt({ maxTilt: 10, scale: 1.025 })
+  const targetTilt = use3DTilt({ maxTilt: 10, scale: 1.025 })
+  const thresholdTilt = use3DTilt({ maxTilt: 10, scale: 1.025 })
+  const stepsTilt = use3DTilt({ maxTilt: 5, scale: 1.008 })
+  const creditsTilt = use3DTilt({ maxTilt: 7, scale: 1.015 })
+  const techTilt = use3DTilt({ maxTilt: 7, scale: 1.015 })
+  const milestoneTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
+  const formTilt = use3DTilt({ maxTilt: 3, scale: 1.005 })
+  const dangerTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
 
   // Parse URL query parameter ?tab=profile
   const searchParams = new URLSearchParams(window.location.search)
@@ -29,6 +44,107 @@ function About() {
   const [weeklyReport, setWeeklyReport] = useState(true)
   const [goalAlerts, setGoalAlerts] = useState(true)
   const [ecoTips, setEcoTips] = useState(false)
+
+  // Browser Notifications API States & Helpers
+  const isNotificationSupported = typeof window !== 'undefined' && 'Notification' in window
+  const [permission, setPermission] = useState(
+    isNotificationSupported ? Notification.permission : 'denied'
+  )
+
+  useEffect(() => {
+    if (isNotificationSupported) {
+      setPermission(Notification.permission)
+      const interval = setInterval(() => {
+        setPermission(Notification.permission)
+      }, 2000)
+      return () => clearInterval(interval)
+    }
+  }, [isNotificationSupported])
+
+  const requestPermissionSafe = async () => {
+    if (!isNotificationSupported) return 'default'
+    try {
+      const res = await Notification.requestPermission()
+      setPermission(res)
+      return res
+    } catch (e) {
+      console.error('Error requesting notification permission:', e)
+      return 'default'
+    }
+  }
+
+  const handleTogglePreference = async (type) => {
+    if (!isNotificationSupported) {
+      setToastMessage('Notifications are not supported in your browser.')
+      setShowToast(true)
+      return
+    }
+
+    if (type === 'weeklyReport') {
+      if (weeklyReport) {
+        setWeeklyReport(false)
+      } else {
+        const res = await requestPermissionSafe()
+        if (res === 'granted') {
+          setWeeklyReport(true)
+        } else {
+          setWeeklyReport(false)
+          if (res === 'denied') {
+            setToastMessage('Notifications blocked. Enable them in your browser settings to use this feature.')
+            setShowToast(true)
+          }
+        }
+      }
+    } else if (type === 'goalAlerts') {
+      if (goalAlerts) {
+        setGoalAlerts(false)
+      } else {
+        const res = await requestPermissionSafe()
+        if (res === 'granted') {
+          setGoalAlerts(true)
+        } else {
+          setGoalAlerts(false)
+          if (res === 'denied') {
+            setToastMessage('Notifications blocked. Enable them in your browser settings to use this feature.')
+            setShowToast(true)
+          }
+        }
+      }
+    } else if (type === 'ecoTips') {
+      if (ecoTips) {
+        setEcoTips(false)
+      } else {
+        const res = await requestPermissionSafe()
+        if (res === 'granted') {
+          setEcoTips(true)
+        } else {
+          setEcoTips(false)
+          if (res === 'denied') {
+            setToastMessage('Notifications blocked. Enable them in your browser settings to use this feature.')
+            setShowToast(true)
+          }
+        }
+      }
+    }
+  }
+
+  const handleTestNotification = (type) => {
+    if (!canNotify()) {
+      setToastMessage('Please enable notifications first.')
+      setShowToast(true)
+      return
+    }
+
+    if (type === 'weekly') {
+      checkWeeklyDigest(true)
+    } else if (type === 'goal') {
+      checkGoalAlert(state.carbonEntries, parseFloat(monthlyGoal) || 150, true)
+    } else if (type === 'tip') {
+      checkDailyTipSuggestion(TIPS_DATA, true)
+    }
+  }
+
+  const isDisabled = !isNotificationSupported || permission === 'denied'
 
   // Toast notification state
   const [toastMessage, setToastMessage] = useState('')
@@ -62,7 +178,7 @@ function About() {
       vehicleType,
       notifications: { weeklyReport, goalAlerts, ecoTips }
     })
-    setToastMessage('Profile changes saved successfully! 🌱')
+    setToastMessage('Profile changes saved successfully!')
     setShowToast(true)
   }, [updateProfile, name, location, monthlyGoal, dietPreference, vehicleType, weeklyReport, goalAlerts, ecoTips])
 
@@ -88,7 +204,7 @@ function About() {
   }, [clearHistory])
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Toast Notification */}
       <ToastNotification message={toastMessage} show={showToast} onClose={() => setShowToast(false)} />
@@ -96,7 +212,7 @@ function About() {
       {/* Wipe Confirmation Modal */}
       <ConfirmDialog
         isOpen={isConfirmOpen}
-        title="🚨 WIPE ALL APP DATA 🚨"
+        title="WIPE ALL APP DATA"
         message="This will delete ALL your carbon history logs, reset your profile, and lock all achieved badges. This action is permanent and cannot be undone."
         confirmText="Wipe All Data"
         cancelText="Cancel"
@@ -106,23 +222,23 @@ function About() {
       />
 
       {/* Page Header */}
-      <div className="mb-6 animate-fade-in-up">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+      <div className="mb-8 animate-fade-in-up">
+        <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight font-display">
           System &amp; <span className="gradient-text">Profile</span>
         </h1>
-        <p className="text-gray-500 text-sm">
+        <p className="text-[#94A3B8] text-sm mt-1.5 font-sans font-medium">
           Learn about our methodology and manage your carbon goals.
         </p>
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex border-b border-gray-200 gap-1.5 pb-2 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+      <div className="flex gap-3 pb-2 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
         <button
           onClick={() => setActiveTab('about')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold tracking-wide transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none ${
+          className={`flex items-center gap-2.5 h-12 px-6 text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer focus:outline-none rounded-full ${
             activeTab === 'about'
-              ? 'bg-green-600 text-white shadow-md'
-              : 'bg-white text-gray-500 hover:text-green-700 hover:bg-green-50 border border-gray-200'
+              ? 'btn-premium text-white'
+              : 'bg-[#0F1115]/80 text-[#94A3B8] hover:text-white border border-white/10 hover:bg-[#0F1115]'
           }`}
           aria-label="View about carbonwise"
         >
@@ -131,10 +247,10 @@ function About() {
         </button>
         <button
           onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-bold tracking-wide transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none ${
+          className={`flex items-center gap-2.5 h-12 px-6 text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer focus:outline-none rounded-full ${
             activeTab === 'profile'
-              ? 'bg-green-600 text-white shadow-md'
-              : 'bg-white text-gray-500 hover:text-green-700 hover:bg-green-50 border border-gray-200'
+              ? 'btn-premium text-white'
+              : 'bg-[#0F1115]/80 text-[#94A3B8] hover:text-white border border-white/10 hover:bg-[#0F1115]'
           }`}
           aria-label="View profile settings"
         >
@@ -145,33 +261,39 @@ function About() {
 
       {/* Tab 1: About Content */}
       {activeTab === 'about' && (
-        <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+        <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           
           {/* Section: What is a carbon footprint */}
-          <div className="glass-card p-6 md:p-8 grid grid-cols-1 md:grid-cols-5 gap-6 items-center">
+          <div
+            ref={footprintTilt.ref}
+            onMouseMove={footprintTilt.onMouseMove}
+            onMouseLeave={footprintTilt.onMouseLeave}
+            style={footprintTilt.style}
+            className="glass-card p-6 md:p-8 grid grid-cols-1 md:grid-cols-5 gap-6 items-center rounded-3xl"
+          >
             <div className="md:col-span-3 space-y-4">
-              <h2 className="text-lg font-black text-gray-800 uppercase tracking-wide">What is a Carbon Footprint?</h2>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <h2 className="text-xl font-bold text-white uppercase tracking-wide font-display">What is a Carbon Footprint?</h2>
+              <p className="text-sm text-[#94A3B8] leading-relaxed font-sans font-medium">
                 A carbon footprint represents the total volume of greenhouse gases—specifically carbon dioxide (CO₂) and methane—released into the atmosphere as a result of our individual actions and consumption patterns.
               </p>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-sm text-[#94A3B8] leading-relaxed font-sans font-medium">
                 Every commute, electric bulb turned on, hamburger eaten, or clothing purchase contributes to this footprint. By tracking these everyday actions, we can identify high-emission areas and take direct steps toward carbon reduction.
               </p>
             </div>
             
             {/* Infographic SVG */}
-            <div className="md:col-span-2 flex justify-center bg-green-50/50 rounded-2xl p-4 border border-green-100/30">
+            <div className="md:col-span-2 flex justify-center bg-black/50 border border-white/10 rounded-2xl p-6">
               <svg viewBox="0 0 200 200" className="w-44 h-44 drop-shadow-md">
                 {/* Globe Outline */}
-                <circle cx="100" cy="100" r="75" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="4 4" />
+                <circle cx="100" cy="100" r="75" fill="none" stroke="#F7931A" strokeWidth="2" strokeDasharray="4 4" />
                 {/* Cloud/Atmosphere */}
-                <path d="M 50 140 Q 60 120 80 120 Q 90 100 110 100 Q 130 100 140 115 Q 155 115 160 130 Q 160 145 150 150 Z" fill="#22c55e" opacity="0.1" />
-                {/* Green Footprint leaf shape */}
-                <path d="M 90 145 Q 75 110 85 80 Q 95 60 110 60 Q 120 70 120 90 Q 120 120 105 145 Z" fill="#16a34a" />
-                <path d="M 103 50 Q 95 40 105 32 Q 112 40 103 50 Z" fill="#16a34a" opacity="0.9" />
-                <path d="M 116 55 Q 110 45 119 38 Q 124 45 116 55 Z" fill="#16a34a" opacity="0.8" />
-                <path d="M 127 64 Q 122 55 130 49 Q 135 55 127 64 Z" fill="#16a34a" opacity="0.7" />
-                <path d="M 134 76 Q 130 68 138 63 Q 142 68 134 76 Z" fill="#16a34a" opacity="0.6" />
+                <path d="M 50 140 Q 60 120 80 120 Q 90 100 110 100 Q 130 100 140 115 Q 155 115 160 130 Q 160 145 150 150 Z" fill="#EA580C" opacity="0.15" />
+                {/* Orange Footprint leaf shape */}
+                <path d="M 90 145 Q 75 110 85 80 Q 95 60 110 60 Q 120 70 120 90 Q 120 120 105 145 Z" fill="#F7931A" />
+                <path d="M 103 50 Q 95 40 105 32 Q 112 40 103 50 Z" fill="#FFD600" opacity="0.9" />
+                <path d="M 116 55 Q 110 45 119 38 Q 124 45 116 55 Z" fill="#FFD600" opacity="0.8" />
+                <path d="M 127 64 Q 122 55 130 49 Q 135 55 127 64 Z" fill="#FFD600" opacity="0.7" />
+                <path d="M 134 76 Q 130 68 138 63 Q 142 68 134 76 Z" fill="#FFD600" opacity="0.6" />
                 {/* Center Leaf Line */}
                 <path d="M 90 145 Q 102 100 110 60" fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.4" />
               </svg>
@@ -180,32 +302,50 @@ function About() {
 
           {/* Section: Why it matters (3 Stats) */}
           <div className="space-y-4">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Why It Matters</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h3 className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider font-display">Why It Matters</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               
               {/* Stat 1 */}
-              <div className="glass-card p-5 text-center">
-                <p className="text-3xl font-black text-red-600">4.0 Tons</p>
-                <p className="text-xs font-bold text-gray-800 mt-2">Global Average</p>
-                <p className="text-[11px] text-gray-400 mt-1 leading-normal">
+              <div
+                ref={globalAvgTilt.ref}
+                onMouseMove={globalAvgTilt.onMouseMove}
+                onMouseLeave={globalAvgTilt.onMouseLeave}
+                style={globalAvgTilt.style}
+                className="glass-card p-6 text-center rounded-2xl"
+              >
+                <p className="text-4xl font-bold text-[#EA580C] font-display">4.0 Tons</p>
+                <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Global Average</p>
+                <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
                   The current average annual carbon emissions per person worldwide.
                 </p>
               </div>
 
               {/* Stat 2 */}
-              <div className="glass-card p-5 text-center">
-                <p className="text-3xl font-black text-green-600">2.0 Tons</p>
-                <p className="text-xs font-bold text-gray-800 mt-2">Target Footprint</p>
-                <p className="text-[11px] text-gray-400 mt-1 leading-normal">
+              <div
+                ref={targetTilt.ref}
+                onMouseMove={targetTilt.onMouseMove}
+                onMouseLeave={targetTilt.onMouseLeave}
+                style={targetTilt.style}
+                className="glass-card p-6 text-center rounded-2xl"
+              >
+                <p className="text-4xl font-bold text-[#10B981] font-display">2.0 Tons</p>
+                <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Target Footprint</p>
+                <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
                   The target annual emissions per person required to halt global warming trends.
                 </p>
               </div>
 
               {/* Stat 3 */}
-              <div className="glass-card p-5 text-center">
-                <p className="text-3xl font-black text-amber-600">1.5°C</p>
-                <p className="text-xs font-bold text-gray-800 mt-2">Threshold Limit</p>
-                <p className="text-[11px] text-gray-400 mt-1 leading-normal">
+              <div
+                ref={thresholdTilt.ref}
+                onMouseMove={thresholdTilt.onMouseMove}
+                onMouseLeave={thresholdTilt.onMouseLeave}
+                style={thresholdTilt.style}
+                className="glass-card p-6 text-center rounded-2xl"
+              >
+                <p className="text-4xl font-bold text-[#FFD600] font-display">1.5°C</p>
+                <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Threshold Limit</p>
+                <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
                   The maximum global temperature rise limit to avoid severe climate impacts.
                 </p>
               </div>
@@ -214,39 +354,45 @@ function About() {
           </div>
 
           {/* Section: How this app works */}
-          <div className="glass-card p-6 md:p-8 space-y-6">
-            <h2 className="text-lg font-black text-gray-800 uppercase tracking-wide text-center">How CarbonWise Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+          <div
+            ref={stepsTilt.ref}
+            onMouseMove={stepsTilt.onMouseMove}
+            onMouseLeave={stepsTilt.onMouseLeave}
+            style={stepsTilt.style}
+            className="glass-card p-6 md:p-8 space-y-6 rounded-3xl"
+          >
+            <h2 className="text-xl font-bold text-white uppercase tracking-wide text-center font-display">How CarbonWise Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
               
               {/* Step 1 */}
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center font-bold text-sm mx-auto shadow-sm">
-                  1
+              <div className="text-center space-y-3">
+                <div className="w-10 h-10 rotate-45 bg-[#EA580C]/10 border border-[#EA580C]/40 text-[#F7931A] shadow-[0_0_15px_rgba(247,147,26,0.25)] flex items-center justify-center font-bold text-sm mx-auto rounded-xl font-display">
+                  <span className="-rotate-45">I</span>
                 </div>
-                <h3 className="text-xs font-bold text-gray-800 uppercase">Track Activities</h3>
-                <p className="text-[11px] text-gray-400 leading-normal">
+                <h3 className="text-xs font-bold text-[#F7931A] uppercase tracking-widest font-display">Track Activities</h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed font-sans font-medium">
                   Log your daily commutes, energy bill consumption, meals, and shopping purchases step-by-step.
                 </p>
               </div>
 
               {/* Step 2 */}
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center font-bold text-sm mx-auto shadow-sm">
-                  2
+              <div className="text-center space-y-3">
+                <div className="w-10 h-10 rotate-45 bg-[#EA580C]/10 border border-[#EA580C]/40 text-[#F7931A] shadow-[0_0_15px_rgba(247,147,26,0.25)] flex items-center justify-center font-bold text-sm mx-auto rounded-xl font-display">
+                  <span className="-rotate-45">II</span>
                 </div>
-                <h3 className="text-xs font-bold text-gray-800 uppercase">Analyze Trends</h3>
-                <p className="text-[11px] text-gray-400 leading-normal">
+                <h3 className="text-xs font-bold text-[#F7931A] uppercase tracking-widest font-display">Analyze Trends</h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed font-sans font-medium">
                   Examine weekly trend lines, category breakdowns, and compare your output against global averages.
                 </p>
               </div>
 
               {/* Step 3 */}
-              <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center font-bold text-sm mx-auto shadow-sm">
-                  3
+              <div className="text-center space-y-3">
+                <div className="w-10 h-10 rotate-45 bg-[#EA580C]/10 border border-[#EA580C]/40 text-[#F7931A] shadow-[0_0_15px_rgba(247,147,26,0.25)] flex items-center justify-center font-bold text-sm mx-auto rounded-xl font-display">
+                  <span className="-rotate-45">III</span>
                 </div>
-                <h3 className="text-xs font-bold text-gray-800 uppercase">Reduce Footprint</h3>
-                <p className="text-[11px] text-gray-400 leading-normal">
+                <h3 className="text-xs font-bold text-[#F7931A] uppercase tracking-widest font-display">Reduce Footprint</h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed font-sans font-medium">
                   Mark daily tips as done, complete actionable checklist items, and unlock milestones badges!
                 </p>
               </div>
@@ -255,24 +401,36 @@ function About() {
           </div>
 
           {/* Data Sources and Tech Stack */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Credits */}
-            <div className="glass-card p-5 space-y-2.5">
-              <h4 className="text-xs font-bold text-gray-800 uppercase">Data &amp; Methodology</h4>
-              <p className="text-[11px] text-gray-400 leading-relaxed">
+            <div
+              ref={creditsTilt.ref}
+              onMouseMove={creditsTilt.onMouseMove}
+              onMouseLeave={creditsTilt.onMouseLeave}
+              style={creditsTilt.style}
+              className="glass-card rounded-2xl p-6 space-y-3"
+            >
+              <h4 className="text-sm font-bold text-white uppercase font-display">Data &amp; Methodology</h4>
+              <p className="text-xs text-[#94A3B8] leading-relaxed font-sans font-medium">
                 Emission factors and carbon conversions are modeled in equivalence values (CO₂e) based on established governmental and scientific datasets, including the **EPA** (Environmental Protection Agency), **IPCC** (Intergovernmental Panel on Climate Change), and UK **DEFRA** conversions.
               </p>
             </div>
 
             {/* Tech Stack */}
-            <div className="glass-card p-5 space-y-2.5">
-              <h4 className="text-xs font-bold text-gray-800 uppercase">Technical Information</h4>
-              <div className="space-y-1 text-[11px] text-gray-500 font-medium">
-                <p>App Version: <span className="text-gray-800 font-bold">1.1.0 (Production)</span></p>
-                <p>Core Framework: <span className="text-gray-800 font-bold">React 19 &amp; Vite</span></p>
-                <p>Styling Engine: <span className="text-gray-800 font-bold">Tailwind CSS v4</span></p>
-                <p>Charts &amp; Icons: <span className="text-gray-800 font-bold">Recharts &amp; Lucide Icons</span></p>
+            <div
+              ref={techTilt.ref}
+              onMouseMove={techTilt.onMouseMove}
+              onMouseLeave={techTilt.onMouseLeave}
+              style={techTilt.style}
+              className="glass-card rounded-2xl p-6 space-y-3"
+            >
+              <h4 className="text-sm font-bold text-white uppercase font-display">Technical Information</h4>
+              <div className="space-y-1.5 text-xs text-[#94A3B8] font-medium font-sans">
+                <p>App Version: <span className="text-white font-bold font-mono">1.1.0 (Production)</span></p>
+                <p>Core Framework: <span className="text-white font-bold font-mono">React 19 &amp; Vite</span></p>
+                <p>Styling Engine: <span className="text-white font-bold font-mono">Tailwind CSS v4</span></p>
+                <p>Charts &amp; Icons: <span className="text-white font-bold font-mono">Recharts &amp; Lucide Icons</span></p>
               </div>
             </div>
 
@@ -286,40 +444,54 @@ function About() {
         <div className="space-y-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           
           {/* Profile Completion Card */}
-          <div className="glass-card p-5 relative overflow-hidden">
+          <div
+            ref={milestoneTilt.ref}
+            onMouseMove={milestoneTilt.onMouseMove}
+            onMouseLeave={milestoneTilt.onMouseLeave}
+            style={milestoneTilt.style}
+            className="glass-card p-6 rounded-2xl relative overflow-hidden"
+          >
             <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-green-500/5 blur-xl" />
-            <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Setup Milestone</p>
-                <h3 className="text-base font-black text-gray-800 mt-0.5">Profile Setup Completion</h3>
+                <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider font-display">Setup Milestone</p>
+                <h3 className="text-base font-bold text-white mt-0.5 font-display">Profile Setup Completion</h3>
               </div>
-              <span className="text-xs font-black text-green-700">{profileCompletion}% Complete</span>
+              <span className="text-sm font-bold text-[#F7931A] font-mono">{profileCompletion}% Complete</span>
             </div>
             
             {/* Progress Bar */}
             <ProgressBar
               value={profileCompletion}
               max={100}
-              color="bg-gradient-to-r from-green-500 to-emerald-600"
+              color="bg-gradient-to-r from-[#EA580C] to-[#F7931A]"
             />
             {profileCompletion < 100 ? (
-              <p className="text-[10px] text-gray-400 mt-2">
-                💡 Fill in your name and location to reach 100% and get tailored recommendations!
+              <p className="text-xs text-[#94A3B8] mt-3 font-sans font-medium flex items-center gap-1.5">
+                <Lightbulb className="w-4 h-4 text-[#FFD600]" />
+                Fill in your name and location to reach 100% and get tailored recommendations!
               </p>
             ) : (
-              <p className="text-[10px] text-green-600 font-bold mt-2 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Profile fully completed! Excellent job.
+              <p className="text-xs text-[#10B981] font-bold mt-3 flex items-center gap-1.5 font-sans">
+                <CheckCircle className="w-4 h-4 text-[#10B981]" /> Profile fully completed! Excellent job.
               </p>
             )}
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSave} className="glass-card p-6 md:p-8 space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form
+            ref={formTilt.ref}
+            onMouseMove={formTilt.onMouseMove}
+            onMouseLeave={formTilt.onMouseLeave}
+            style={formTilt.style}
+            onSubmit={handleSave}
+            className="glass-card p-6 md:p-8 space-y-6 rounded-3xl"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               
               {/* Name */}
               <div>
-                <label htmlFor="profile-name-input" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+                <label htmlFor="profile-name-input" className="block text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2 font-display">
                   Your Display Name
                 </label>
                 <input
@@ -328,39 +500,36 @@ function About() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-transparent transition-all text-gray-700"
+                  className="w-full h-14 px-4 focus:outline-none text-sm transition-all"
                   aria-label="Your display name"
                 />
               </div>
 
               {/* Location */}
               <div>
-                <label htmlFor="profile-location-input" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+                <label htmlFor="profile-location-input" className="block text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2 font-display">
                   City &amp; Country
                 </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    id="profile-location-input"
-                    value={location}
-                    onChange={e => setLocation(e.target.value)}
-                    placeholder="e.g. London, UK"
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-transparent transition-all text-gray-700"
-                    aria-label="City and country"
-                  />
-                </div>
+                <LocationAutocomplete
+                  id="profile-location-input"
+                  value={location}
+                  onChange={setLocation}
+                  placeholder="e.g. London, UK"
+                  className="w-full h-14 pr-4 focus:outline-none text-sm transition-all"
+                  showIcon={true}
+                  ariaLabel="City and country"
+                />
               </div>
 
             </div>
 
             {/* Monthly CO2 Goal Slider */}
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label htmlFor="profile-goal-slider" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label htmlFor="profile-goal-slider" className="block text-xs font-bold text-[#94A3B8] uppercase tracking-wider font-display">
                   Monthly Goal (kg CO₂)
                 </label>
-                <span className="text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-[#F7931A] bg-black/40 border border-white/10 px-3 py-1.5 rounded-lg shadow-sm font-mono">
                   {monthlyGoal} kg CO₂
                 </span>
               </div>
@@ -372,27 +541,27 @@ function About() {
                 step="10"
                 value={monthlyGoal}
                 onChange={e => setMonthlyGoal(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+                className="w-full h-2 bg-black/40 border border-white/10 rounded-full appearance-none cursor-pointer accent-[#F7931A] focus:outline-none"
                 aria-label="Monthly goal footprint"
               />
-              <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+              <div className="flex justify-between text-[10px] text-[#94A3B8] font-bold font-mono uppercase tracking-wide">
                 <span>50 kg (Low Impact)</span>
                 <span>500 kg (High Budget)</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               
               {/* Diet Preference */}
               <div>
-                <label htmlFor="profile-diet-select" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+                <label htmlFor="profile-diet-select" className="block text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2 font-display">
                   Default Diet Preference
                 </label>
                 <select
                   id="profile-diet-select"
                   value={dietPreference}
                   onChange={e => setDietPreference(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-transparent transition-all font-semibold text-gray-600 cursor-pointer"
+                  className="w-full h-14 px-4 focus:outline-none text-sm transition-all cursor-pointer"
                   aria-label="Dietary preference"
                 >
                   <option value="omnivore">Meat-Eater (Omnivore)</option>
@@ -403,14 +572,14 @@ function About() {
 
               {/* Vehicle Type */}
               <div>
-                <label htmlFor="profile-vehicle-select" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+                <label htmlFor="profile-vehicle-select" className="block text-xs font-bold text-[#94A3B8] uppercase tracking-wider mb-2 font-display">
                   Primary Commute Vehicle
                 </label>
                 <select
                   id="profile-vehicle-select"
                   value={vehicleType}
                   onChange={e => setVehicleType(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-transparent transition-all font-semibold text-gray-600 cursor-pointer"
+                  className="w-full h-14 px-4 focus:outline-none text-sm transition-all cursor-pointer"
                   aria-label="Commute vehicle type"
                 >
                   <option value="none">No Private Vehicle (Transit/Walk)</option>
@@ -423,66 +592,105 @@ function About() {
             </div>
 
              {/* Notification Preferences */}
-            <div className="space-y-3 pt-3 border-t border-gray-100">
-              <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                Notification Preferences (Mock)
+            <div className="space-y-4 pt-5 border-t border-white/10">
+              <span className="block text-xs font-bold text-[#94A3B8] uppercase tracking-wider font-display">
+                Notification Preferences
               </span>
               
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between py-2.5 border-b border-white/10 last:border-0">
                 <div>
-                  <p className="font-semibold text-gray-700">Weekly Summary Reports</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Receive reports containing weekly average trends</p>
+                  <p className="font-bold text-white text-sm font-display">Weekly Summary Reports</p>
+                  <p className="text-xs text-[#94A3B8] mt-0.5 font-sans font-medium">Receive reports containing weekly average trends</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setWeeklyReport(!weeklyReport)}
-                  className="text-gray-400 hover:text-green-600 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none rounded-xl"
-                  aria-label="Toggle weekly summary reports"
-                >
-                  {weeklyReport ? (
-                    <ToggleRight className="w-9 h-9 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="w-9 h-9 text-gray-300" />
-                  )}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleTestNotification('weekly')}
+                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                    title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Send a test weekly summary report"}
+                  >
+                    Test
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleTogglePreference('weeklyReport')}
+                    className="text-[#94A3B8] hover:text-[#F7931A] transition-colors cursor-pointer focus:outline-none rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Toggle weekly summary reports"}
+                    aria-label="Toggle weekly summary reports"
+                  >
+                    {weeklyReport && !isDisabled ? (
+                      <ToggleRight className="w-10 h-10 text-[#F7931A] transition-all" />
+                    ) : (
+                      <ToggleLeft className="w-10 h-10 text-white/20 transition-all" />
+                    )}
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between py-2.5 border-b border-white/10 last:border-0">
                 <div>
-                  <p className="font-semibold text-gray-700">Goal Alert Notifications</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Get notified if monthly footprint exceeds target budget</p>
+                  <p className="font-bold text-white text-sm font-display">Goal Alert Notifications</p>
+                  <p className="text-xs text-[#94A3B8] mt-0.5 font-sans font-medium">Get notified if monthly footprint exceeds target budget</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setGoalAlerts(!goalAlerts)}
-                  className="text-gray-400 hover:text-green-600 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none rounded-xl"
-                  aria-label="Toggle goal alerts notifications"
-                >
-                  {goalAlerts ? (
-                    <ToggleRight className="w-9 h-9 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="w-9 h-9 text-gray-300" />
-                  )}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleTestNotification('goal')}
+                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                    title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Send a test goal alert"}
+                  >
+                    Test
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleTogglePreference('goalAlerts')}
+                    className="text-[#94A3B8] hover:text-[#F7931A] transition-colors cursor-pointer focus:outline-none rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Toggle goal alerts notifications"}
+                    aria-label="Toggle goal alerts notifications"
+                  >
+                    {goalAlerts && !isDisabled ? (
+                      <ToggleRight className="w-10 h-10 text-[#F7931A] transition-all" />
+                    ) : (
+                      <ToggleLeft className="w-10 h-10 text-white/20 transition-all" />
+                    )}
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between py-2.5 border-b border-white/10 last:border-0">
                 <div>
-                  <p className="font-semibold text-gray-700">Eco Tip Recommendations</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Receive daily notifications recommending eco tips</p>
+                  <p className="font-bold text-white text-sm font-display">Eco Tip Recommendations</p>
+                  <p className="text-xs text-[#94A3B8] mt-0.5 font-sans font-medium">Receive daily notifications recommending eco tips</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setEcoTips(!ecoTips)}
-                  className="text-gray-400 hover:text-green-600 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none rounded-xl"
-                  aria-label="Toggle eco tip recommendations"
-                >
-                  {ecoTips ? (
-                    <ToggleRight className="w-9 h-9 text-green-600" />
-                  ) : (
-                    <ToggleLeft className="w-9 h-9 text-gray-300" />
-                  )}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleTestNotification('tip')}
+                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                    title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Send a test eco tip recommendation"}
+                  >
+                    Test
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDisabled}
+                    onClick={() => handleTogglePreference('ecoTips')}
+                    className="text-[#94A3B8] hover:text-[#F7931A] transition-colors cursor-pointer focus:outline-none rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Toggle eco tip recommendations"}
+                    aria-label="Toggle eco tip recommendations"
+                  >
+                    {ecoTips && !isDisabled ? (
+                      <ToggleRight className="w-10 h-10 text-[#F7931A] transition-all" />
+                    ) : (
+                      <ToggleLeft className="w-10 h-10 text-white/20 transition-all" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -490,10 +698,10 @@ function About() {
             <div className="pt-4 flex items-center justify-end">
               <button
                 type="submit"
-                className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-2xl hover:bg-green-700 transition-colors shadow-md shadow-green-100 font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+                className="btn-premium flex items-center gap-2.5 px-8 h-14 cursor-pointer focus:outline-none font-display"
                 aria-label="Save profile changes"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4.5 h-4.5" />
                 Save Profile
               </button>
             </div>
@@ -501,13 +709,19 @@ function About() {
           </form>
 
           {/* Danger Zone */}
-          <div className="border border-red-200 bg-red-50/30 rounded-3xl p-5 md:p-6 space-y-4">
+          <div
+            ref={dangerTilt.ref}
+            onMouseMove={dangerTilt.onMouseMove}
+            onMouseLeave={dangerTilt.onMouseLeave}
+            style={dangerTilt.style}
+            className="border border-red-500/25 bg-red-500/5 rounded-3xl p-6 md:p-8 space-y-5 shadow-[0_0_20px_-5px_rgba(239,68,68,0.1)]"
+          >
             <div>
-              <h3 className="text-sm font-bold text-red-700 uppercase tracking-wide flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-red-600 animate-pulse" />
+              <h3 className="text-base font-bold text-red-500 uppercase tracking-wider flex items-center gap-2.5 font-display">
+                <ShieldAlert className="w-5.5 h-5.5 text-red-500" />
                 System Management (Danger Zone)
               </h3>
-              <p className="text-[11px] text-gray-400 leading-normal mt-1">
+              <p className="text-xs text-[#94A3B8] leading-relaxed mt-1 font-sans font-medium">
                 Perform diagnostics and reset system parameters. Clearing local data wipes all history.
               </p>
             </div>
@@ -516,10 +730,10 @@ function About() {
               <button
                 type="button"
                 onClick={handleClearData}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 transition-colors font-bold text-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus:outline-none"
+                className="btn-3d-destructive flex items-center gap-2.5 h-12 px-6 text-xs focus:outline-none"
                 aria-label="Wipe all app data"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4.5 h-4.5" />
                 Wipe All App Data
               </button>
             </div>
@@ -533,3 +747,4 @@ function About() {
 }
 
 export default About
+

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { Flame, Sun, CloudSun, Rainbow, Cloud, Snowflake } from 'lucide-react'
 
 /**
  * useWeather — Fetches current temperature from Open-Meteo API.
@@ -163,47 +164,47 @@ function getWeatherTip(temp) {
 
   if (temp >= 40) {
     return {
-      message: `Extreme heat (${temp}°C) — stay indoors & use fans instead of AC 🌡️`,
-      icon: '🔥',
+      message: `Extreme heat (${temp}°C) — stay indoors & use fans instead of AC`,
+      icon: Flame,
       severity: 'critical',
       savings: 'Fans use 90% less energy than air conditioning',
     }
   }
   if (temp >= 35) {
     return {
-      message: `Very hot today (${temp}°C) — consider using fans instead of AC 🌡️`,
-      icon: '☀️',
+      message: `Very hot today (${temp}°C) — consider using fans instead of AC`,
+      icon: Sun,
       severity: 'high',
       savings: 'Fans use 90% less energy than AC',
     }
   }
   if (temp >= 30) {
     return {
-      message: `Warm day (${temp}°C) — set your AC to 24°C to save energy ❄️`,
-      icon: '🌤️',
+      message: `Warm day (${temp}°C) — set your AC to 24°C to save energy`,
+      icon: CloudSun,
       severity: 'medium',
       savings: 'Each °C higher saves ~6% cooling energy',
     }
   }
   if (temp >= 20) {
     return {
-      message: `Pleasant weather (${temp}°C) — open windows instead of using AC 🪟`,
-      icon: '🌈',
+      message: `Pleasant weather (${temp}°C) — open windows instead of using AC`,
+      icon: Rainbow,
       severity: 'low',
       savings: 'Natural ventilation = zero carbon cooling',
     }
   }
   if (temp >= 10) {
     return {
-      message: `Cool day (${temp}°C) — layer up before turning on the heater 🧣`,
-      icon: '🌥️',
+      message: `Cool day (${temp}°C) — layer up before turning on the heater`,
+      icon: Cloud,
       severity: 'medium',
       savings: 'Lowering heating by 1°C saves ~10% energy',
     }
   }
   return {
-    message: `Cold today (${temp}°C) — use a blanket before cranking up the heater ❄️`,
-    icon: '🥶',
+    message: `Cold today (${temp}°C) — use a blanket before cranking up the heater`,
+    icon: Snowflake,
     severity: 'high',
     savings: 'Electric heaters use ~2 kWh/hour',
   }

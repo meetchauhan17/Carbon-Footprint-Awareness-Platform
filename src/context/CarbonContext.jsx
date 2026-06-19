@@ -1,6 +1,7 @@
-import { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useRef } from 'react'
 import { getCategoryBreakdown, getWeeklyData, getMonthlyData, getTotalCO2 } from '../utils/calculations.js'
 import { evaluateBadges } from '../utils/badges.js'
+import { checkGoalAlert } from '../utils/notifications.js'
 
 const CarbonContext = createContext(null)
 
@@ -61,12 +62,13 @@ function loadFromStorage() {
 // ─── Initial State ────────────────────────────────────────────────────
 function buildInitialState() {
   const stored = loadFromStorage()
-  if (stored && stored.carbonEntries && stored.carbonEntries.length > 0) {
+  if (stored) {
     // Recompute derived fields from stored data
-    const totalFootprint = getTotalCO2(stored.carbonEntries)
-    const weeklyData = getWeeklyData(stored.carbonEntries)
-    const monthlyData = getMonthlyData(stored.carbonEntries)
-    const badges = evaluateBadges({ ...stored, carbonEntries: stored.carbonEntries })
+    const carbonEntries = stored.carbonEntries || []
+    const totalFootprint = getTotalCO2(carbonEntries)
+    const weeklyData = getWeeklyData(carbonEntries)
+    const monthlyData = getMonthlyData(carbonEntries)
+    const badges = evaluateBadges({ ...stored, carbonEntries })
     const userProfile = {
       name: '',
       location: '',
@@ -76,7 +78,7 @@ function buildInitialState() {
       notifications: { weeklyReport: true, goalAlerts: true, ecoTips: false },
       ...stored.userProfile
     }
-    return { completedTips: [], ...stored, userProfile, totalFootprint, weeklyData, monthlyData, badges }
+    return { completedTips: [], ...stored, carbonEntries, userProfile, totalFootprint, weeklyData, monthlyData, badges }
   }
 
   // First load → seed with sample data
@@ -175,6 +177,17 @@ export function CarbonProvider({ children }) {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state])
+
+  // Trigger goal alerts on new entries added during the session
+  const prevEntriesLength = useRef(state?.carbonEntries?.length || 0)
+  useEffect(() => {
+    if (state?.carbonEntries && state.carbonEntries.length > prevEntriesLength.current) {
+      checkGoalAlert(state.carbonEntries, state.userProfile?.monthlyGoal ?? 150)
+    }
+    if (state?.carbonEntries) {
+      prevEntriesLength.current = state.carbonEntries.length
+    }
+  }, [state?.carbonEntries, state?.userProfile?.monthlyGoal])
 
   // ── Exposed action functions ──────────────────────────────────────
   const addCarbonEntry = useCallback((entry) => {

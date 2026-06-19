@@ -52,10 +52,10 @@ export const EMISSION_FACTORS = {
 // ─── Category Metadata ─────────────────────────────────────────────────
 
 const CATEGORY_META = {
-  transport: { color: '#3b82f6', label: 'Transport' },
-  energy:    { color: '#f59e0b', label: 'Home Energy' },
-  food:      { color: '#16a34a', label: 'Food' },
-  shopping:  { color: '#8b5cf6', label: 'Shopping' },
+  transport: { color: '#1E3D59', label: 'Transport' },
+  energy:    { color: '#D4AF37', label: 'Home Energy' },
+  food:      { color: '#C59B27', label: 'Food' },
+  shopping:  { color: '#F2F0E4', label: 'Shopping' },
 }
 
 // ─── Per-Category Calculators ──────────────────────────────────────────

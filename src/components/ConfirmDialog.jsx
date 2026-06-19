@@ -43,7 +43,7 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in"
       onClick={onCancel}
     >
       <div
@@ -53,41 +53,42 @@ export default function ConfirmDialog({
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-desc"
         tabIndex="-1"
-        className={`w-full max-w-md bg-white rounded-3xl border border-gray-100 shadow-2xl p-6 relative overflow-hidden animate-fade-in-up animate-duration-300 focus:outline-none ${className}`}
+        className={`w-full max-w-md bg-[#0F1115] rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(247,147,26,0.18)] p-8 relative overflow-hidden animate-fade-in-up focus:outline-none ${className}`}
         onClick={(e) => e.stopPropagation()} // Prevent backdrop click when clicking dialog content
       >
         {/* Background design accents */}
-        <div className={`absolute -top-12 -left-12 w-32 h-32 rounded-full blur-2xl opacity-10 ${isDestructive ? 'bg-red-500' : 'bg-green-500'}`} />
-        <div className={`absolute -bottom-12 -right-12 w-32 h-32 rounded-full blur-2xl opacity-10 ${isDestructive ? 'bg-orange-500' : 'bg-emerald-500'}`} />
+        <div className="absolute -top-12 -left-12 w-32 h-32 bg-[#F7931A]/5 blur-2xl pointer-events-none" />
 
         {/* Close Icon (Top Right) */}
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="absolute top-4 right-4 p-1 rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all cursor-pointer"
+            className="absolute top-5 right-5 p-2 rounded-full border border-white/10 text-[#94A3B8] hover:bg-white/10 hover:text-white transition-all duration-200 cursor-pointer shadow-sm"
             aria-label="Close dialog"
           >
-            <X className="w-4.5 h-4.5" />
+            <X className="w-4 h-4" />
           </button>
         )}
 
-        <div className="flex items-start gap-4 mt-2">
+        <div className="flex items-start gap-5 mt-2">
           {/* Warning Icon Banner */}
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isDestructive ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
+            isDestructive ? 'border-red-500/30 bg-red-950/20 text-red-500' : 'border-[#F7931A]/35 bg-[#F7931A]/10 text-[#F7931A]'
+          }`}>
             <AlertTriangle className="w-5 h-5" />
           </div>
 
-          <div className="space-y-2 flex-1">
+          <div className="space-y-2.5 flex-1 font-sans">
             <h3
               id="confirm-dialog-title"
-              className="text-base font-extrabold text-gray-900 leading-tight"
+              className="text-lg font-bold text-clay-text uppercase tracking-wider font-display"
             >
               {title}
             </h3>
             <p
               id="confirm-dialog-desc"
-              className="text-xs text-gray-500 leading-relaxed font-medium"
+              className="text-xs text-clay-muted leading-relaxed font-medium"
             >
               {message}
             </p>
@@ -95,11 +96,11 @@ export default function ConfirmDialog({
         </div>
 
         {/* Action Buttons Row */}
-        <div className="flex items-center gap-3.5 pt-6 mt-4 border-t border-gray-100/60 justify-end">
+        <div className="flex items-center gap-3 pt-6 mt-6 border-t border-white/10 justify-end font-sans">
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2.5 rounded-2xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-bold transition-all cursor-pointer min-w-[80px] text-center"
+            className="btn-3d-secondary h-10 px-5 text-xs min-w-[90px] text-center"
           >
             {cancelText}
           </button>
@@ -107,10 +108,10 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className={`px-5 py-2.5 rounded-2xl text-white text-xs font-bold transition-all cursor-pointer min-w-[80px] text-center shadow-md ${
+            className={`h-10 px-5 text-xs min-w-[90px] text-center ${
               isDestructive
-                ? 'bg-red-600 hover:bg-red-700 shadow-red-200'
-                : 'bg-green-600 hover:bg-green-700 shadow-green-200'
+                ? 'btn-3d-destructive'
+                : 'btn-premium'
             }`}
           >
             {confirmText}

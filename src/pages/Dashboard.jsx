@@ -7,9 +7,10 @@ import {
 } from 'recharts'
 import {
   Car, Zap, Utensils, ShoppingBag, Target, TrendingUp,
-  TrendingDown, Award, Flame, ArrowRight, Leaf,
-  CheckCircle2, Lightbulb, Calendar, Settings, Lock,
-  Thermometer, Quote, RefreshCw, Globe, CloudSun,
+  Award, Flame, Leaf, ArrowRight, Lightbulb,
+  CheckCircle2, Calendar, Settings,
+  Thermometer, Globe, CloudSun, Quote, RefreshCw,
+  Bike, Salad, Bus, Plug, Trash2, Shirt, Wrench, BarChart2, Package, Snowflake
 } from 'lucide-react'
 import { useCarbon } from '../context/CarbonContext.jsx'
 import { useCarbonStats } from '../hooks/useCarbonStats.js'
@@ -23,6 +24,9 @@ import CarbonCard from '../components/CarbonCard.jsx'
 import EmissionGauge from '../components/EmissionGauge.jsx'
 import ProgressBar from '../components/ProgressBar.jsx'
 import QuickLogButton from '../components/QuickLogButton.jsx'
+import LocationAutocomplete from '../components/LocationAutocomplete.jsx'
+import EmojiIcon from '../components/EmojiIcon.jsx'
+import { use3DTilt } from '../hooks/use3DTilt.js'
 
 // ─── Constants ────────────────────────────────────────────────────────
 
@@ -30,27 +34,25 @@ import QuickLogButton from '../components/QuickLogButton.jsx'
 const GLOBAL_DAILY_AVG = parseFloat((4000 / 365).toFixed(2))
 
 const ALL_TIPS = [
-  { title: 'Cycle or walk for short trips',        category: 'Transport', impact: 'High',   icon: '🚲', description: 'Replace car trips under 3 km with cycling to save ~0.6 kg CO₂ per trip.' },
-  { title: 'Switch to LED lighting',               category: 'Energy',    impact: 'Medium', icon: '💡', description: 'LEDs use 75% less energy and last 25× longer than incandescent bulbs.' },
-  { title: 'Eat more plant-based meals',           category: 'Food',      impact: 'High',   icon: '🥗', description: 'A plant-based diet can reduce your food carbon footprint by up to 73%.' },
-  { title: 'Use public transit',                   category: 'Transport', impact: 'High',   icon: '🚌', description: 'Buses and trains emit 60–80% less CO₂ per passenger compared to driving alone.' },
-  { title: 'Unplug idle electronics',              category: 'Energy',    impact: 'Medium', icon: '🔌', description: 'Phantom loads from standby devices account for 5–10% of home electricity use.' },
-  { title: 'Reduce food waste',                    category: 'Food',      impact: 'High',   icon: '🗑️', description: 'Plan meals and store food properly — food waste generates 8–10% of global emissions.' },
-  { title: 'Choose reusable products',             category: 'Shopping',  impact: 'High',   icon: '♻️', description: 'Replace single-use items with reusables to drastically cut waste over time.' },
-  { title: 'Air-dry your laundry',                 category: 'Energy',    impact: 'Medium', icon: '👔', description: 'Skipping the dryer saves ~2.3 kg CO₂ per load.' },
-  { title: 'Buy local & seasonal produce',         category: 'Food',      impact: 'Medium', icon: '🥕', description: 'Locally grown seasonal produce cuts transport-related emissions by up to 50%.' },
-  { title: 'Choose green energy providers',        category: 'Energy',    impact: 'High',   icon: '🌱', description: 'Switching to a renewable energy tariff can eliminate household electricity emissions.' },
-  { title: 'Carpool with colleagues',              category: 'Transport', impact: 'Medium', icon: '🚗', description: 'Sharing rides halves your transport emissions while cutting fuel costs.' },
-  { title: 'Repair before replacing electronics', category: 'Shopping',  impact: 'Medium', icon: '🔧', description: 'Extending product life by just 1 year can reduce its lifetime emissions by 20–30%.' },
+  { title: 'Cycle or walk for short trips',        category: 'Transport', impact: 'High',   icon: Bike, description: 'Replace car trips under 3 km with cycling to save ~0.6 kg CO₂ per trip.' },
+  { title: 'Switch to LED lighting',               category: 'Energy',    impact: 'Medium', icon: Lightbulb, description: 'LEDs use 75% less energy and last 25× longer than incandescent bulbs.' },
+  { title: 'Eat more plant-based meals',           category: 'Food',      impact: 'High',   icon: Salad, description: 'A plant-based diet can reduce your food carbon footprint by up to 73%.' },
+  { title: 'Use public transit',                   category: 'Transport', impact: 'High',   icon: Bus, description: 'Buses and trains emit 60–80% less CO₂ per passenger compared to driving alone.' },
+  { title: 'Unplug idle electronics',              category: 'Energy',    impact: 'Medium', icon: Plug, description: 'Phantom loads from standby devices account for 5–10% of home electricity use.' },
+  { title: 'Reduce food waste',                    category: 'Food',      impact: 'High',   icon: Trash2, description: 'Plan meals and store food properly — food waste generates 8–10% of global emissions.' },
+  { title: 'Choose reusable products',             category: 'Shopping',  impact: 'High',   icon: RefreshCw, description: 'Replace single-use items with reusables to drastically cut waste over time.' },
+  { title: 'Air-dry your laundry',                 category: 'Energy',    impact: 'Medium', icon: Shirt, description: 'Skipping the dryer saves ~2.3 kg CO₂ per load.' },
+  { title: 'Buy local & seasonal produce',         category: 'Food',      impact: 'Medium', icon: Salad, description: 'Locally grown seasonal produce cuts transport-related emissions by up to 50%.' },
+  { title: 'Choose green energy providers',        category: 'Energy',    impact: 'High',   icon: Leaf, description: 'Switching to a renewable energy tariff can eliminate household electricity emissions.' },
+  { title: 'Carpool with colleagues',              category: 'Transport', impact: 'Medium', icon: Car, description: 'Sharing rides halves your transport emissions while cutting fuel costs.' },
+  { title: 'Repair before replacing electronics', category: 'Shopping',  impact: 'Medium', icon: Wrench, description: 'Extending product life by just 1 year can reduce its lifetime emissions by 20–30%.' },
 ]
 
-
-
 const QUICK_LOGS = [
-  { id: 'drove-work',      label: 'Drove to work',     icon: '🚗', emoji: Car,         co2: 3.15,  category: 'transport', item: 'car_petrol',  note: '15 km trip' },
-  { id: 'skipped-meat',    label: 'Skipped meat today', icon: '🥗', emoji: Utensils,   co2: -1.5,  category: 'food',      item: 'vegan',       note: 'Plant-based meal' },
-  { id: 'used-ac',         label: 'Used AC (2 hrs)',    icon: '❄️',  emoji: Zap,        co2: 1.64,  category: 'energy',    item: 'electricity', note: '2 kWh @ India grid' },
-  { id: 'ordered-online',  label: 'Ordered online',     icon: '📦', emoji: ShoppingBag, co2: 0.5,  category: 'shopping',  item: 'online',      note: 'Packaging emissions' },
+  { id: 'drove-work',      label: 'Drove to work',     icon: Car, emoji: Car,         co2: 3.15,  category: 'transport', item: 'car_petrol',  note: '15 km trip' },
+  { id: 'skipped-meat',    label: 'Skipped meat today', icon: Salad, emoji: Salad,   co2: -1.5,  category: 'food',      item: 'vegan',       note: 'Plant-based meal' },
+  { id: 'used-ac',         label: 'Used AC (2 hrs)',    icon: Snowflake,  emoji: Snowflake,  co2: 1.64,  category: 'energy',    item: 'electricity', note: '2 kWh @ India grid' },
+  { id: 'ordered-online',  label: 'Ordered online',     icon: Package, emoji: Package, co2: 0.5,  category: 'shopping',  item: 'online',      note: 'Packaging emissions' },
 ]
 
 const IMPACT_BADGE = {
@@ -62,21 +64,19 @@ const IMPACT_BADGE = {
 // ─── Helpers ──────────────────────────────────────────────────────────
 
 function seededPick3(arr) {
-  // Deterministic "random" 3 by day-of-year so they change daily
   const seed = new Date().getDate()
   const a = arr[(seed * 3)     % arr.length]
   const b = arr[(seed * 5 + 2) % arr.length]
   const c = arr[(seed * 7 + 4) % arr.length]
-  // Dedupe
   const seen = new Set()
   return [a, b, c].filter(x => { if (seen.has(x.title)) return false; seen.add(x.title); return true })
 }
 
 function getDayColor(kg) {
-  if (kg < 5)  return '#16a34a'
-  if (kg < 10) return '#ca8a04'
+  if (kg < 5)  return '#10B981'
+  if (kg < 10) return '#F59E0B'
   if (kg < 20) return '#ea580c'
-  return '#dc2626'
+  return '#DB2777'
 }
 
 function getTodayKg(entries) {
@@ -134,7 +134,7 @@ function computeStreak(entries, goalKgPerDay) {
     const d = new Date(); d.setDate(d.getDate() - i)
     const key = d.toISOString().split('T')[0]
     const dayTotal = entries.filter(e => e.date?.startsWith(key)).reduce((s, e) => s + e.totalCO2, 0)
-    if (i === 0 && dayTotal === 0) continue // skip today if nothing logged yet
+    if (i === 0 && dayTotal === 0) continue
     if (dayTotal <= goalKgPerDay && dayTotal > 0) streak++
     else if (dayTotal > goalKgPerDay) break
   }
@@ -143,17 +143,82 @@ function computeStreak(entries, goalKgPerDay) {
 
 // ─── Sub-components ───────────────────────────────────────────────────
 
-/** Custom recharts tooltip */
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
+  const isPie = !label || typeof label === 'number';
+  const title = isPie ? payload[0]?.name : label;
+  const showNameInLine = !isPie;
   return (
-    <div className="bg-white border border-green-100 rounded-xl px-3 py-2 shadow-lg text-xs">
-      <p className="font-semibold text-gray-700 mb-1">{label}</p>
+    <div className="bg-[#0F1115]/90 backdrop-blur-md border border-white/12 rounded-xl px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.6),_0_0_15px_rgba(247,147,26,0.15)] text-xs font-bold font-sans">
+      {title && <p className="text-[#F7931A] mb-2 font-display uppercase tracking-wider text-[10px]">{title}</p>}
       {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color ?? p.fill }}>
-          {p.name}: <span className="font-bold">{parseFloat(p.value).toFixed(2)} kg CO₂</span>
-        </p>
+        <div key={i} className="flex items-center gap-2 mt-1 first:mt-0">
+          <span className="w-2.5 h-2.5 rounded-full border border-black/40 shadow-sm" style={{ backgroundColor: p.color ?? p.fill }} />
+          <p className="text-white font-medium">
+            {showNameInLine ? `${p.name}: ` : ''}
+            <span className="font-mono font-bold text-gray-200">{parseFloat(p.value).toFixed(1)} kg</span>
+          </p>
+        </div>
       ))}
+    </div>
+  )
+}
+
+function DashboardBadgeCard({ badge }) {
+  const tilt = use3DTilt({ maxTilt: 14, scale: 1.04 })
+  return (
+    <div
+      ref={tilt.ref}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
+      style={tilt.style}
+      className="flex items-center gap-3.5 p-3.5 bg-[#0F1115] border border-white/10 rounded-2xl animate-fade-in-up transition-all shadow-[0_0_20px_rgba(247,147,26,0.05)] holo-shine"
+    >
+      <span className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 bg-[#030304] border border-[#F7931A]/20 shadow-[0_0_10px_rgba(247,147,26,0.06)]">
+        <EmojiIcon icon={badge.icon} className="w-6 h-6" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-bold text-white truncate font-display">{badge.name}</p>
+        <p className="text-[10px] text-clay-muted font-medium truncate mt-0.5 font-sans">{badge.description}</p>
+        <span className="text-[9px] font-bold text-[#10B981] bg-[#030304] border border-[#10B981]/25 px-2.5 py-0.5 rounded-md mt-1.5 inline-block shadow-sm font-mono">
+          Unlocked {badge.earnedDate}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function DashboardTipCard({ tip, i, impactBadge }) {
+  const tilt = use3DTilt({ maxTilt: 10, scale: 1.03 })
+  return (
+    <div
+      ref={tilt.ref}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
+      style={{
+        ...tilt.style,
+        animationDelay: `${750 + i * 80}ms`
+      }}
+      className="glass-card p-5 group animate-fade-in-up flex flex-col justify-between"
+    >
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-[#030304] border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
+          <EmojiIcon icon={tip.icon} className="w-5 h-5" />
+        </div>
+        <div className="min-w-0 flex-1 font-sans">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-xs font-bold text-white leading-tight font-display">{tip.title}</h3>
+            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold shrink-0 border ${impactBadge[tip.impact]}`}>
+              {tip.impact}
+            </span>
+          </div>
+          <p className="text-[10px] text-clay-muted mt-1 leading-relaxed font-medium">{tip.description}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 pt-3 border-t border-white/5 font-sans">
+        <span className="w-1.5 h-1.5 rounded-full bg-clay-success" />
+        <span className="text-[10px] text-clay-success font-bold font-mono">{tip.category}</span>
+      </div>
     </div>
   )
 }
@@ -167,22 +232,25 @@ function Dashboard() {
   const { carbonEntries, userProfile, badges } = state
   const monthlyGoal = userProfile?.monthlyGoal ?? 150
 
-  // ── API Hooks ──────────────────────────────────────────────────
-  // Pass user's location — hook geocodes it to real lat/lon, falls back to Surat
-  const { temperature, resolvedCity, weatherTip, isLoading: weatherLoading, error: weatherError } = useWeather(userProfile?.location)
-  const { quote, isLoading: quoteLoading, nextQuote } = useQuote()
+  const { temperature, resolvedCity, weatherTip, isLoading: weatherLoading } = useWeather(userProfile?.location)
+  const { quote, nextQuote } = useQuote()
   const { countryData, co2PerCapita, motivationalMsg, isLoading: countryLoading } = useCountryData(userProfile?.location)
 
   const [flashedId, setFlashedId] = useState(null)
   const [isBadgesOpen, setIsBadgesOpen] = useState(false)
+
+  // 3D tilt interaction hooks for dashboard containers
+  const weatherTilt = use3DTilt({ maxTilt: 8, scale: 1.015 })
+  const countryTilt = use3DTilt({ maxTilt: 8, scale: 1.015 })
+  const quickLogTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
+  const goalTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
+  const achievementsTilt = use3DTilt({ maxTilt: 4, scale: 1.01 })
   
-  // Settings modal state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [settingsName, setSettingsName] = useState(userProfile?.name || '')
   const [settingsLocation, setSettingsLocation] = useState(userProfile?.location || '')
   const [settingsGoal, setSettingsGoal] = useState(monthlyGoal)
 
-  // Sync settings inputs when userProfile updates
   useEffect(() => {
     if (isSettingsOpen) {
       setSettingsName(userProfile?.name || '')
@@ -201,7 +269,6 @@ function Dashboard() {
     setIsSettingsOpen(false)
   }, [updateProfile, settingsName, settingsLocation, settingsGoal])
 
-  // ── Derived data ─────────────────────────────────────────────────
   const todayKg      = useMemo(() => getTodayKg(carbonEntries),           [carbonEntries])
   const weeklyData   = useMemo(() => getWeeklyKg(carbonEntries),          [carbonEntries])
   const catBreakdown = useMemo(() => getWeekCategoryBreakdown(carbonEntries), [carbonEntries])
@@ -211,12 +278,13 @@ function Dashboard() {
     return days.length ? parseFloat((days.reduce((s, d) => s + d.co2, 0) / days.length).toFixed(2)) : 0
   }, [weeklyData])
   const streak       = useMemo(() => computeStreak(carbonEntries, monthlyGoal / 30), [carbonEntries, monthlyGoal])
-  const goalProgress = useMemo(() => Math.min((monthKg / monthlyGoal) * 100, 100), [monthKg, monthlyGoal])
+  const goalProgress = useMemo(() => {
+    if (!monthlyGoal || monthlyGoal <= 0 || isNaN(monthlyGoal)) return 0
+    return Math.min((monthKg / monthlyGoal) * 100, 100)
+  }, [monthKg, monthlyGoal])
 
-  // Comparison to global: percentile approximation
   const betterThanPct = useMemo(() => {
     if (weekAvgKg <= 0) return null
-    // Simple linear approximation: global avg = 10.96, better than 50% at avg
     const ratio = weekAvgKg / GLOBAL_DAILY_AVG
     const pct = Math.round(Math.max(5, Math.min(95, (1 - ratio) * 50 + 50)))
     return pct
@@ -226,21 +294,18 @@ function Dashboard() {
   const dailyGoal    = parseFloat((monthlyGoal / 30).toFixed(2))
   const tips3        = useMemo(() => seededPick3(ALL_TIPS), [])
 
-  // ── Quick log handler ────────────────────────────────────────────
   const handleQuickLog = useCallback((log) => {
-    const absCo2 = Math.abs(log.co2)
     addCarbonEntry({
       category: log.category,
       item:     log.item,
       label:    log.label,
       quantity: 1,
-      totalCO2: absCo2,
+      totalCO2: log.co2,
     })
     setFlashedId(log.id)
     setTimeout(() => setFlashedId(null), 800)
   }, [addCarbonEntry])
 
-  // ── Greeting ─────────────────────────────────────────────────────
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const userName = userProfile?.name || null
@@ -250,33 +315,34 @@ function Dashboard() {
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <div className="animate-fade-in-up">
-        {/* Greeting + Quote */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-          <div>
-            <p className="text-sm font-medium text-green-600 mb-1">{greeting}{userName ? `, ${userName}` : ''}!</p>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
-              Here's your carbon snapshot <span className="gradient-text">🌱</span>
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-clay-primary uppercase tracking-widest bg-clay-primary/10 px-3 py-1 rounded-full border border-clay-primary/20 inline-block font-mono">
+              {greeting}{userName ? `, ${userName}` : ''}!
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#FFFFFF] leading-tight font-display">
+              Here's your carbon snapshot <span className="gradient-text inline-flex items-center gap-1"><EmojiIcon icon={Leaf} className="w-8 h-8" /></span>
             </h1>
-            <p className="text-gray-400 mt-1 text-sm">
+            <p className="text-clay-muted text-sm font-semibold font-sans">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap font-mono">
             {betterThanPct !== null && (
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-green-50 border border-green-200">
-                <Award className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)]">
+                <Award className="w-4 h-4 text-clay-primary" />
+                <span>
                   Better than {betterThanPct}% of users
                 </span>
               </div>
             )}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 hover:text-green-700 hover:border-green-300 hover:bg-green-50/40 shadow-sm hover:shadow transition-all cursor-pointer font-semibold text-sm focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+              className="btn-premium flex items-center gap-2 px-5 py-2.5 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none"
               id="dashboard-settings-btn"
               aria-label="Edit profile and goals settings"
             >
-              <Settings className="w-4 h-4 text-gray-500" />
+              <Settings className="w-4 h-4 text-white" />
               Edit Profile
             </button>
           </div>
@@ -284,19 +350,19 @@ function Dashboard() {
 
         {/* Profile Completion Motivational Bar */}
         {profileCompletion < 100 && (
-          <div className="glass-card p-4 mb-6 border-l-4 border-l-amber-500 animate-fade-in-up relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-amber-500/5 blur-xl" />
+          <div className="glass-card p-5 mb-6 animate-fade-in-up border-l-4 border-l-[#F7931A] relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-clay-warning/5 blur-xl" />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  <span className="flex h-2.5 w-2.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7931A] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F7931A]"></span>
                   </span>
-                  <h3 className="text-sm font-bold text-gray-800">Complete your profile to unlock local tips!</h3>
+                  <h3 className="text-sm font-bold text-clay-text font-display">Complete your profile to unlock local tips!</h3>
                 </div>
-                <p className="text-xs text-gray-500">
-                  Your profile setup is <span className="font-extrabold text-amber-600">{profileCompletion}%</span> complete. Fill in your details to refine carbon estimates.
+                <p className="text-xs text-clay-muted font-medium font-sans">
+                  Your profile setup is <span className="font-extrabold text-[#F7931A]">{profileCompletion}%</span> complete. Fill in your details to refine carbon estimates.
                 </p>
               </div>
               <div className="flex items-center gap-4 min-w-[200px] sm:justify-end">
@@ -304,12 +370,12 @@ function Dashboard() {
                   <ProgressBar
                     value={profileCompletion}
                     max={100}
-                    color="bg-gradient-to-r from-amber-500 to-amber-600"
+                    color="bg-gradient-to-r from-[#EA580C] to-[#F7931A]"
                   />
                 </div>
                 <Link 
                   to="/about?tab=profile" 
-                  className="px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors shadow-sm font-bold text-xs cursor-pointer shrink-0"
+                  className="btn-premium px-4 py-2 text-white font-bold text-xs cursor-pointer shrink-0"
                 >
                   Complete Setup
                 </Link>
@@ -318,130 +384,8 @@ function Dashboard() {
           </div>
         )}
 
-        {/* ── ENVIRONMENTAL QUOTE ──────────────────────────────── */}
-        {quote && (
-          <div className="glass-card p-4 mb-6 relative overflow-hidden border-l-4 border-l-emerald-500 animate-fade-in-up">
-            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-emerald-500/5 blur-xl" />
-            <div className="flex items-start gap-3 relative">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
-                <Quote className="w-4 h-4 text-emerald-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-700 italic leading-relaxed">
-                  "{quote.content}"
-                </p>
-                <p className="text-xs text-emerald-600 font-semibold mt-1">— {quote.author}</p>
-              </div>
-              <button
-                onClick={nextQuote}
-                className="p-1.5 rounded-lg hover:bg-emerald-50 text-gray-400 hover:text-emerald-600 transition-all shrink-0 cursor-pointer"
-                title="New quote"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── WEATHER + COUNTRY ROW ─────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {/* Weather Widget */}
-          <div className="glass-card p-4 relative overflow-hidden">
-            <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full bg-sky-500/5 blur-xl" />
-            <div className="flex items-center gap-3 relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-50 to-sky-100 flex items-center justify-center shrink-0">
-                {weatherLoading ? (
-                  <CloudSun className="w-5 h-5 text-sky-400 animate-pulse" />
-                ) : (
-                  <Thermometer className="w-5 h-5 text-sky-600" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                {weatherLoading ? (
-                  <div className="space-y-1.5">
-                    <div className="h-4 w-24 bg-gray-100 rounded animate-pulse" />
-                    <div className="h-3 w-32 bg-gray-50 rounded animate-pulse" />
-                  </div>
-                ) : temperature !== null ? (
-                  <>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xl font-extrabold text-gray-900">{temperature}°C</span>
-                      <span className="text-xs text-gray-400 font-medium">{resolvedCity}</span>
-                    </div>
-                    {weatherTip && (
-                      <p className="text-xs text-sky-600 mt-0.5 leading-relaxed">
-                        {weatherTip.icon} {weatherTip.message}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-xs text-gray-400">Weather data unavailable</p>
-                )}
-              </div>
-            </div>
-            {weatherTip && temperature !== null && (
-              <div className="mt-3 pt-3 border-t border-gray-100/80">
-                <p className="text-[10px] text-gray-400">
-                  💡 <span className="font-semibold text-gray-500">{weatherTip.savings}</span>
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Country Comparison Widget */}
-          <div className="glass-card p-4 relative overflow-hidden">
-            <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full bg-violet-500/5 blur-xl" />
-            <div className="flex items-center gap-3 relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 flex items-center justify-center shrink-0">
-                <Globe className="w-5 h-5 text-violet-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                {countryLoading ? (
-                  <div className="space-y-1.5">
-                    <div className="h-4 w-28 bg-gray-100 rounded animate-pulse" />
-                    <div className="h-3 w-36 bg-gray-50 rounded animate-pulse" />
-                  </div>
-                ) : motivationalMsg ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      {countryData?.flag && (
-                        <img src={countryData.flag} alt={`${motivationalMsg.country} flag`} className="w-5 h-3.5 rounded-sm object-cover shadow-sm" />
-                      )}
-                      <span className="text-sm font-bold text-gray-800">{motivationalMsg.country}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-600 font-semibold border border-violet-100">
-                        {co2PerCapita} t/yr per capita
-                      </span>
-                    </div>
-                    <p className="text-xs text-violet-600 mt-1">
-                      {motivationalMsg.text} — you're at {formatCO2(monthKg)}/month
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-bold text-gray-700">Country Comparison</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Set your location in{' '}
-                      <Link to="/about?tab=profile" className="text-violet-600 underline underline-offset-2 font-semibold">
-                        Profile
-                      </Link>{' '}
-                      to see your country's CO₂ average
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-            {motivationalMsg && (
-              <div className="mt-3 pt-3 border-t border-gray-100/80">
-                <p className="text-[10px] text-gray-400">
-                  📊 <span className="font-semibold text-gray-500">{motivationalMsg.detail}</span>
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Hero metric cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {/* Today */}
           <CarbonCard
             label="Today's Footprint"
@@ -450,7 +394,7 @@ function Dashboard() {
             accentColor={todayColor}
             trend={todayKg <= dailyGoal ? 'down' : 'up'}
             trendText={
-              todayKg < 5 ? 'Low emissions day 🎉' :
+              todayKg < 5 ? 'Low emissions day' :
               todayKg < 10 ? 'Moderate day' :
               todayKg < 20 ? 'High emissions day' : 'Critical — take action!'
             }
@@ -462,7 +406,7 @@ function Dashboard() {
             value={weekAvgKg > 0 ? `${weekAvgKg.toFixed(1)} kg` : '—'}
             subText={`Daily goal: ${dailyGoal} kg`}
             icon={TrendingUp}
-            accentColor="#3b82f6"
+            accentColor="#0EA5E9"
             delay={100}
             trend={weekAvgKg > 0 ? (weekAvgKg <= dailyGoal ? 'down' : 'up') : undefined}
             trendText={
@@ -480,17 +424,129 @@ function Dashboard() {
             value={formatCO2(monthKg)}
             subText={`of ${formatCO2(monthlyGoal)} goal`}
             icon={Calendar}
-            accentColor={goalProgress >= 100 ? '#dc2626' : goalProgress >= 75 ? '#ea580c' : '#16a34a'}
+            accentColor={goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}
             delay={200}
           >
             <ProgressBar
               value={goalProgress}
               max={100}
               className="mt-3"
-              color={goalProgress >= 100 ? 'bg-red-600' : goalProgress >= 75 ? 'bg-orange-500' : 'bg-green-600'}
+              color={goalProgress >= 100 ? 'bg-[#EF4444]' : goalProgress >= 75 ? 'bg-[#EA580C]' : 'bg-[#10B981]'}
             />
-            <p className="text-xs text-gray-400 mt-1">{goalProgress.toFixed(0)}% of monthly budget used</p>
+            <p className="text-[10px] text-clay-muted font-bold mt-1.5 font-sans">{goalProgress.toFixed(0)}% of monthly budget used</p>
           </CarbonCard>
+        </div>
+
+        {/* ── WEATHER + COUNTRY ROW ─────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Weather Widget */}
+          <div
+            ref={weatherTilt.ref}
+            onMouseMove={weatherTilt.onMouseMove}
+            onMouseLeave={weatherTilt.onMouseLeave}
+            style={weatherTilt.style}
+            className="glass-card shimmer-container p-5 relative overflow-hidden"
+          >
+            <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full bg-sky-500/5 blur-xl" />
+            <div className="flex items-center gap-3 relative">
+              <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
+                {weatherLoading ? (
+                  <CloudSun className="w-5 h-5 text-sky-400 animate-pulse" />
+                ) : (
+                  <Thermometer className="w-5 h-5 text-sky-500" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0 font-sans">
+                {weatherLoading ? (
+                  <div className="space-y-1.5 font-sans">
+                    <div className="h-4 w-24 bg-gray-100/5 rounded animate-pulse" />
+                    <div className="h-3 w-32 bg-gray-50/5 rounded animate-pulse" />
+                  </div>
+                ) : temperature !== null ? (
+                  <>
+                    <div className="flex items-baseline gap-1.5 font-sans">
+                      <span className="text-xl font-bold text-white font-display">{temperature}°C</span>
+                      <span className="text-xs text-clay-muted font-medium">{resolvedCity}</span>
+                    </div>
+                    {weatherTip && (
+                      <p className="text-xs text-sky-400 mt-1 leading-relaxed font-semibold flex items-center gap-1 font-sans">
+                        <EmojiIcon icon={weatherTip.icon} className="w-4 h-4" />
+                        {weatherTip.message}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-clay-muted font-bold">Weather data unavailable</p>
+                )}
+              </div>
+            </div>
+            {weatherTip && temperature !== null && (
+              <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-1 font-sans">
+                <EmojiIcon icon={Lightbulb} className="w-3.5 h-3.5" />
+                <p className="text-[10px] text-clay-muted font-bold">
+                  <span className="text-white">{weatherTip.savings}</span>
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Country Comparison Widget */}
+          <div
+            ref={countryTilt.ref}
+            onMouseMove={countryTilt.onMouseMove}
+            onMouseLeave={countryTilt.onMouseLeave}
+            style={countryTilt.style}
+            className="glass-card shimmer-container p-5 relative overflow-hidden"
+          >
+            <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full bg-violet-500/5 blur-xl" />
+            <div className="flex items-center gap-3 relative">
+              <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
+                <Globe className="w-5 h-5 text-clay-primary" />
+              </div>
+              <div className="flex-1 min-w-0 font-sans">
+                {countryLoading ? (
+                  <div className="space-y-1.5 font-sans">
+                    <div className="h-4 w-28 bg-gray-100/5 rounded animate-pulse" />
+                    <div className="h-3 w-36 bg-gray-50/5 rounded animate-pulse" />
+                  </div>
+                ) : motivationalMsg ? (
+                  <>
+                    <div className="flex items-center gap-2 font-sans">
+                      {countryData?.flag && (
+                        <img src={countryData.flag} alt={`${motivationalMsg.country} flag`} className="w-5 h-3.5 rounded-sm object-cover shadow-sm" />
+                      )}
+                      <span className="text-sm font-bold text-white font-display">{motivationalMsg.country}</span>
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#030304] text-[#FFD600] font-bold border border-[#FFD600]/25 shadow-[0_0_10px_rgba(255,214,0,0.06)] font-mono">
+                        {co2PerCapita} t/yr per capita
+                      </span>
+                    </div>
+                    <p className="text-xs text-clay-primary mt-1.5 font-bold font-sans">
+                      {motivationalMsg.text} — you're at {formatCO2(monthKg)}/month
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-bold text-white font-display">Country Comparison</p>
+                    <p className="text-xs text-clay-muted mt-1 font-semibold font-sans">
+                      Set your location in{' '}
+                      <Link to="/about?tab=profile" className="text-clay-primary underline underline-offset-2 font-bold">
+                        Profile
+                      </Link>{' '}
+                      to see your country's CO₂ average
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+            {motivationalMsg && (
+              <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-1 font-sans">
+                <EmojiIcon icon={BarChart2} className="w-3.5 h-3.5" />
+                <p className="text-[10px] text-clay-muted font-bold">
+                  <span className="text-white">{motivationalMsg.detail}</span>
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -498,14 +554,14 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Line chart — 7-day trend */}
         <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 font-sans">
             <div>
-              <h2 className="text-base font-bold text-gray-800">7-Day Emissions Trend</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Daily CO₂ vs your goal line</p>
+              <h2 className="text-base font-bold text-clay-text font-display">7-Day Emissions Trend</h2>
+              <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Daily CO₂ vs your goal line</p>
             </div>
-            <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-3 text-xs text-clay-muted font-bold font-mono">
               <span className="flex items-center gap-1">
-                <span className="w-3 h-0.5 bg-green-500 rounded-full inline-block" />
+                <span className="w-3 h-0.5 bg-clay-primary rounded-full inline-block" />
                 Your goal
               </span>
             </div>
@@ -517,47 +573,58 @@ function Dashboard() {
                 margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
                 onClick={(e) => {
                   if (e && e.activePayload && e.activePayload.length > 0) {
-                    // Navigate to history or just set something. The user asks to "navigate to that day's history entry"
-                    // History page doesn't currently support a direct hash or query param for day, but we can navigate to /history
                     navigate('/history')
                   }
                 }}
-                className="cursor-pointer"
+                className="cursor-pointer font-mono"
               >
                 <defs>
                   <linearGradient id="colorCo2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#16a34a" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#F7931A" stopOpacity={0.25}/>
+                    <stop offset="95%" stopColor="#F7931A" stopOpacity={0}/>
                   </linearGradient>
+                  <filter id="areaGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx={0} dy={4} stdDeviation={5} floodColor="#F7931A" floodOpacity={0.35} />
+                  </filter>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0fdf4" />
-                <XAxis dataKey="day" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 30]} tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} unit=" kg" />
+                <CartesianGrid vertical={false} stroke="rgba(255, 255, 255, 0.04)" />
+                <XAxis dataKey="day" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 30]} tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} unit=" kg" />
                 <Tooltip content={<ChartTooltip />} />
                 <ReferenceLine
                   y={dailyGoal}
-                  stroke="#9ca3af"
-                  strokeDasharray="6 3"
+                  stroke="rgba(247, 147, 26, 0.3)"
+                  strokeDasharray="5 5"
                   strokeWidth={1.5}
-                  label={{ value: `Goal ${dailyGoal}kg`, position: 'insideTopRight', fontSize: 10, fill: '#9ca3af' }}
+                  label={{ value: `Goal ${dailyGoal}kg`, position: 'insideTopRight', offset: 10, fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono', fontWeight: 'bold' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="co2" 
                   name="Emissions" 
-                  stroke="#16a34a" 
-                  strokeWidth={2.5} 
+                  stroke="#F7931A" 
+                  strokeWidth={2} 
                   fillOpacity={1} 
                   fill="url(#colorCo2)" 
-                  activeDot={{ r: 6, fill: '#16a34a' }}
+                  activeDot={{ r: 6, fill: '#F7931A', stroke: '#030304', strokeWidth: 2 }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="co2" 
+                  stroke="#F7931A" 
+                  strokeWidth={3} 
+                  fill="none"
+                  filter="url(#areaGlow)"
+                  legendType="none"
+                  activeDot={false}
                 />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-60 flex flex-col items-center justify-center text-gray-400 gap-2">
-              <Leaf className="w-8 h-8 text-green-200" />
-              <p className="text-sm">No data yet — log your first entry!</p>
-              <Link to="/calculator" className="text-xs text-green-600 font-semibold hover:underline">
+            <div className="h-60 flex flex-col items-center justify-center text-clay-muted gap-2 font-sans">
+              <Leaf className="w-8 h-8 text-clay-primary animate-clay-breathe" />
+              <p className="text-sm font-bold">No data yet — log your first entry!</p>
+              <Link to="/calculator" className="text-xs text-clay-primary font-black hover:underline font-mono">
                 Open Calculator →
               </Link>
             </div>
@@ -567,28 +634,42 @@ function Dashboard() {
         {/* Pie chart — category breakdown this week */}
         <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
           <div className="mb-4 text-center">
-            <h2 className="text-base font-bold text-gray-800">This Week by Category</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Where your emissions are coming from</p>
+            <h2 className="text-base font-bold text-clay-text font-display">This Week by Category</h2>
+            <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Where your emissions are coming from</p>
           </div>
           {catBreakdown.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
+                {/* Background track circle */}
+                <Pie
+                  data={[{ value: 1 }]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  dataKey="value"
+                  fill="rgba(255, 255, 255, 0.03)"
+                  stroke="none"
+                  isAnimationActive={false}
+                />
                 <Pie
                   data={catBreakdown}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
                   outerRadius={80}
-                  paddingAngle={5}
+                  paddingAngle={4}
                   dataKey="value"
                   animationBegin={200}
                   animationDuration={800}
+                  stroke="#0F1115"
+                  strokeWidth={2.5}
                 >
                   {catBreakdown.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={v => [`${v.toFixed(2)} kg CO₂`]} />
+                <Tooltip content={<ChartTooltip />} />
                 <Legend 
                   verticalAlign="bottom" 
                   height={36} 
@@ -597,28 +678,28 @@ function Dashboard() {
                     return (
                       <div className="flex flex-wrap justify-center gap-3 mt-4">
                         {payload.map((entry, index) => (
-                          <div key={`item-${index}`} className="flex items-center gap-1.5">
+                          <div key={`item-${index}`} className="flex items-center gap-1.5 font-bold font-sans">
                             <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                            <span className="text-xs font-semibold text-gray-600">{entry.value}</span>
-                            <span className="text-xs text-gray-400">({((catBreakdown.find(c => c.name === entry.value)?.value / catBreakdown.reduce((a,b)=>a+b.value,0)) * 100).toFixed(0)}%)</span>
+                            <span className="text-xs text-clay-text font-mono">{entry.value}</span>
+                            <span className="text-xs text-clay-muted">({((catBreakdown.find(c => c.name === entry.value)?.value / catBreakdown.reduce((a,b)=>a+b.value,0)) * 100).toFixed(0)}%)</span>
                           </div>
                         ))}
                       </div>
                     );
                   }}
                 />
-                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-sm font-bold fill-gray-800">
-                  {catBreakdown.reduce((a,b) => a+b.value, 0).toFixed(1)} kg
+                <text x="50%" y="44%" textAnchor="middle" dominantBaseline="middle" className="text-[10px] font-extrabold fill-[#F7931A] uppercase tracking-widest font-display">
+                  TOTAL CO₂
                 </text>
-                <text x="50%" y="58%" textAnchor="middle" dominantBaseline="middle" className="text-[10px] fill-gray-400 uppercase tracking-wider">
-                  Total
+                <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" className="text-lg font-black fill-white font-mono">
+                  {catBreakdown.reduce((a,b) => a+b.value, 0).toFixed(1)}<tspan fontSize="10" fontWeight="bold" fill="#94A3B8" fontFamily="Inter, sans-serif"> kg</tspan>
                 </text>
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-60 flex flex-col items-center justify-center text-gray-400 gap-2">
-              <Leaf className="w-8 h-8 text-green-200" />
-              <p className="text-sm">Log activities to see your breakdown.</p>
+            <div className="h-60 flex flex-col items-center justify-center text-clay-muted gap-2 font-sans">
+              <Leaf className="w-8 h-8 text-clay-primary animate-clay-breathe" />
+              <p className="text-sm font-bold">Log activities to see your breakdown.</p>
             </div>
           )}
         </div>
@@ -628,11 +709,20 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
         {/* Quick log — 3/5 width */}
-        <div className="lg:col-span-3 glass-card p-6 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+        <div
+          ref={quickLogTilt.ref}
+          onMouseMove={quickLogTilt.onMouseMove}
+          onMouseLeave={quickLogTilt.onMouseLeave}
+          style={{
+            ...quickLogTilt.style,
+            animationDelay: '500ms'
+          }}
+          className="lg:col-span-3 glass-card p-6 animate-fade-in-up"
+        >
           <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base font-bold text-gray-800">Quick Log</h2>
-            <span className="text-xs text-gray-400 ml-1">— tap to instantly log an activity</span>
+            <Zap className="w-5 h-5 text-clay-warning" />
+            <h2 className="text-base font-bold text-white font-display">Quick Log</h2>
+            <span className="text-xs text-clay-muted font-medium ml-1 font-sans">— tap to instantly log an activity</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {QUICK_LOGS.map(log => (
@@ -645,7 +735,7 @@ function Dashboard() {
             ))}
           </div>
           {flashedId && (
-            <div className="mt-3 flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-xl px-3 py-2 animate-fade-in-up">
+            <div className="mt-3 flex items-center gap-2 text-xs text-clay-success bg-green-50/10 border border-[#10B981]/25 rounded-xl px-3 py-2 animate-fade-in-up font-bold font-sans">
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
               Entry logged and saved to your history!
             </div>
@@ -653,50 +743,60 @@ function Dashboard() {
         </div>
 
         {/* Goals — 2/5 width */}
-        <div className="lg:col-span-2 glass-card p-6 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-          <div className="flex items-center gap-2 mb-5">
-            <Target className="w-5 h-5 text-green-600" />
-            <h2 className="text-base font-bold text-gray-800">Monthly Goal</h2>
+        <div
+          ref={goalTilt.ref}
+          onMouseMove={goalTilt.onMouseMove}
+          onMouseLeave={goalTilt.onMouseLeave}
+          style={{
+            ...goalTilt.style,
+            animationDelay: '600ms'
+          }}
+          className="lg:col-span-2 glass-card p-6 animate-fade-in-up"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Target className="w-5 h-5 text-clay-primary" />
+            <h2 className="text-base font-bold text-white font-display">Monthly Goal</h2>
           </div>
 
-          {/* Goal ring */}
-          <div className="flex justify-center mb-5">
+          <div className="flex justify-center mb-4">
             <EmissionGauge
               value={goalProgress}
               max={100}
               label="used"
               levelText={goalProgress >= 100 ? 'exceeded' : 'on track'}
-              colorOverride={goalProgress >= 100 ? '#dc2626' : goalProgress >= 75 ? '#ea580c' : '#16a34a'}
+              colorOverride={goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}
               className="scale-75 -my-6"
             />
           </div>
 
-          <div className="space-y-2 text-sm">
+          <div className="space-y-2 text-xs font-bold" style={{ fontFamily: 'Nunito, sans-serif' }}>
             <div className="flex justify-between">
-              <span className="text-gray-500">Current</span>
-              <span className="font-bold text-gray-800">{formatCO2(monthKg)}</span>
+              <span className="text-clay-muted">Current</span>
+              <span className="text-clay-text">{formatCO2(monthKg)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Goal</span>
-              <span className="font-bold text-gray-800">{formatCO2(monthlyGoal)}</span>
+              <span className="text-clay-muted">Goal</span>
+              <span className="text-clay-text">{formatCO2(monthlyGoal)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Remaining</span>
-              <span className={`font-bold ${monthKg >= monthlyGoal ? 'text-red-600' : 'text-green-600'}`}>
+              <span className="text-clay-muted">Remaining</span>
+              <span className={`${monthKg >= monthlyGoal ? 'text-clay-secondary font-black' : 'text-clay-success font-black'}`}>
                 {monthKg >= monthlyGoal ? 'Goal exceeded!' : formatCO2(monthlyGoal - monthKg)}
               </span>
             </div>
           </div>
 
           {/* Streak */}
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2">
-            <Flame className={`w-5 h-5 ${streak > 0 ? 'text-orange-500' : 'text-gray-300'}`} />
+          <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
+              <Flame className={`w-5 h-5 ${streak > 0 ? 'text-[#F7931A]' : 'text-gray-600 animate-pulse'}`} />
+            </div>
             <div>
-              <p className="text-sm font-bold text-gray-800">
+              <p className="text-xs font-bold text-white font-sans">
                 {streak > 0 ? `${streak} day${streak > 1 ? 's' : ''} below goal!` : 'No streak yet'}
               </p>
-              <p className="text-xs text-gray-400">
-                {streak > 0 ? 'Keep it up — you\'re on a roll 🔥' : 'Log entries to start a streak'}
+              <p className="text-[10px] text-clay-muted font-medium mt-0.5 font-sans">
+                {streak > 0 ? 'Keep it up — you\'re on a roll' : 'Log entries to start a streak'}
               </p>
             </div>
           </div>
@@ -704,18 +804,27 @@ function Dashboard() {
       </div>
 
       {/* ── ACHIEVEMENTS ──────────────────────────────────────────── */}
-      <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '650ms' }}>
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-5">
+      <div
+        ref={achievementsTilt.ref}
+        onMouseMove={achievementsTilt.onMouseMove}
+        onMouseLeave={achievementsTilt.onMouseLeave}
+        style={{
+          ...achievementsTilt.style,
+          animationDelay: '650ms'
+        }}
+        className="glass-card p-6 animate-fade-in-up"
+      >
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-5 font-sans">
           <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-green-600 animate-bounce" />
+            <Award className="w-5 h-5 text-clay-primary animate-clay-breathe" />
             <div>
-              <h2 className="text-base font-bold text-gray-800">My Achievements</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Track your unlocked badges and eco-milestones</p>
+              <h2 className="text-base font-bold text-white font-display">My Achievements</h2>
+              <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Track your unlocked badges and eco-milestones</p>
             </div>
           </div>
           <button
             onClick={() => setIsBadgesOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-green-200 text-green-700 bg-green-50/50 hover:bg-green-100/50 transition-all text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+            className="btn-premium flex items-center gap-1.5 px-4 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-[#F7931A]/30 focus:outline-none border-none"
             aria-label={`View All Badges, unlocked ${badges?.length || 0} of 17`}
           >
             View All Badges ({badges?.length || 0}/17)
@@ -727,97 +836,88 @@ function Dashboard() {
         {badges && badges.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {badges.slice(0, 4).map(badge => (
-              <div
-                key={badge.id}
-                className="flex items-center gap-3.5 p-3.5 bg-gradient-to-br from-green-50/60 to-emerald-50/60 border border-green-100 rounded-2xl animate-fade-in-up hover:shadow-sm transition-all"
-              >
-                <span className="text-3xl shrink-0 p-1.5 bg-white rounded-full shadow-sm">{badge.icon}</span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-black text-gray-800 truncate">{badge.name}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5 truncate">{badge.description}</p>
-                  <span className="text-[9px] font-semibold text-green-600 bg-white/80 border border-green-100/80 px-1.5 py-0.5 rounded-full mt-1.5 inline-block">
-                    Unlocked {badge.earnedDate}
-                  </span>
-                </div>
-              </div>
+              <DashboardBadgeCard key={badge.id} badge={badge} />
             ))}
           </div>
         ) : (
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-6 text-center text-gray-400 space-y-2 max-w-md mx-auto">
-            <Award className="w-8 h-8 text-gray-300 mx-auto" />
-            <p className="text-xs font-bold text-gray-600">No achievements unlocked yet</p>
-            <p className="text-[11px] leading-relaxed">
+          <div className="bg-[#0F1115]/40 border border-white/5 shadow-inner rounded-xl p-6 text-center text-clay-muted space-y-2 max-w-md mx-auto font-sans">
+            <Award className="w-8 h-8 text-clay-muted/30 mx-auto" />
+            <p className="text-xs font-bold text-white font-display">No achievements unlocked yet</p>
+            <p className="text-[10px] leading-relaxed font-medium">
               Log activities in the Carbon Calculator or mark eco tips as done to unlock badges!
             </p>
           </div>
         )}
       </div>
 
-      {/* ── TIPS PREVIEW ──────────────────────────────────────────── */}
+      {/* ── DAILY ECO TIPS PREVIEW ────────────────────────────────── */}
       <div className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base font-bold text-gray-800">Today's Eco Tips</h2>
+            <Lightbulb className="w-5 h-5 text-clay-warning" />
+            <h2 className="text-base font-bold text-white font-display">Today's Eco Tips</h2>
           </div>
           <Link
             to="/tips"
-            className="flex items-center gap-1 text-sm font-semibold text-green-600 hover:text-green-700 transition-colors"
+            className="flex items-center gap-1 text-sm font-bold text-[#F7931A] hover:underline transition-colors font-sans"
           >
             See all tips <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {tips3.map((tip, i) => (
-            <div
-              key={tip.title}
-              className="glass-card p-5 group animate-fade-in-up"
-              style={{ animationDelay: `${750 + i * 80}ms` }}
-            >
-              <div className="flex items-start gap-3 mb-2">
-                <span className="text-xl shrink-0">{tip.icon}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-gray-800 leading-tight">{tip.title}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${IMPACT_BADGE[tip.impact]}`}>
-                      {tip.impact}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">{tip.description}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                <span className="text-xs text-green-600 font-medium">{tip.category}</span>
-              </div>
-            </div>
+            <DashboardTipCard key={tip.title} tip={tip} i={i} impactBadge={IMPACT_BADGE} />
           ))}
         </div>
       </div>
 
+      {/* ── ENVIRONMENTAL QUOTE ──────────────────────────────── */}
+      {quote && (
+        <div className="glass-card shimmer-container p-5 relative overflow-hidden border-l-4 border-l-[#10B981] animate-fade-in-up" style={{ animationDelay: '750ms' }}>
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-[#10B981]/5 blur-xl animate-pulse" />
+          <div className="flex items-start gap-3 relative">
+            <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
+              <Quote className="w-4 h-4 text-[#F7931A]" />
+            </div>
+            <div className="flex-1 min-w-0 font-sans">
+              <p className="text-sm text-clay-text italic leading-relaxed font-medium">
+                "{quote.content}"
+              </p>
+              <p className="text-xs text-[#F7931A] font-bold mt-1.5 font-mono">— {quote.author}</p>
+            </div>
+            <button
+              onClick={nextQuote}
+              className="p-1.5 rounded-full hover:bg-white/5 text-clay-muted hover:text-clay-primary transition-all shrink-0 cursor-pointer active:scale-90 shadow-sm"
+              title="New quote"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── PROFILE & GOALS SETTINGS MODAL ───────────────────────── */}
       {isSettingsOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div 
-            className="w-full max-w-md bg-white rounded-3xl border border-green-100 shadow-2xl p-6 relative overflow-hidden animate-fade-in-up animate-duration-300"
+            className="w-full max-w-md bg-[#0F1115] rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(247,147,26,0.25)] p-6 relative overflow-visible animate-fade-in-up"
           >
-            {/* Background design accents */}
-            <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-green-500/5 blur-2xl" />
-            <div className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-emerald-500/5 blur-2xl" />
+            <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-[#F7931A]/5 blur-2xl" />
+            <div className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-[#EA580C]/5 blur-2xl" />
 
             <div className="flex items-center gap-3 mb-6 relative">
-              <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-                <Settings className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
+                <Settings className="w-5 h-5 text-clay-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Profile & Goals</h3>
-                <p className="text-xs text-gray-400">Configure your dashboard preferences</p>
+                <h3 className="text-lg font-bold text-white font-display">Profile & Goals</h3>
+                <p className="text-xs text-clay-muted font-bold font-sans">Configure your dashboard preferences</p>
               </div>
             </div>
 
             <form onSubmit={handleSaveSettings} className="space-y-4 relative">
               <div>
-                <label htmlFor="settings-name-input" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                <label htmlFor="settings-name-input" className="block text-[10px] font-bold text-clay-muted uppercase tracking-wider mb-1.5 font-mono">
                   Your Name
                 </label>
                 <input
@@ -826,28 +926,28 @@ function Dashboard() {
                   value={settingsName}
                   onChange={e => setSettingsName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-green-500 text-sm transition-all"
+                  className="w-full h-12 px-4 focus:outline-none text-sm transition-all font-sans"
                   aria-label="Your name"
                 />
               </div>
 
               <div>
-                <label htmlFor="settings-location-input" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                <label htmlFor="settings-location-input" className="block text-[10px] font-bold text-clay-muted uppercase tracking-wider mb-1.5 font-mono">
                   Location
                 </label>
-                <input
-                  type="text"
+                <LocationAutocomplete
                   id="settings-location-input"
                   value={settingsLocation}
-                  onChange={e => setSettingsLocation(e.target.value)}
+                  onChange={setSettingsLocation}
                   placeholder="e.g. Mumbai, India"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-green-500 text-sm transition-all"
-                  aria-label="Location"
+                  className="w-full h-12 px-4 focus:outline-none text-sm transition-all font-sans"
+                  showIcon={false}
+                  ariaLabel="Location"
                 />
               </div>
 
               <div>
-                <label htmlFor="settings-goal-input" className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
+                <label htmlFor="settings-goal-input" className="block text-[10px] font-bold text-clay-muted uppercase tracking-wider mb-1.5 font-mono">
                   Monthly CO₂ Goal (kg)
                 </label>
                 <input
@@ -857,26 +957,26 @@ function Dashboard() {
                   max="5000"
                   value={settingsGoal}
                   onChange={e => setSettingsGoal(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-green-500 text-sm transition-all"
+                  className="w-full h-12 px-4 focus:outline-none text-sm transition-all font-mono"
                   aria-label="Monthly carbon goal in kilograms"
                 />
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-[10px] text-clay-muted font-bold mt-1.5 font-sans">
                   Global average is ~333 kg CO₂/month. A lower goal helps reduce your impact!
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 pt-4">
+              <div className="flex items-center gap-3 pt-4 font-sans">
                 <button
                   type="button"
                   onClick={() => setIsSettingsOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+                  className="btn-3d-secondary flex-1 h-11 flex items-center justify-center text-xs focus-visible:ring-4 focus-visible:ring-[#F7931A]/30 focus:outline-none"
                   aria-label="Cancel profile changes"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-green-600 text-white hover:bg-green-700 text-sm font-semibold transition-colors cursor-pointer shadow-md shadow-green-200 focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+                  className="btn-premium flex-1 h-11 flex items-center justify-center text-xs focus-visible:ring-4 focus-visible:ring-[#F7931A]/30 focus:outline-none border-none"
                   aria-label="Save profile changes"
                 >
                   Save Changes
@@ -886,36 +986,35 @@ function Dashboard() {
           </div>
         </div>
       )}
+
       {/* ── ALL BADGES DIALOG MODAL ──────────────────────────────── */}
       {isBadgesOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div 
-            className="w-full max-w-4xl bg-[#f8faf9] rounded-3xl border border-green-100 shadow-2xl p-6 relative overflow-hidden animate-fade-in-up animate-duration-300 max-h-[85vh] overflow-y-auto"
+            className="w-full max-w-4xl bg-[#0F1115] rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(247,147,26,0.25)] p-6 relative overflow-hidden max-h-[85vh] overflow-y-auto"
           >
-            {/* Background design accents */}
-            <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-green-500/5 blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-emerald-500/5 blur-2xl pointer-events-none" />
+            <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-[#F7931A]/5 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-[#EA580C]/5 blur-2xl pointer-events-none" />
 
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6 relative">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6 relative">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
-                  <Award className="w-5 h-5 text-green-600 animate-bounce" />
+                <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
+                  <Award className="w-5 h-5 text-clay-primary animate-clay-breathe" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-gray-900">Achievements Showcase</h3>
-                  <p className="text-xs text-gray-400">You've unlocked {badges?.length || 0} of 17 milestones</p>
+                  <h3 className="text-base font-bold text-white font-display">Achievements Showcase</h3>
+                  <p className="text-xs text-clay-muted font-bold font-sans">You've unlocked {badges?.length || 0} of 17 milestones</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsBadgesOpen(false)}
-                className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-500 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+                className="btn-premium px-5 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none border-none"
                 aria-label="Close achievements modal"
               >
                 Close View
               </button>
             </div>
 
-            {/* Badges Grid component */}
             <div className="relative">
               <BadgesGrid earnedBadges={badges} />
             </div>

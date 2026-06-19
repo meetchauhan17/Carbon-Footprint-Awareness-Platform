@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Flag } from 'lucide-react'
 
 /**
  * Known per-capita CO₂ emissions (tons/year) for common countries.
@@ -122,7 +123,7 @@ export function useCountryData(locationStr) {
           name: country.name?.common || searchTerm,
           officialName: country.name?.official || '',
           flag: country.flags?.svg || country.flags?.png || '',
-          flagEmoji: country.flags?.alt ? '' : '🏳️',
+          flagIcon: country.flags?.alt ? null : Flag,
           population: country.population || 0,
           region: country.region || '',
           cca2: country.cca2 || '',
@@ -139,11 +140,15 @@ export function useCountryData(locationStr) {
       }
     } catch (err) {
       setError(err.message || 'Failed to fetch country data')
+      setCountryData(null)
       // Still try to get CO2 data from local DB
       const localCo2 = lookupCO2(searchTerm)
       if (localCo2 !== null) {
         setCo2PerCapita(localCo2)
         setMotivationalMsg(buildMotivationalMsg(searchTerm, localCo2))
+      } else {
+        setCo2PerCapita(null)
+        setMotivationalMsg(null)
       }
     } finally {
       setIsLoading(false)
@@ -156,6 +161,8 @@ export function useCountryData(locationStr) {
     setCo2PerCapita(co2)
     if (co2 !== null) {
       setMotivationalMsg(buildMotivationalMsg(data.name || searchTerm, co2))
+    } else {
+      setMotivationalMsg(null)
     }
   }
 

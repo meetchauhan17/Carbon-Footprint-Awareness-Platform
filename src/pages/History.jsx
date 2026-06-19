@@ -3,24 +3,28 @@ import { useCarbon } from '../context/CarbonContext.jsx'
 import { formatCO2 } from '../utils/calculations.js'
 import {
   Calendar, ChevronLeft, ChevronRight, Download, Trash2,
-  Filter, ArrowUpDown, ChevronDown, ChevronUp, AlertCircle,
-  Clock, SlidersHorizontal, Eye, ShieldAlert, Sparkles, CheckCircle
+  ChevronDown, ChevronUp, AlertCircle,
+  Clock, SlidersHorizontal, Eye, ShieldAlert, Sparkles,
+  Car, Zap, Leaf, ShoppingBag
 } from 'lucide-react'
 
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import CategoryBadge from '../components/CategoryBadge.jsx'
+import EmojiIcon from '../components/EmojiIcon.jsx'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, Cell, ReferenceLine
 } from 'recharts'
 
+import { use3DTilt } from '../hooks/use3DTilt.js'
+
 // Daily emissions levels mapping
 const DAILY_LEVELS = {
-  low: { label: 'Low', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  medium: { label: 'Medium', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  high: { label: 'High', color: 'bg-orange-100 text-orange-700 border-orange-200' },
-  critical: { label: 'Critical', color: 'bg-red-100 text-red-700 border-red-200' },
+  low: { label: 'Low', color: 'bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30' },
+  medium: { label: 'Medium', color: 'bg-[#FFD600]/15 text-[#FFD600] border border-[#FFD600]/30' },
+  high: { label: 'High', color: 'bg-[#F7931A]/15 text-[#F7931A] border border-[#F7931A]/30' },
+  critical: { label: 'Critical', color: 'bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30' },
 }
 
 function getDailyLevelKey(kg) {
@@ -31,16 +35,94 @@ function getDailyLevelKey(kg) {
 }
 
 function getDayColorClass(kg) {
-  if (kg === 0) return 'bg-gray-50 border-gray-100 text-gray-400 hover:bg-gray-100'
-  if (kg < 5) return 'bg-yellow-100 border-yellow-200 text-yellow-800 hover:bg-yellow-200'
-  if (kg < 10) return 'bg-amber-200 border-amber-300 text-amber-800 hover:bg-amber-300'
-  if (kg < 20) return 'bg-orange-300 border-orange-400 text-orange-900 hover:bg-orange-400'
-  return 'bg-red-500 border-red-600 text-white hover:bg-red-600'
+  if (kg === 0) return 'bg-[#0F1115] text-[#94A3B8] border border-white/5 rounded-md hover:border-[#F7931A]/30'
+  if (kg < 5) return 'bg-[#10B981]/10 text-white border border-[#10B981]/30 rounded-md hover:border-[#10B981] hover:scale-105'
+  if (kg < 10) return 'bg-[#FFD600]/10 text-[#FFD600] border border-[#FFD600]/30 rounded-md hover:border-[#FFD600] hover:scale-105'
+  if (kg < 20) return 'bg-[#F7931A]/10 text-[#F7931A] border border-[#F7931A]/40 rounded-md hover:border-[#F7931A] hover:scale-105'
+  return 'bg-[#EA580C]/20 text-[#FFD600] border border-[#EA580C] rounded-md font-bold hover:scale-105 shadow-[0_0_15px_rgba(234,88,12,0.4)]'
+}
+
+// 3D Stat Card subcomponent
+function StatCard({ label, value, subtext, labelColor = 'text-[#94A3B8]', valueColor = 'text-[#F7931A]', delay = '0ms', className = '' }) {
+  const { ref, style, onMouseMove, onMouseLeave } = use3DTilt({ maxTilt: 10, scale: 1.03 })
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{ ...style, animationDelay: delay }}
+      className={`glass-card p-6 text-center rounded-2xl flex flex-col justify-center animate-fade-in-up ${className}`}
+    >
+      <p className={`text-[10px] font-bold ${labelColor} uppercase tracking-wider font-display`}>{label}</p>
+      <p className={`text-3xl font-bold ${valueColor} mt-1.5 font-mono`}>{value}</p>
+      <p className="text-[10px] text-clay-muted mt-1 font-sans font-medium">{subtext}</p>
+    </div>
+  )
+}
+
+// 3D Calendar Day Cell subcomponent
+function CalendarDayCell({ d, isSelected, onClick }) {
+  const { ref, style, onMouseMove, onMouseLeave } = use3DTilt({ maxTilt: 20, scale: 1.12, perspective: 400 })
+  const colorClass = getDayColorClass(d.co2)
+  return (
+    <button
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+      style={{ ...style, transformStyle: 'preserve-3d' }}
+      className={`aspect-square rounded-md border-0 transition-all relative flex flex-col items-center justify-center text-xs font-bold cursor-pointer focus:outline-none preserve-3d shadow-[0_4px_10px_rgba(0,0,0,0.4)] ${colorClass} ${
+        isSelected ? 'border border-[#F7931A] ring-2 ring-[#F7931A]/50 z-20 shadow-[0_0_15px_rgba(247,147,26,0.5)]' : 'hover:z-10'
+      }`}
+      title={`${d.date}: ${d.co2.toFixed(1)} kg CO₂`}
+      aria-label={`Select ${d.date} to view details`}
+    >
+      <span className="font-mono" style={{ transform: 'translateZ(12px)', display: 'inline-block' }}>{d.day}</span>
+      {d.co2 > 0 && (
+        <span 
+          className="absolute bottom-1.5 w-1.5 h-1.5 rounded-full bg-current opacity-70" 
+          style={{ transform: 'translateZ(6px)', display: 'inline-block' }}
+        />
+      )}
+    </button>
+  )
+}
+
+// 3D Activity Breakdown Card subcomponent
+function ActivityBreakdownCard({ entry }) {
+  const { ref, style, onMouseMove, onMouseLeave } = use3DTilt({ maxTilt: 8, scale: 1.02 })
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={style}
+      className="glass-card p-4 flex items-center justify-between shadow-sm transition-all duration-200"
+    >
+      <div>
+        <p className="text-xs font-bold text-white font-display">{entry.label}</p>
+        <div className="flex items-center gap-2 mt-1.5 select-none">
+          <CategoryBadge category={entry.category} showIcon={true} />
+          <span className="text-[9px] text-clay-muted font-bold font-mono">Qty: {entry.quantity}</span>
+        </div>
+      </div>
+      <div className="text-right font-mono">
+        <p className="text-xs font-bold text-[#10B981]">{entry.totalCO2.toFixed(2)} kg</p>
+        <p className="text-[9px] text-clay-muted font-bold uppercase tracking-wider">CO₂</p>
+      </div>
+    </div>
+  )
 }
 
 function History() {
   const { state, deleteEntry, clearHistory } = useCarbon()
   const { carbonEntries } = state
+
+  // 3D tilt hooks for containers
+  const trendChartTilt = use3DTilt({ maxTilt: 3, scale: 1.01 })
+  const heatmapContainerTilt = use3DTilt({ maxTilt: 3, scale: 1.005 })
+  const selectedDetailsTilt = use3DTilt({ maxTilt: 6, scale: 1.01 })
+  const filtersTilt = use3DTilt({ maxTilt: 2, scale: 1.002 })
 
   // Navigation states for Heatmap
   const [heatmapYear, setHeatmapYear] = useState(new Date().getFullYear())
@@ -309,28 +391,30 @@ function History() {
   const userGoalDaily = (state.userProfile?.monthlyGoal ?? 150) / 30
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 font-sans">
       
       {/* ── HEADER ─────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold gradient-text mb-2">My History</h1>
-          <p className="text-gray-500 text-sm">Review, analyze, and manage your saved carbon footprint logs.</p>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight font-display">
+            My <span className="gradient-text">History</span>
+          </h1>
+          <p className="text-clay-muted text-sm mt-1 font-sans font-medium">Review, analyze, and manage your saved carbon footprint logs.</p>
         </div>
         
         {carbonEntries.length > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={exportToCSV}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 hover:text-green-700 hover:border-green-300 shadow-sm hover:shadow transition-all cursor-pointer font-semibold text-xs focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+              className="flex items-center gap-2 px-5 h-12 rounded-full border border-white/20 hover:border-white hover:bg-white/5 text-white hover:scale-102 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all cursor-pointer font-display font-bold text-xs"
               aria-label="Export carbon logs to CSV"
             >
-              <Download className="w-4 h-4 text-gray-500" />
+              <Download className="w-4 h-4 text-clay-muted" />
               Export CSV
             </button>
             <button
               onClick={handleClearAll}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 shadow-sm hover:shadow transition-all cursor-pointer font-semibold text-xs focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+              className="flex items-center gap-2 px-5 h-12 bg-gradient-to-r from-[#EA580C] to-[#EF4444] text-white hover:scale-102 active:scale-95 shadow-[0_0_20px_rgba(234,88,12,0.4)] rounded-full transition-all cursor-pointer font-display font-bold text-xs border-0"
               aria-label="Clear all carbon logs from history"
             >
               <ShieldAlert className="w-4 h-4" />
@@ -342,57 +426,55 @@ function History() {
 
       {/* ── SUMMARY CARDS ROW ──────────────────────────────────────── */}
       {groupedByDate.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
           
-          {/* Card 1: Total Days */}
-          <div className="glass-card p-4 border-l-[3px] border-l-blue-500 animate-fade-in-up" style={{ animationDelay: '50ms' }}>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Days Logged</p>
-            <p className="text-2xl font-black text-gray-800 mt-1">{stats.totalEntries}</p>
-            <p className="text-[10px] text-gray-400 mt-1">across {groupedByDate.length} calendar days</p>
-          </div>
+          <StatCard
+            label="Entries Logged"
+            value={stats.totalEntries}
+            subtext={`across ${groupedByDate.length} calendar days`}
+            valueColor="text-[#F7931A]"
+            delay="50ms"
+          />
 
-          {/* Card 2: Average Daily */}
-          <div className="glass-card p-4 border-l-[3px] border-l-green-600 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Daily Average</p>
-            <p className="text-2xl font-black text-green-700 mt-1">{stats.avgDaily} kg</p>
-            <p className="text-[10px] text-gray-400 mt-1">CO₂ emissions per day</p>
-          </div>
+          <StatCard
+            label="Daily Average"
+            value={`${stats.avgDaily} kg`}
+            subtext="CO₂ emissions per day"
+            valueColor="text-[#10B981]"
+            delay="100ms"
+          />
 
-          {/* Card 3: Best Day */}
-          <div className="glass-card p-4 border-l-[3px] border-l-emerald-500 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Best Logged Day</p>
-            <p className="text-2xl font-black text-emerald-700 mt-1">
-              {stats.bestDay ? `${stats.bestDay.co2.toFixed(1)} kg` : '—'}
-            </p>
-            <p className="text-[10px] text-gray-400 mt-1 truncate">
-              {stats.bestDay ? new Date(stats.bestDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No logs'}
-            </p>
-          </div>
+          <StatCard
+            label="Best Logged Day"
+            value={stats.bestDay ? `${stats.bestDay.co2.toFixed(1)} kg` : '—'}
+            subtext={stats.bestDay ? new Date(stats.bestDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No logs'}
+            valueColor="text-[#10B981]"
+            delay="150ms"
+          />
 
-          {/* Card 4: Worst Day */}
-          <div className="glass-card p-4 border-l-[3px] border-l-red-500 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Worst Logged Day</p>
-            <p className="text-2xl font-black text-red-700 mt-1">
-              {stats.worstDay ? `${stats.worstDay.co2.toFixed(1)} kg` : '—'}
-            </p>
-            <p className="text-[10px] text-gray-400 mt-1 truncate">
-              {stats.worstDay ? new Date(stats.worstDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No logs'}
-            </p>
-          </div>
+          <StatCard
+            label="Worst Logged Day"
+            value={stats.worstDay ? `${stats.worstDay.co2.toFixed(1)} kg` : '—'}
+            subtext={stats.worstDay ? new Date(stats.worstDay.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No logs'}
+            valueColor="text-[#EF4444]"
+            delay="200ms"
+          />
 
-          {/* Card 5: Month Total */}
-          <div className="glass-card p-4 border-l-[3px] border-l-purple-500 animate-fade-in-up sm:col-span-2 lg:col-span-1" style={{ animationDelay: '250ms' }}>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Emissions This Month</p>
-            <p className="text-2xl font-black text-purple-700 mt-1">{stats.monthTotal} kg</p>
-            <p className="text-[10px] text-gray-400 mt-1">carbon output logged</p>
-          </div>
+          <StatCard
+            label="Emissions This Month"
+            value={`${stats.monthTotal} kg`}
+            subtext="carbon output logged"
+            valueColor="text-[#F7931A]"
+            delay="250ms"
+            className="sm:col-span-2 lg:col-span-1"
+          />
 
         </div>
       ) : (
         <EmptyState
           title="Your carbon log is empty"
           description="No entries have been saved yet. Pop over to the calculator and log some activities to start tracking your daily trends!"
-          icon="🌱"
+          icon={Leaf}
           actionText="Open Carbon Calculator"
           actionLink="/calculator"
         />
@@ -402,20 +484,25 @@ function History() {
       {groupedByDate.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           
-          {/* Bar Chart — 5/5 width taking full row before Heatmap */}
-          <div className="lg:col-span-5 glass-card p-6 animate-fade-in-up">
-            <div className="flex items-center justify-between mb-4">
+          <div
+            ref={trendChartTilt.ref}
+            onMouseMove={trendChartTilt.onMouseMove}
+            onMouseLeave={trendChartTilt.onMouseLeave}
+            style={trendChartTilt.style}
+            className="lg:col-span-5 glass-card p-6 rounded-[32px] animate-fade-in-up"
+          >
+            <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Emissions Trend</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Your daily carbon output vs goal</p>
+                <h2 className="text-base font-bold text-white uppercase tracking-wider font-display">Emissions Trend</h2>
+                <p className="text-xs text-clay-muted mt-0.5 font-sans font-medium">Your daily carbon output vs goal</p>
               </div>
-              <div className="flex items-center bg-gray-100 rounded-xl p-1">
+              <div className="flex items-center bg-[#0F1115] border border-white/10 rounded-[16px] p-1">
                 {[7, 14, 30].map(days => (
                   <button
                     key={days}
                     onClick={() => setChartDays(days)}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                      chartDays === days ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    className={`px-4.5 py-2 text-xs font-bold rounded-[12px] transition-all cursor-pointer font-display ${
+                      chartDays === days ? 'bg-[#F7931A] text-[#030304] shadow-sm' : 'text-clay-muted hover:text-white border-0 bg-transparent'
                     }`}
                   >
                     {days}D
@@ -423,20 +510,22 @@ function History() {
                 ))}
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={260}>
               <BarChart data={barChartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0fdf4" vertical={false} />
-                <XAxis dataKey="displayDate" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} unit=" kg" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" vertical={false} />
+                <XAxis dataKey="displayDate" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fontWeight: 500 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fontWeight: 500 }} axisLine={false} tickLine={false} unit=" kg" />
                 <RechartsTooltip 
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
+                      const isOver = payload[0].payload.totalCO2 > userGoalDaily;
                       return (
-                        <div className="bg-white border border-gray-100 rounded-xl px-3 py-2 shadow-lg text-xs">
-                          <p className="font-semibold text-gray-700 mb-1">{label}</p>
-                          <p className="font-bold" style={{ color: payload[0].payload.totalCO2 > userGoalDaily ? '#dc2626' : '#16a34a' }}>
+                        <div className="bg-[#0F1115] border border-white/10 rounded-2xl px-4 py-3 shadow-[0_0_25px_rgba(247,147,26,0.15)] text-xs text-white font-sans">
+                          <p className="font-bold text-[#F7931A] mb-1 font-display">{label}</p>
+                          <p className={`font-bold text-sm font-mono ${isOver ? 'text-[#EF4444]' : 'text-[#10B981]'}`}>
                             {payload[0].value.toFixed(2)} kg CO₂
                           </p>
+                          <p className="text-[10px] text-clay-muted mt-0.5">{isOver ? 'Exceeds Goal' : 'Under Target'}</p>
                         </div>
                       )
                     }
@@ -445,13 +534,13 @@ function History() {
                 />
                 <ReferenceLine
                   y={userGoalDaily}
-                  stroke="#9ca3af"
+                  stroke="#F7931A"
                   strokeDasharray="4 4"
-                  label={{ value: 'Daily Goal', position: 'insideTopRight', fill: '#9ca3af', fontSize: 11 }}
+                  label={{ value: 'Daily Goal', position: 'insideTopRight', fill: '#F7931A', fontSize: 10, fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700 }}
                 />
                 <Bar dataKey="totalCO2" radius={[4, 4, 0, 0]}>
                   {barChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.totalCO2 > userGoalDaily ? '#ef4444' : '#22c55e'} />
+                    <Cell key={`cell-${index}`} fill={entry.totalCO2 > userGoalDaily ? '#F7931A' : '#10B981'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -459,183 +548,186 @@ function History() {
           </div>
 
           {/* Calendar Heatmap — 3/5 width */}
-          <div className="lg:col-span-3 glass-card p-6 animate-fade-in-up animate-duration-500">
-            <div className="flex items-center justify-between mb-5">
+          <div
+            ref={heatmapContainerTilt.ref}
+            onMouseMove={heatmapContainerTilt.onMouseMove}
+            onMouseLeave={heatmapContainerTilt.onMouseLeave}
+            style={{ ...heatmapContainerTilt.style, transformStyle: 'preserve-3d' }}
+            className="lg:col-span-3 glass-card p-6 rounded-[32px] animate-fade-in-up"
+          >
+            <div className="flex items-center justify-between mb-5 font-display">
               <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-green-600" />
-                <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Monthly Activity Heatmap</h2>
+                <Calendar className="w-5 h-5 text-[#F7931A]" />
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider">Activity Heatmap</h2>
               </div>
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => handleMonthChange(-1)}
-                  className="p-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-green-50 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 focus:outline-none"
+                  className="p-2 rounded-xl bg-black/50 text-[#F7931A] hover:bg-[#F7931A]/10 border border-white/10 hover:border-[#F7931A]/50 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                   aria-label="Previous month"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-4.5 h-4.5" />
                 </button>
-                <span className="text-xs font-bold text-gray-700 min-w-28 text-center capitalize">
+                <span className="text-xs font-bold text-white min-w-28 text-center capitalize font-display">
                   {currentMonthName} {heatmapYear}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleMonthChange(1)}
-                  className="p-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-green-50 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 focus:outline-none"
+                  className="p-2 rounded-xl bg-black/50 text-[#F7931A] hover:bg-[#F7931A]/10 border border-white/10 hover:border-[#F7931A]/50 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                   aria-label="Next month"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4.5 h-4.5" />
                 </button>
               </div>
             </div>
 
             {/* Weekdays Row */}
-            <div className="grid grid-cols-7 gap-1.5 text-center mb-2">
+            <div className="grid grid-cols-7 gap-2.5 text-center mb-2.5 font-display">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                <span key={i} className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{day}</span>
+                <span key={i} className="text-[10px] font-bold text-clay-muted uppercase tracking-wider">{day}</span>
               ))}
             </div>
 
             {/* Grid days */}
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-7 gap-2.5">
               {heatmapData.map((d, index) => {
                 if (d.padding) {
                   return <div key={`pad-${index}`} className="aspect-square bg-transparent" />
                 }
                 const isSelected = selectedHeatmapDate === d.date
-                const colorClass = getDayColorClass(d.co2)
                 return (
-                  <button
+                  <CalendarDayCell
                     key={d.date}
+                    d={d}
+                    isSelected={isSelected}
                     onClick={() => setSelectedHeatmapDate(d.date)}
-                    className={`aspect-square rounded-lg border transition-all relative flex items-center justify-center text-xs font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 focus:outline-none ${colorClass} ${
-                      isSelected ? 'ring-2 ring-green-600 border-green-500 scale-95 shadow' : 'border-gray-200/50'
-                    }`}
-                    title={`${d.date}: ${d.co2.toFixed(1)} kg CO₂`}
-                    aria-label={`Select ${d.date} to view details`}
-                  >
-                    <span>{d.day}</span>
-                    {d.co2 > 0 && (
-                      <span className="absolute bottom-1 w-1 h-1 rounded-full bg-current opacity-70" />
-                    )}
-                  </button>
+                  />
                 )
               })}
             </div>
 
             {/* Heatmap Legend */}
-            <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Legend</span>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  <span className="w-3.5 h-3.5 rounded bg-gray-50 border border-gray-200" />
-                  <span className="text-[10px] text-gray-500 font-semibold">None</span>
+            <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between flex-wrap gap-4 font-display tracking-widest uppercase">
+              <span className="text-[10px] font-bold text-clay-muted uppercase tracking-wider">Legend</span>
+              <div className="flex items-center gap-3.5 flex-wrap font-sans">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 bg-[#0F1115] border border-white/5 rounded-md" />
+                  <span className="text-[10px] text-clay-muted font-bold">None</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3.5 h-3.5 rounded bg-yellow-100 border border-yellow-200" />
-                  <span className="text-[10px] text-gray-500 font-semibold">Low (&lt;5kg)</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 bg-[#10B981]/10 border border-[#10B981]/30 rounded-md" />
+                  <span className="text-[10px] text-[#10B981] font-bold">Low (&lt;5kg)</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3.5 h-3.5 rounded bg-amber-200 border border-amber-300" />
-                  <span className="text-[10px] text-gray-500 font-semibold">Mid (5-10kg)</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 bg-[#FFD600]/10 border border-[#FFD600]/30 rounded-md" />
+                  <span className="text-[10px] text-[#FFD600] font-bold">Mid (5-10)</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3.5 h-3.5 rounded bg-orange-300 border border-orange-400" />
-                  <span className="text-[10px] text-gray-500 font-semibold">High (10-20kg)</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 bg-[#F7931A]/10 border border-[#F7931A]/40 rounded-md" />
+                  <span className="text-[10px] text-[#F7931A] font-bold">High (10-20)</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3.5 h-3.5 rounded bg-red-500 border border-red-600" />
-                  <span className="text-[10px] text-gray-500 font-semibold">Critical (&gt;20kg)</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3.5 h-3.5 bg-[#EA580C]/20 border border-[#EA580C] rounded-md" />
+                  <span className="text-[10px] text-[#FFD600] font-bold">Critical (&gt;20)</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Selected Day Details — 2/5 width */}
-          <div className="lg:col-span-2 glass-card p-6 flex flex-col justify-between animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <div
+            ref={selectedDetailsTilt.ref}
+            onMouseMove={selectedDetailsTilt.onMouseMove}
+            onMouseLeave={selectedDetailsTilt.onMouseLeave}
+            style={{ ...selectedDetailsTilt.style, animationDelay: '100ms' }}
+            className="lg:col-span-2 glass-card shadow-[var(--shadow-clay-card)] p-6 flex flex-col justify-between rounded-[32px] animate-fade-in-up"
+          >
             {selectedDayInfo ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div className="space-y-5">
+                <div className="flex items-center justify-between pb-3.5 border-b border-white/5">
                   <div>
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Day Details</h3>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider font-display">Day Details</h3>
+                    <p className="text-xs text-clay-muted mt-0.5 font-mono">
                       {new Date(selectedDayInfo.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
                   {selectedDayInfo.entries.length > 0 && (
                     <button
                       onClick={(e) => handleDeleteDay(selectedDayInfo.date, e)}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+                      className="p-2.5 text-clay-muted hover:text-[#EF4444] hover:bg-red-500/10 rounded-xl transition-all cursor-pointer"
                       title="Delete all day entries"
                     >
-                      <Trash2 className="w-4.5 h-4.5" />
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   )}
                 </div>
 
                 {selectedDayInfo.entries.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {/* Circle Gauge for selected day */}
-                    <div className="flex items-center gap-4 bg-green-50/40 border border-green-100 rounded-2xl p-4">
-                      <div className="w-14 h-14 rounded-full bg-white flex flex-col items-center justify-center border-2 border-green-600 shadow-sm shrink-0">
-                        <span className="text-sm font-black text-green-800 leading-none">{selectedDayInfo.totalCO2.toFixed(1)}</span>
-                        <span className="text-[8px] font-bold text-gray-400 mt-0.5 uppercase">kg</span>
+                    <div className="flex items-center gap-4 bg-[#10B981]/10 border border-[#10B981]/30 rounded-2xl p-4 shadow-sm">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#10B981] to-[#059669] text-white flex flex-col items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.4)] shrink-0 font-mono">
+                        <span className="text-base font-bold leading-none">{selectedDayInfo.totalCO2.toFixed(1)}</span>
+                        <span className="text-[9px] font-bold mt-0.5 uppercase tracking-wider">kg</span>
                       </div>
                       <div>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${DAILY_LEVELS[getDailyLevelKey(selectedDayInfo.totalCO2)].color}`}>
+                        <span className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-full ${DAILY_LEVELS[getDailyLevelKey(selectedDayInfo.totalCO2)].color} shadow-sm`}>
                           {DAILY_LEVELS[getDailyLevelKey(selectedDayInfo.totalCO2)].label} Emissions
                         </span>
-                        <p className="text-xs text-gray-500 mt-1.5 leading-normal">
+                        <p className="text-xs text-clay-muted mt-2 leading-relaxed font-sans font-medium">
                           Emitted {selectedDayInfo.totalCO2.toFixed(2)} kg CO₂ across {selectedDayInfo.entries.length} logged activities.
                         </p>
                       </div>
                     </div>
 
                     {/* Breakdown of Categories */}
-                    <div className="space-y-2.5">
-                      <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Category Breakdown</h4>
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-bold text-clay-muted uppercase tracking-wider font-display">Category Breakdown</h4>
+                      <div className="grid grid-cols-2 gap-3">
                         {/* Transport */}
-                        <div className="bg-white border border-gray-100 rounded-xl p-3">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Transport</span>
-                          <p className="text-sm font-extrabold text-blue-600 mt-1">{selectedDayInfo.transport.toFixed(1)} kg</p>
+                        <div className="glass-card p-4 shadow-sm border border-white/5 rounded-2xl">
+                          <span className="text-[10px] font-bold text-clay-muted uppercase font-display">Transport</span>
+                          <p className="text-base font-bold text-[#0EA5E9] mt-1 font-mono">{selectedDayInfo.transport.toFixed(1)} kg</p>
                         </div>
                         {/* Energy */}
-                        <div className="bg-white border border-gray-100 rounded-xl p-3">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Home Energy</span>
-                          <p className="text-sm font-extrabold text-amber-600 mt-1">{selectedDayInfo.energy.toFixed(1)} kg</p>
+                        <div className="glass-card p-4 shadow-sm border border-white/5 rounded-2xl">
+                          <span className="text-[10px] font-bold text-clay-muted uppercase font-display">Home Energy</span>
+                          <p className="text-base font-bold text-[#FFD600] mt-1 font-mono">{selectedDayInfo.energy.toFixed(1)} kg</p>
                         </div>
                         {/* Food */}
-                        <div className="bg-white border border-gray-100 rounded-xl p-3">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Food</span>
-                          <p className="text-sm font-extrabold text-green-700 mt-1">{selectedDayInfo.food.toFixed(1)} kg</p>
+                        <div className="glass-card p-4 shadow-sm border border-white/5 rounded-2xl">
+                          <span className="text-[10px] font-bold text-clay-muted uppercase font-display">Food</span>
+                          <p className="text-base font-bold text-[#10B981] mt-1 font-mono">{selectedDayInfo.food.toFixed(1)} kg</p>
                         </div>
                         {/* Shopping */}
-                        <div className="bg-white border border-gray-100 rounded-xl p-3">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Shopping</span>
-                          <p className="text-sm font-extrabold text-purple-600 mt-1">{selectedDayInfo.shopping.toFixed(1)} kg</p>
+                        <div className="glass-card p-4 shadow-sm border border-white/5 rounded-2xl">
+                          <span className="text-[10px] font-bold text-clay-muted uppercase font-display">Shopping</span>
+                          <p className="text-base font-bold text-[#EF4444] mt-1 font-mono">{selectedDayInfo.shopping.toFixed(1)} kg</p>
                         </div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-gray-400">
-                    <p className="text-xs">No logs saved on this day.</p>
+                  <div className="py-10 text-center text-clay-muted">
+                    <p className="text-sm font-medium">No logs saved on this day.</p>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="py-12 text-center text-gray-400 space-y-2.5 my-auto">
-                <Clock className="w-8 h-8 mx-auto text-gray-300 animate-pulse" />
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide">Select a Day</h4>
-                <p className="text-xs max-w-[200px] mx-auto leading-relaxed text-gray-400">
+              <div className="py-16 text-center text-clay-muted space-y-3.5 my-auto">
+                <Clock className="w-10 h-10 mx-auto text-[#94A3B8] animate-pulse" />
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-display">Select a Day</h4>
+                <p className="text-xs max-w-[200px] mx-auto leading-relaxed text-clay-muted font-sans font-medium">
                   Click on any day in the heatmap calendar to see its specific footprint breakdown.
                 </p>
               </div>
             )}
 
             {/* Bottom mini tip */}
-            <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2 text-[10px] text-gray-400">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <div className="mt-4 pt-3.5 border-t border-white/5 flex items-center gap-2 text-[10px] text-clay-muted font-sans font-medium">
+              <Sparkles className="w-4 h-4 text-[#FFD600] shrink-0" />
               <span>Target to keep daily emissions under 11kg (Global daily avg).</span>
             </div>
           </div>
@@ -645,20 +737,26 @@ function History() {
 
       {/* ── FILTERS & DATA TABLE ──────────────────────────────────── */}
       {groupedByDate.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           
           {/* Title & Filters heading */}
-          <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-            <SlidersHorizontal className="w-4.5 h-4.5 text-gray-500" />
-            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Emissions Log</h2>
+          <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+            <SlidersHorizontal className="w-4.5 h-4.5 text-clay-muted" />
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider font-display">Emissions Log</h2>
           </div>
 
           {/* Filter & Search Bar */}
-          <div className="glass-card p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up">
+          <div
+            ref={filtersTilt.ref}
+            onMouseMove={filtersTilt.onMouseMove}
+            onMouseLeave={filtersTilt.onMouseLeave}
+            style={filtersTilt.style}
+            className="glass-card p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 rounded-[32px] animate-fade-in-up"
+          >
             
             {/* From Date */}
             <div>
-              <label htmlFor="history-filter-from" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+              <label htmlFor="history-filter-from" className="block text-xs font-bold text-clay-muted uppercase tracking-wider mb-2 font-display">
                 From Date
               </label>
               <input
@@ -666,14 +764,14 @@ function History() {
                 id="history-filter-from"
                 value={fromDate}
                 onChange={e => setFromDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-green-500 focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-transparent transition-all font-medium text-gray-600"
+                className="w-full h-12 px-4 bg-black/50 border-0 border-b-2 border-white/20 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#F7931A] focus:shadow-[0_10px_20px_-10px_rgba(247,147,26,0.3)] transition-all duration-200"
                 aria-label="Filter from date"
               />
             </div>
 
             {/* To Date */}
             <div>
-              <label htmlFor="history-filter-to" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+              <label htmlFor="history-filter-to" className="block text-xs font-bold text-clay-muted uppercase tracking-wider mb-2 font-display">
                 To Date
               </label>
               <input
@@ -681,46 +779,46 @@ function History() {
                 id="history-filter-to"
                 value={toDate}
                 onChange={e => setToDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-green-500 focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-transparent transition-all font-medium text-gray-600"
+                className="w-full h-12 px-4 bg-black/50 border-0 border-b-2 border-white/20 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-[#F7931A] focus:shadow-[0_10px_20px_-10px_rgba(247,147,26,0.3)] transition-all duration-200"
                 aria-label="Filter to date"
               />
             </div>
 
             {/* Category Filter */}
             <div>
-              <label htmlFor="history-filter-category" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+              <label htmlFor="history-filter-category" className="block text-xs font-bold text-clay-muted uppercase tracking-wider mb-2 font-display">
                 Category
               </label>
               <select
                 id="history-filter-category"
                 value={categoryFilter}
                 onChange={e => setCategoryFilter(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-transparent transition-all font-semibold text-gray-600 cursor-pointer"
+                className="w-full h-12 px-4 bg-black/50 border-0 border-b-2 border-white/20 rounded-lg text-xs text-white font-display font-bold focus:outline-none focus:border-[#F7931A] focus:shadow-[0_10px_20px_-10px_rgba(247,147,26,0.3)] transition-all duration-200 cursor-pointer appearance-none"
                 aria-label="Filter by category"
               >
-                <option value="all">All Categories</option>
-                <option value="transport">Transport</option>
-                <option value="energy">Home Energy</option>
-                <option value="food">Food</option>
-                <option value="shopping">Shopping</option>
+                <option value="all" className="bg-[#0F1115]">All Categories</option>
+                <option value="transport" className="bg-[#0F1115]">Transport</option>
+                <option value="energy" className="bg-[#0F1115]">Home Energy</option>
+                <option value="food" className="bg-[#0F1115]">Food</option>
+                <option value="shopping" className="bg-[#0F1115]">Shopping</option>
               </select>
             </div>
 
             {/* Sort Selection */}
             <div>
-              <label htmlFor="history-sort-select" className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+              <label htmlFor="history-sort-select" className="block text-xs font-bold text-clay-muted uppercase tracking-wider mb-2 font-display">
                 Sort Options
               </label>
               <select
                 id="history-sort-select"
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-green-500 transition-all font-semibold text-gray-600 cursor-pointer"
+                className="w-full h-12 px-4 bg-black/50 border-0 border-b-2 border-white/20 rounded-lg text-xs text-white font-display font-bold focus:outline-none focus:border-[#F7931A] focus:shadow-[0_10px_20px_-10px_rgba(247,147,26,0.3)] transition-all duration-200 cursor-pointer appearance-none"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="highest">Highest CO₂</option>
-                <option value="lowest">Lowest CO₂</option>
+                <option value="newest" className="bg-[#0F1115]">Newest First</option>
+                <option value="oldest" className="bg-[#0F1115]">Oldest First</option>
+                <option value="highest" className="bg-[#0F1115]">Highest CO₂</option>
+                <option value="lowest" className="bg-[#0F1115]">Lowest CO₂</option>
               </select>
             </div>
 
@@ -728,24 +826,44 @@ function History() {
 
           {/* Data list view */}
           {filteredAndSortedDays.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               
               {/* Desktop Data Table - hidden on mobile */}
-              <div className="hidden md:block overflow-hidden bg-white border border-green-100 rounded-3xl shadow-sm">
-                <table className="w-full border-collapse text-left text-xs">
-                  <thead className="bg-green-50/50 border-b border-green-100 text-gray-400 font-bold uppercase tracking-wider">
+              <div className="hidden md:block overflow-hidden bg-[#0F1115] border border-white/10 rounded-3xl shadow-[0_0_20px_rgba(247,147,26,0.05)] p-2">
+                <table className="w-full border-collapse text-left text-xs font-sans font-medium">
+                  <thead className="bg-[#030304]/60 border-b border-white/5 text-clay-muted uppercase tracking-wider font-display rounded-2xl">
                     <tr>
-                      <th className="px-5 py-4 font-bold">Date</th>
-                      <th className="px-4 py-4 font-bold">🚗 Transport</th>
-                      <th className="px-4 py-4 font-bold">🏠 Energy</th>
-                      <th className="px-4 py-4 font-bold">🍽️ Food</th>
-                      <th className="px-4 py-4 font-bold">🛍️ Shopping</th>
+                      <th className="px-5 py-4 font-bold rounded-l-2xl">Date</th>
+                      <th className="px-4 py-4 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <EmojiIcon icon={Car} className="w-4 h-4" />
+                          Transport
+                        </span>
+                      </th>
+                      <th className="px-4 py-4 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <EmojiIcon icon={Zap} className="w-4 h-4" />
+                          Energy
+                        </span>
+                      </th>
+                      <th className="px-4 py-4 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <EmojiIcon icon={Leaf} className="w-4 h-4" />
+                          Food
+                        </span>
+                      </th>
+                      <th className="px-4 py-4 font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <EmojiIcon icon={ShoppingBag} className="w-4 h-4" />
+                          Shopping
+                        </span>
+                      </th>
                       <th className="px-4 py-4 font-bold">Total CO₂</th>
                       <th className="px-4 py-4 font-bold text-center">Level</th>
-                      <th className="px-5 py-4 text-right">Actions</th>
+                      <th className="px-5 py-4 text-right rounded-r-2xl font-bold">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-white/5">
                     {filteredAndSortedDays.map(day => {
                       const isExpanded = expandedRow === day.date
                       const levelKey = getDailyLevelKey(day.totalCO2)
@@ -755,37 +873,37 @@ function History() {
                           {/* Row */}
                           <tr
                             onClick={() => setExpandedRow(isExpanded ? null : day.date)}
-                            className={`hover:bg-green-50/20 transition-colors cursor-pointer ${
-                              isExpanded ? 'bg-green-50/10' : ''
+                            className={`hover:bg-[#F7931A]/5 hover:text-white transition-colors cursor-pointer ${
+                              isExpanded ? 'bg-[#F7931A]/10 text-white' : ''
                             }`}
                           >
-                            <td className="px-5 py-4 font-bold text-gray-700">
+                            <td className="px-5 py-4 font-bold text-white font-display">
                               {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </td>
-                            <td className="px-4 py-4 text-gray-500 font-semibold">{day.transport > 0 ? `${day.transport} kg` : '—'}</td>
-                            <td className="px-4 py-4 text-gray-500 font-semibold">{day.energy > 0 ? `${day.energy} kg` : '—'}</td>
-                            <td className="px-4 py-4 text-gray-500 font-semibold">{day.food > 0 ? `${day.food} kg` : '—'}</td>
-                            <td className="px-4 py-4 text-gray-500 font-semibold">{day.shopping > 0 ? `${day.shopping} kg` : '—'}</td>
-                            <td className="px-4 py-4 text-green-700 font-black">{day.totalCO2} kg</td>
+                            <td className="px-4 py-4 text-clay-muted font-bold font-mono">{day.transport > 0 ? `${day.transport} kg` : '—'}</td>
+                            <td className="px-4 py-4 text-clay-muted font-bold font-mono">{day.energy > 0 ? `${day.energy} kg` : '—'}</td>
+                            <td className="px-4 py-4 text-clay-muted font-bold font-mono">{day.food > 0 ? `${day.food} kg` : '—'}</td>
+                            <td className="px-4 py-4 text-clay-muted font-bold font-mono">{day.shopping > 0 ? `${day.shopping} kg` : '—'}</td>
+                            <td className="px-4 py-4 text-[#10B981] font-bold font-mono">{day.totalCO2} kg</td>
                             <td className="px-4 py-4 text-center">
-                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${level.color}`}>
+                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm font-mono ${level.color}`}>
                                 {level.label}
                               </span>
                             </td>
-                            <td className="px-5 py-4 text-right flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
+                            <td className="px-5 py-4 text-right flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
                               <button
                                 onClick={() => setExpandedRow(isExpanded ? null : day.date)}
-                                className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                                className="p-2 hover:bg-white/5 rounded-xl text-clay-muted hover:text-[#F7931A] transition-all cursor-pointer border-0 bg-transparent"
                                 title="View details"
                               >
-                                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                {isExpanded ? <ChevronUp className="w-4.5 h-4.5" /> : <ChevronDown className="w-4.5 h-4.5" />}
                               </button>
                               <button
                                 onClick={(e) => handleDeleteDay(day.date, e)}
-                                className="p-1.5 hover:bg-red-50 rounded-lg text-gray-300 hover:text-red-500 transition-colors cursor-pointer"
+                                className="p-2 hover:bg-[#EF4444]/10 rounded-xl text-clay-muted hover:text-[#EF4444] transition-all cursor-pointer border-0 bg-transparent"
                                 title="Delete day logs"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-4.5 h-4.5" />
                               </button>
                             </td>
                           </tr>
@@ -793,24 +911,12 @@ function History() {
                           {/* Expanded detail sub-row */}
                           {isExpanded && (
                             <tr>
-                              <td colSpan="8" className="bg-gray-50/50 px-6 py-4">
-                                <div className="space-y-3 animate-fade-in-up">
-                                  <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Logged Activities Breakdown</h4>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <td colSpan="8" className="bg-[#030304]/40 px-6 py-4">
+                                <div className="space-y-3.5 animate-fade-in-up">
+                                  <h4 className="text-[10px] font-bold text-clay-muted uppercase tracking-wider font-display">Logged Activities Breakdown</h4>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                     {day.entries.map((entry, idx) => (
-                                      <div key={idx} className="bg-white border border-gray-200/50 rounded-xl p-3 flex items-center justify-between shadow-xs">
-                                        <div>
-                                          <p className="text-xs font-bold text-gray-800">{entry.label}</p>
-                                          <div className="flex items-center gap-1.5 mt-1 select-none">
-                                            <CategoryBadge category={entry.category} showIcon={true} />
-                                            <span className="text-[10px] text-gray-400 font-semibold">Qty: {entry.quantity}</span>
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          <p className="text-xs font-bold text-green-700">{entry.totalCO2.toFixed(2)} kg</p>
-                                          <p className="text-[9px] text-gray-400">CO₂</p>
-                                        </div>
-                                      </div>
+                                      <ActivityBreakdownCard key={idx} entry={entry} />
                                     ))}
                                   </div>
                                 </div>
@@ -825,7 +931,7 @@ function History() {
               </div>
 
               {/* Mobile Card List - visible on mobile only */}
-              <div className="block md:hidden space-y-3">
+              <div className="block md:hidden space-y-4">
                 {filteredAndSortedDays.map(day => {
                   const isExpanded = expandedRow === day.date
                   const levelKey = getDailyLevelKey(day.totalCO2)
@@ -834,67 +940,58 @@ function History() {
                     <div
                       key={day.date}
                       onClick={() => setExpandedRow(isExpanded ? null : day.date)}
-                      className={`glass-card p-4 border-2 transition-all duration-300 ${
-                        isExpanded ? 'border-green-300' : 'border-gray-100'
+                      className={`glass-card p-5 border transition-all duration-300 rounded-3xl ${
+                        isExpanded ? 'border-[#F7931A]/40' : 'border-white/5'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-gray-800">
+                      <div className="flex items-center justify-between mb-3 font-display">
+                        <span className="text-xs font-bold text-white">
                           {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                         </span>
-                        <span className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${level.color}`}>
+                        <span className={`text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm font-mono ${level.color}`}>
                           {level.label}
                         </span>
                       </div>
 
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-xs text-gray-400">Total Emissions:</span>
-                        <span className="text-base font-black text-green-700">{day.totalCO2} kg CO₂</span>
+                      <div className="flex items-baseline justify-between font-display">
+                        <span className="text-xs text-clay-muted font-medium">Total Emissions:</span>
+                        <span className="text-base font-bold text-[#10B981] font-mono">{day.totalCO2} kg CO₂</span>
                       </div>
 
                       {/* Mini visual summary of categories */}
-                      <div className="grid grid-cols-4 gap-1.5 mt-3 pt-3 border-t border-gray-100 text-[10px] text-gray-500">
+                      <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-white/5 text-[10px] text-clay-muted font-mono">
                         <div>
-                          <p className="text-[9px] text-gray-400 font-bold uppercase">TRA</p>
-                          <p className="font-bold text-blue-600 mt-0.5">{day.transport > 0 ? `${day.transport}k` : '—'}</p>
+                          <p className="text-[9px] text-clay-muted font-bold uppercase">TRA</p>
+                          <p className="font-bold text-[#0EA5E9] mt-0.5">{day.transport > 0 ? `${day.transport}k` : '—'}</p>
                         </div>
                         <div>
-                          <p className="text-[9px] text-gray-400 font-bold uppercase">ENE</p>
-                          <p className="font-bold text-amber-600 mt-0.5">{day.energy > 0 ? `${day.energy}k` : '—'}</p>
+                          <p className="text-[9px] text-clay-muted font-bold uppercase">ENE</p>
+                          <p className="font-bold text-[#FFD600] mt-0.5">{day.energy > 0 ? `${day.energy}k` : '—'}</p>
                         </div>
                         <div>
-                          <p className="text-[9px] text-gray-400 font-bold uppercase">FOO</p>
-                          <p className="font-bold text-green-700 mt-0.5">{day.food > 0 ? `${day.food}k` : '—'}</p>
+                          <p className="text-[9px] text-clay-muted font-bold uppercase">FOO</p>
+                          <p className="font-bold text-[#10B981] mt-0.5">{day.food > 0 ? `${day.food}k` : '—'}</p>
                         </div>
                         <div>
-                          <p className="text-[9px] text-gray-400 font-bold uppercase">SHO</p>
-                          <p className="font-bold text-purple-600 mt-0.5">{day.shopping > 0 ? `${day.shopping}k` : '—'}</p>
+                          <p className="text-[9px] text-clay-muted font-bold uppercase">SHO</p>
+                          <p className="font-bold text-[#EF44] mt-0.5">{day.shopping > 0 ? `${day.shopping}k` : '—'}</p>
                         </div>
                       </div>
 
                       {/* Expanded View on Mobile */}
                       {isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5 animate-fade-in-up">
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Logged Activities</p>
-                          <div className="space-y-2">
+                        <div className="mt-4 pt-4 border-t border-white/5 space-y-3 animate-fade-in-up">
+                          <p className="text-[9px] font-bold text-clay-muted uppercase tracking-wider font-display">Logged Activities</p>
+                          <div className="space-y-2.5">
                             {day.entries.map((entry, idx) => (
-                              <div key={idx} className="bg-gray-50 border border-gray-100 rounded-xl p-2.5 flex items-center justify-between text-xs">
-                                <div>
-                                  <p className="font-bold text-gray-800 leading-none">{entry.label}</p>
-                                  <div className="flex items-center gap-1.5 mt-1 select-none">
-                                    <CategoryBadge category={entry.category} showIcon={true} />
-                                    <span className="text-[9px] text-gray-400 font-semibold">Qty: {entry.quantity}</span>
-                                  </div>
-                                </div>
-                                <span className="font-bold text-green-700">{entry.totalCO2.toFixed(1)} kg</span>
-                              </div>
+                              <ActivityBreakdownCard key={idx} entry={entry} />
                             ))}
                           </div>
                           
                           <div className="flex justify-end pt-2">
                             <button
                               onClick={(e) => handleDeleteDay(day.date, e)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-50 text-red-700 border border-red-200 font-bold text-[10px] cursor-pointer"
+                              className="flex items-center gap-1.5 h-9 px-4 rounded-full bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/30 font-bold text-[10px] cursor-pointer font-display active:scale-95"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               Delete Logged Day
@@ -922,7 +1019,7 @@ function History() {
       {/* Clear All History Confirmation Modal */}
       <ConfirmDialog
         isOpen={isClearAllOpen}
-        title="🚨 Clear All History? 🚨"
+        title="Clear All History?"
         message="Are you sure you want to clear ALL logged footprint history? This action is permanent and cannot be undone."
         confirmText="Clear All"
         cancelText="Cancel"

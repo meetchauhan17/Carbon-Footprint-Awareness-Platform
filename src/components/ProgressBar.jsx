@@ -8,7 +8,7 @@ export default function ProgressBar({
   max = 100,
   showLabel = false,
   labelStyle = 'percentage', // 'percentage' | 'fraction' | 'none'
-  color = 'bg-gradient-to-r from-green-500 to-emerald-600', // default gradient
+  color = 'bg-gradient-to-r from-[#EA580C] to-[#F7931A]', // default Bitcoin orange
   className = '',
   labelClassName = ''
 }) {
@@ -25,11 +25,11 @@ export default function ProgressBar({
       aria-label={`Progress: ${Math.round(percentage)}%`}
     >
       {showLabel && labelStyle !== 'none' && (
-        <div className="flex justify-between items-center mb-1.5">
-          <span className={`text-[10px] font-bold text-gray-400 uppercase tracking-wide ${labelClassName}`}>
+        <div className="flex justify-between items-center mb-1.5 font-sans">
+          <span className={`text-[10px] font-bold text-clay-muted uppercase tracking-widest ${labelClassName}`}>
             Progress
           </span>
-          <span className="text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full select-none">
+          <span className="text-xs font-bold text-[#F7931A] bg-[#0F1115] border border-[#F7931A]/20 px-2 py-0.5 rounded-md select-none font-mono">
             {labelStyle === 'percentage' 
               ? `${Math.round(percentage)}%` 
               : `${safeValue} / ${max}`}
@@ -38,7 +38,7 @@ export default function ProgressBar({
       )}
 
       {/* Progress Track */}
-      <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden shadow-inner border border-gray-100/50">
+      <div className="w-full h-2.5 bg-[#1E293B] rounded-full overflow-hidden shadow-inner border border-white/5">
         <div
           className={`h-full rounded-full transition-all duration-500 ease-out ${color}`}
           style={{ width: `${percentage}%` }}
@@ -47,3 +47,4 @@ export default function ProgressBar({
     </div>
   )
 }
+

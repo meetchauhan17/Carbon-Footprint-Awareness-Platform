@@ -30,23 +30,23 @@ export default function Navbar({ className = '' }) {
   return (
     <nav
       id="main-navbar"
-      className={`sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-green-100 shadow-sm transition-all duration-200 ${className}`}
+      className={`sticky top-0 z-50 bg-[#0F1115]/90 backdrop-blur-lg border-b border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.5)] transition-all duration-200 ${className}`}
       role="navigation"
       aria-label="Main Navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <NavLink to="/" className="flex items-center gap-2 group focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none rounded-xl" id="nav-logo" aria-label="CarbonWise Home">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md group-hover:shadow-lg transition-all" aria-hidden="true">
-              <Leaf className="w-5 h-5 text-white" />
+          <NavLink to="/" className="flex items-center gap-4 group focus:outline-none" id="nav-logo" aria-label="CarbonWise Home">
+            <div className="w-7 h-7 rotate-45 border border-[#F7931A]/40 flex items-center justify-center group-hover:scale-105 active:scale-95 transition-all bg-[#0F1115] rounded-md" aria-hidden="true">
+              <Leaf className="-rotate-45 w-4 h-4 text-[#F7931A]" />
             </div>
-            <span className="text-xl font-bold gradient-text tracking-tight select-none">CarbonWise</span>
+            <span className="text-xl font-bold gradient-text tracking-wider select-none font-display">CarbonWise</span>
           </NavLink>
 
           {/* Desktop nav links + Daily Badge */}
           <div className="hidden md:flex items-center gap-4">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {navLinks.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
@@ -54,15 +54,15 @@ export default function Navbar({ className = '' }) {
                   id={`nav-${label.toLowerCase().replace(/\s/g, '-')}`}
                   end={to === '/'}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-250 focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none ${
+                    `flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all duration-200 focus:outline-none tracking-wider uppercase border font-mono ${
                       isActive
-                        ? 'bg-green-600 text-white shadow-md shadow-green-100'
-                        : 'text-gray-600 hover:text-green-700 hover:bg-green-50'
+                        ? 'bg-[#F7931A]/10 text-[#F7931A] border-[#F7931A]/30 shadow-[0_0_15px_rgba(247,147,26,0.15)] rounded-full'
+                        : 'text-[#94A3B8] border-transparent hover:text-white hover:bg-white/5 rounded-full'
                     }`
                   }
                   aria-label={`Navigate to ${label}`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span>{label}</span>
                 </NavLink>
               ))}
@@ -70,10 +70,10 @@ export default function Navbar({ className = '' }) {
 
             {/* Today's Emission Total Badge */}
             <div 
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-bold shadow-sm select-none"
+              className="flex items-center gap-2 px-3.5 py-2 border border-[#F7931A]/20 text-[#F7931A] text-xs font-bold bg-[#0F1115] rounded-full select-none tracking-wider uppercase font-mono shadow-[0_0_12px_rgba(247,147,26,0.08)]"
               title="Today's total carbon emissions logged"
             >
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 bg-[#F7931A] rounded-full animate-pulse" />
               <span>Today: {todayTotal.toFixed(1)} kg CO₂</span>
             </div>
           </div>
@@ -81,15 +81,15 @@ export default function Navbar({ className = '' }) {
           {/* Mobile elements (Hamburguer and Daily Badge) */}
           <div className="flex items-center gap-2 md:hidden">
             <div 
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-green-50 border border-green-150 text-green-700 text-xs font-bold select-none"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#F7931A]/20 text-[#F7931A] text-xs font-bold bg-[#0F1115] rounded-full select-none tracking-wide uppercase font-mono shadow-[0_0_12px_rgba(247,147,26,0.08)]"
               title="Today's total emissions logged"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-1.5 h-1.5 bg-[#F7931A] rounded-full animate-pulse" />
               <span>{todayTotal.toFixed(1)} kg</span>
             </div>
             <button
               id="mobile-menu-toggle"
-              className="p-2 rounded-xl text-gray-600 hover:bg-green-50 hover:text-green-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none"
+              className="p-2 text-[#FFFFFF] hover:text-[#F7931A] transition-colors cursor-pointer focus:outline-none"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu-items"
@@ -104,7 +104,7 @@ export default function Navbar({ className = '' }) {
       {/* Mobile Menu Overlay */}
       {mobileOpen && (
         <div id="mobile-menu-items" className="md:hidden animate-fade-in-up">
-          <div className="bg-white/95 backdrop-blur-xl border-t border-green-100 shadow-xl px-4 py-3 space-y-1">
+          <div className="bg-[#030304]/95 border-t border-white/10 shadow-xl px-4 py-3 space-y-1">
             {navLinks.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
@@ -113,10 +113,10 @@ export default function Navbar({ className = '' }) {
                 id={`mobile-nav-${label.toLowerCase().replace(/\s/g, '-')}`}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus:outline-none ${
+                  `flex items-center gap-3 px-4 py-3 text-sm font-bold tracking-wider uppercase transition-all focus:outline-none font-mono rounded-lg ${
                     isActive
-                      ? 'bg-green-600 text-white shadow-md'
-                      : 'text-gray-600 hover:text-green-700 hover:bg-green-50'
+                      ? 'bg-[#F7931A]/10 text-[#F7931A] border border-[#F7931A]/20'
+                      : 'text-[#94A3B8] hover:text-white hover:bg-white/5'
                   }`
                 }
                 aria-label={`Navigate to ${label}`}
