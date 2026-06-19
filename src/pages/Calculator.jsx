@@ -1,9 +1,7 @@
-import { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
-} from 'recharts'
+// Recharts component code-split
+const CalculatorChart = lazy(() => import('../components/charts/CalculatorChart.jsx'));
 import {
   Car, Zap, Utensils, ShoppingBag, ChevronRight, ChevronLeft,
   Plus, Trash2, CheckCircle2, AlertCircle, Leaf,
@@ -603,19 +601,9 @@ function Summary({ result, onSave, saving }) {
       {horizontalBarData.length > 0 && (
         <div className="glass-card p-5 rounded-2xl">
           <h3 className="text-xs font-bold text-clay-muted uppercase tracking-wider mb-4 text-center font-display">Emissions Breakdown</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={horizontalBarData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="rgba(255, 255, 255, 0.08)" />
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500, fontFamily: 'JetBrains Mono, monospace' }} />
-              <RechartsTooltip contentStyle={{ backgroundColor: '#0F1115', borderColor: 'rgba(255, 255, 255, 0.08)', borderRadius: '16px' }} itemStyle={{ color: '#FFFFFF' }} labelStyle={{ color: '#F7931A', fontWeight: 'bold' }} cursor={{ fill: 'transparent' }} />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={24} label={{ position: 'right', formatter: (v) => `${v.toFixed(1)} kg`, fill: '#94A3B8', fontSize: 10, fontWeight: 500, fontFamily: 'JetBrains Mono, monospace' }}>
-                {horizontalBarData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <Suspense fallback={<div className="h-[220px] w-full animate-pulse bg-white/5 rounded-xl border border-white/10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#F7931A]/20 border-t-[#F7931A] rounded-full animate-spin"></div></div>}>
+            <CalculatorChart horizontalBarData={horizontalBarData} />
+          </Suspense>
         </div>
       )}
 

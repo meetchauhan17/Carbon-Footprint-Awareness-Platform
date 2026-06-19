@@ -140,7 +140,10 @@ export function useWeather(location) {
     // Clear cached resolved city when location changes so UI updates
     setResolvedCity(null)
     setTemperature(null)
-    fetchWeather()
+    const t = setTimeout(() => {
+      fetchWeather()
+    }, 100)
+    return () => clearTimeout(t)
   }, [location, fetchWeather]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Generate a contextual eco tip based on temperature

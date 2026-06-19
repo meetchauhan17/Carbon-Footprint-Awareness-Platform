@@ -88,7 +88,10 @@ export function useQuote() {
   }, [pickLocalQuote])
 
   useEffect(() => {
-    fetchQuote()
+    const t = setTimeout(() => {
+      fetchQuote()
+    }, 100)
+    return () => clearTimeout(t)
   }, [fetchQuote])
 
   /**

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, Fragment } from 'react'
+import React, { useState, useMemo, useCallback, Fragment, Suspense, lazy } from 'react'
 import { useCarbon } from '../context/CarbonContext.jsx'
 import { formatCO2 } from '../utils/calculations.js'
 import {
@@ -12,10 +12,8 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import CategoryBadge from '../components/CategoryBadge.jsx'
 import EmojiIcon from '../components/EmojiIcon.jsx'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, Cell, ReferenceLine
-} from 'recharts'
+// Recharts component code-split
+const HistoryChart = lazy(() => import('../components/charts/HistoryChart.jsx'));
 
 import { use3DTilt } from '../hooks/use3DTilt.js'
 
@@ -510,41 +508,9 @@ function History() {
                 ))}
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={barChartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" vertical={false} />
-                <XAxis dataKey="displayDate" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fontWeight: 500 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono, monospace', fontWeight: 500 }} axisLine={false} tickLine={false} unit=" kg" />
-                <RechartsTooltip 
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      const isOver = payload[0].payload.totalCO2 > userGoalDaily;
-                      return (
-                        <div className="bg-[#0F1115] border border-white/10 rounded-2xl px-4 py-3 shadow-[0_0_25px_rgba(247,147,26,0.15)] text-xs text-white font-sans">
-                          <p className="font-bold text-[#F7931A] mb-1 font-display">{label}</p>
-                          <p className={`font-bold text-sm font-mono ${isOver ? 'text-[#EF4444]' : 'text-[#10B981]'}`}>
-                            {payload[0].value.toFixed(2)} kg CO₂
-                          </p>
-                          <p className="text-[10px] text-clay-muted mt-0.5">{isOver ? 'Exceeds Goal' : 'Under Target'}</p>
-                        </div>
-                      )
-                    }
-                    return null
-                  }} 
-                />
-                <ReferenceLine
-                  y={userGoalDaily}
-                  stroke="#F7931A"
-                  strokeDasharray="4 4"
-                  label={{ value: 'Daily Goal', position: 'insideTopRight', fill: '#F7931A', fontSize: 10, fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700 }}
-                />
-                <Bar dataKey="totalCO2" radius={[4, 4, 0, 0]}>
-                  {barChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.totalCO2 > userGoalDaily ? '#F7931A' : '#10B981'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-[260px] w-full animate-pulse bg-white/5 rounded-xl border border-white/10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#F7931A]/20 border-t-[#F7931A] rounded-full animate-spin"></div></div>}>
+              <HistoryChart barChartData={barChartData} userGoalDaily={userGoalDaily} />
+            </Suspense>
           </div>
 
           {/* Calendar Heatmap — 3/5 width */}

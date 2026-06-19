@@ -1,10 +1,8 @@
-import { useMemo, useState, useEffect, useCallback } from 'react'
+import React, { useMemo, useState, useEffect, useCallback, Suspense, lazy } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  AreaChart, Area, PieChart, Pie, Legend,
-  XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Cell,
-} from 'recharts'
+// Recharts components code-split out
+const DashboardAreaChart = lazy(() => import('../components/charts/DashboardAreaChart.jsx'));
+const DashboardPieChart = lazy(() => import('../components/charts/DashboardPieChart.jsx'));
 import {
   Car, Zap, Utensils, ShoppingBag, Target, TrendingUp,
   Award, Flame, Leaf, ArrowRight, Lightbulb,
@@ -143,26 +141,7 @@ function computeStreak(entries, goalKgPerDay) {
 
 // ─── Sub-components ───────────────────────────────────────────────────
 
-const ChartTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null
-  const isPie = !label || typeof label === 'number';
-  const title = isPie ? payload[0]?.name : label;
-  const showNameInLine = !isPie;
-  return (
-    <div className="bg-[#0F1115]/90 backdrop-blur-md border border-white/12 rounded-xl px-4 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.6),_0_0_15px_rgba(247,147,26,0.15)] text-xs font-bold font-sans">
-      {title && <p className="text-[#F7931A] mb-2 font-display uppercase tracking-wider text-[10px]">{title}</p>}
-      {payload.map((p, i) => (
-        <div key={i} className="flex items-center gap-2 mt-1 first:mt-0">
-          <span className="w-2.5 h-2.5 rounded-full border border-black/40 shadow-sm" style={{ backgroundColor: p.color ?? p.fill }} />
-          <p className="text-white font-medium">
-            {showNameInLine ? `${p.name}: ` : ''}
-            <span className="font-mono font-bold text-gray-200">{parseFloat(p.value).toFixed(1)} kg</span>
-          </p>
-        </div>
-      ))}
-    </div>
-  )
-}
+// Tooltip is moved to chart components
 
 function DashboardBadgeCard({ badge }) {
   const tilt = use3DTilt({ maxTilt: 14, scale: 1.04 })
@@ -567,59 +546,9 @@ function Dashboard() {
             </div>
           </div>
           {weeklyData.some(d => d.co2 > 0) ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <AreaChart 
-                data={weeklyData} 
-                margin={{ top: 5, right: 10, left: -15, bottom: 0 }}
-                onClick={(e) => {
-                  if (e && e.activePayload && e.activePayload.length > 0) {
-                    navigate('/history')
-                  }
-                }}
-                className="cursor-pointer font-mono"
-              >
-                <defs>
-                  <linearGradient id="colorCo2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F7931A" stopOpacity={0.25}/>
-                    <stop offset="95%" stopColor="#F7931A" stopOpacity={0}/>
-                  </linearGradient>
-                  <filter id="areaGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx={0} dy={4} stdDeviation={5} floodColor="#F7931A" floodOpacity={0.35} />
-                  </filter>
-                </defs>
-                <CartesianGrid vertical={false} stroke="rgba(255, 255, 255, 0.04)" />
-                <XAxis dataKey="day" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 30]} tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} unit=" kg" />
-                <Tooltip content={<ChartTooltip />} />
-                <ReferenceLine
-                  y={dailyGoal}
-                  stroke="rgba(247, 147, 26, 0.3)"
-                  strokeDasharray="5 5"
-                  strokeWidth={1.5}
-                  label={{ value: `Goal ${dailyGoal}kg`, position: 'insideTopRight', offset: 10, fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono', fontWeight: 'bold' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="co2" 
-                  name="Emissions" 
-                  stroke="#F7931A" 
-                  strokeWidth={2} 
-                  fillOpacity={1} 
-                  fill="url(#colorCo2)" 
-                  activeDot={{ r: 6, fill: '#F7931A', stroke: '#030304', strokeWidth: 2 }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="co2" 
-                  stroke="#F7931A" 
-                  strokeWidth={3} 
-                  fill="none"
-                  filter="url(#areaGlow)"
-                  legendType="none"
-                  activeDot={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-[240px] w-full animate-pulse bg-white/5 rounded-xl border border-white/10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#F7931A]/20 border-t-[#F7931A] rounded-full animate-spin"></div></div>}>
+              <DashboardAreaChart weeklyData={weeklyData} dailyGoal={dailyGoal} onChartClick={() => navigate('/history')} />
+            </Suspense>
           ) : (
             <div className="h-60 flex flex-col items-center justify-center text-clay-muted gap-2 font-sans">
               <Leaf className="w-8 h-8 text-clay-primary animate-clay-breathe" />
@@ -638,64 +567,9 @@ function Dashboard() {
             <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Where your emissions are coming from</p>
           </div>
           {catBreakdown.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <PieChart>
-                {/* Background track circle */}
-                <Pie
-                  data={[{ value: 1 }]}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  dataKey="value"
-                  fill="rgba(255, 255, 255, 0.03)"
-                  stroke="none"
-                  isAnimationActive={false}
-                />
-                <Pie
-                  data={catBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={4}
-                  dataKey="value"
-                  animationBegin={200}
-                  animationDuration={800}
-                  stroke="#0F1115"
-                  strokeWidth={2.5}
-                >
-                  {catBreakdown.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<ChartTooltip />} />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={36} 
-                  content={(props) => {
-                    const { payload } = props;
-                    return (
-                      <div className="flex flex-wrap justify-center gap-3 mt-4">
-                        {payload.map((entry, index) => (
-                          <div key={`item-${index}`} className="flex items-center gap-1.5 font-bold font-sans">
-                            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                            <span className="text-xs text-clay-text font-mono">{entry.value}</span>
-                            <span className="text-xs text-clay-muted">({((catBreakdown.find(c => c.name === entry.value)?.value / catBreakdown.reduce((a,b)=>a+b.value,0)) * 100).toFixed(0)}%)</span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }}
-                />
-                <text x="50%" y="44%" textAnchor="middle" dominantBaseline="middle" className="text-[10px] font-extrabold fill-[#F7931A] uppercase tracking-widest font-display">
-                  TOTAL CO₂
-                </text>
-                <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" className="text-lg font-black fill-white font-mono">
-                  {catBreakdown.reduce((a,b) => a+b.value, 0).toFixed(1)}<tspan fontSize="10" fontWeight="bold" fill="#94A3B8" fontFamily="Inter, sans-serif"> kg</tspan>
-                </text>
-              </PieChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-[240px] w-full animate-pulse bg-white/5 rounded-xl border border-white/10 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#F7931A]/20 border-t-[#F7931A] rounded-full animate-spin"></div></div>}>
+              <DashboardPieChart catBreakdown={catBreakdown} />
+            </Suspense>
           ) : (
             <div className="h-60 flex flex-col items-center justify-center text-clay-muted gap-2 font-sans">
               <Leaf className="w-8 h-8 text-clay-primary animate-clay-breathe" />
