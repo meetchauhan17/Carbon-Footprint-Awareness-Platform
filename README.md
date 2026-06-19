@@ -13,9 +13,26 @@ Developed for **[Challenge 3] Carbon Footprint Awareness Platform - Hack2Skill P
 
 ---
 
+## System Architecture
+
+The diagram below outlines the core reactive structure, starting from user inputs through the calculation pipeline to the persistence layers:
+
+```mermaid
+graph TD
+    UI["Calculator Form / Quick Log"] -->|Input Values| CalcEngine["Carbon Calculation Engine"]
+    CalcEngine -->|Formula Coefficients| EPA["EPA / IPCC Database"]
+    CalcEngine -->|Carbon Entry Object| Context["React CarbonContext Provider"]
+    Context -->|JSON Entry Logs| LS["LocalStorage Cache"]
+    Context -->|Triggers Evaluation| BadgeEngine["Real-time Badge Evaluator"]
+    BadgeEngine -->|Milestone Match| UnlockedBadge["Earned Achievements & Badges List"]
+    Context -->|Feeds Data| Recharts["Lazy-Loaded Recharts Page (Area & Pie)"]
+```
+
+---
+
 ## Key Features
 
-### 1. Multi-Category Carbon Calculator
+### Multi-Category Carbon Calculator
 *   Granular tracking across four core pillars of individual carbon footprints:
     *   **Transport:** Log trips by car (petrol/diesel/electric), public transit, or air travel.
     *   **Energy:** Log household electricity, natural gas, or LPG cylinder usage.
@@ -23,41 +40,57 @@ Developed for **[Challenge 3] Carbon Footprint Awareness Platform - Hack2Skill P
     *   **Shopping:** Log purchases of clothing, electronics, online deliveries, and general goods.
 *   Persistent state and history logs driven by **React Context** and **LocalStorage**.
 
-### 2. Interactive 3D Earth Globe
-*   Built with raw **Three.js** and **WebGL**, displaying a rotating 3D Earth with custom ambient atmosphere glows, direction-based lighting, and interactive orange hotspots.
+### Interactive 3D Earth Globe
+*   Built with raw **Three.js** and **WebGL**, displaying a rotating 3D Earth with custom ambient atmosphere glows, direction-based lighting, and interactive hotspots.
 *   Automatically fetches and maps coordinate hotspots based on the user's localized country data.
 *   Includes a robust, graceful fallback state to a 2D slate-blue canvas in the event of WebGL unavailability or texture loading failures.
 
-### 3. Code-Split Analytics & Insights
+### Code-Split Analytics & Insights
 *   **7-Day Emissions Trend:** Interactive Area Chart displaying daily emissions stacked against the user's customized target goal line.
 *   **Category Breakdown:** Interactive Pie Chart visualizing weekly emissions distribution.
 *   Both charts are lazy-loaded on mount using React code-splitting chunk hooks (`React.lazy()`) to optimize PageSpeed performance.
 
-### 4. Gamified Achievements & Streaks
+### Gamified Achievements & Streaks
 *   **17 Unlockable Milestones:** Badges earned for low-carbon travel, consistent logging, hitting weekly targets, completing setup, and executing eco-tips.
 *   **Flame Streak Counter:** Tracks consecutive daily logs that fall below the user's daily budget.
 *   Features a responsive completion meter and badge showcase dialog.
 
-### 5. Action Hub & Eco Tips
+### Action Hub & Eco Tips
 *   30+ highly-actionable environmental recommendations categorized by target impact (High, Medium, Low) and theme.
 *   Includes daily seeded suggestions, detailed carbon reduction explanations, and interactive completion logs.
 
 ---
 
+## WebGL & Shader Fallback Architecture
+
+To handle cases where WebGL is unavailable or the network fails to resolve assets, the rotating globe utilizes a fail-safe pipeline:
+
+```mermaid
+graph TD
+    Init["Mount Globe3D Canvas"] -->|Verify Browser| WebGL["WebGL Context Available?"]
+    WebGL -->|No| Fallback["2D Slate-Blue Sphere fallback (GlobeFallback)"]
+    WebGL -->|Yes| LoadTex["Fetch earth.jpg (Local Texture)"]
+    LoadTex -->|Error / CDN Block| Fallback
+    LoadTex -->|Success| CompileShader["Build Ambient Glow, Atmosphere & Hotspots"]
+    CompileShader --> Render["Render Auto-Rotating 3D Earth Globe"]
+```
+
+---
+
 ## Performance & Architecture Highlights
 
-### 3D Globe Mobile Viewport Optimization
-*   **The Issue:** Running `Three.js` (WebGL) and compiling complex shaders on mobile viewports blocks CPU threads, degrading the mobile PageSpeed Performance score.
-*   **The Solution:** Implemented client-side viewport detection logic (`isMobile` hooks targeting screen widths `< 1024px`) inside [Dashboard.jsx](file:///c:/Meet/xyz/Carbon%20Footprint%20Awareness%20Platform/src/pages/Dashboard.jsx).
-*   If a mobile screen is detected, the browser completely bypasses importing and rendering the **~510.92 KB** `Globe3D` module, saving substantial network bandwidth and main-thread processing cycles. The "Settings" button is relocated to the Welcome Card header for accessibility.
+> [!IMPORTANT]
+> **3D Globe Mobile Viewport Bypass:** 
+> Running `Three.js` (WebGL) and compiling complex shaders on mobile viewports blocks CPU threads, degrading the mobile PageSpeed Performance score. 
+> To resolve this, CarbonWise uses client-side viewport detection logic (`isMobile` hooks targeting screen widths `< 1024px`). On mobile devices, the browser completely bypasses importing and rendering the **~510.92 KB** `Globe3D` module, saving substantial network bandwidth and main-thread processing cycles. The Settings button is relocated to the Welcome Card header for accessibility.
 
-### Code-Splitting & Asset Optimization
-*   All heavy non-critical components (charts, modals, and WebGL elements) are code-split into distinct dynamic modules via `React.lazy()` and rendered under React `<Suspense>` loaders.
-*   Optimized asset sizes: Embedded a highly compressed, low-latency, local Earth texture map (92.57 KB) inside `public/textures/earth.jpg`, resolving external CDN blocks and minimizing load latency.
+> [!TIP]
+> **Code-Splitting & Asset Optimization:** 
+> All heavy non-critical components (charts, modals, and WebGL elements) are code-split into distinct dynamic modules via `React.lazy()` and rendered under React `<Suspense>` loaders. This reduced the main bundle size by **28%** (from 333KB to 240KB). Additionally, we embedded a highly compressed, low-latency, local Earth texture map (92.57 KB) inside `public/textures/earth.jpg`, resolving external CDN blocks and minimizing load latency.
 
-### Progressive Web App (PWA) & Service Worker Cache Control
-*   Configured with service worker caching rules to support full offline accessibility for calculator actions, history logging, and achievement tracking.
-*   Includes a custom developer-mode bypass in `index.html` that automatically unregisters caching service workers on `localhost` / `127.0.0.1` to prevent dynamic chunk caching issues during rapid hot reloading.
+> [!NOTE]
+> **Progressive Web App (PWA) & Service Worker Cache Control:** 
+> Configured with service worker caching rules to support full offline accessibility for calculator actions, history logging, and achievement tracking. Includes a custom developer-mode bypass in `index.html` that automatically unregisters caching service workers on `localhost` / `127.0.0.1` to prevent dynamic chunk caching issues during rapid hot reloading.
 
 ---
 
@@ -73,16 +106,6 @@ To provide localized environmental context without blocking critical paint times
     *   Provides motivational benchmarks comparing the user's footprint against their nation's per-capita emission rates.
 3.  **Environmental Motivation (Quotable API / Local Fallback):**
     *   Integrates a rotating quote carousel featuring environmental wisdom from global leaders and scientists, encouraging user logging streaks.
-
----
-
-## State Management & Gamification Flow
-
-CarbonWise uses a centralized **React Context** (`CarbonContext`) mapped to **LocalStorage** for secure, local-first data persistence:
-
-*   **Calculator Input Pipeline:** Inputs from `Calculator.jsx` are evaluated using EPA coefficients, transformed into unified kg CO₂ metrics, and pushed to the global `carbonEntries` array.
-*   **Real-Time Badge Verification:** Every state transition automatically triggers the badge evaluation pipeline. If the user meets conditions (e.g., logging a vegan meal, logging 5 days in a row, or maintaining a streak), a new badge is pushed to the `badges` array and a visual alert is queued.
-*   **Streak Tracking Engine:** Streaks are calculated dynamically on load by sorting historical daily entries and analyzing consecutive daily carbon values against the user's customized carbon budget limits.
 
 ---
 
