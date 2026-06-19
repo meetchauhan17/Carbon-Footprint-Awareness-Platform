@@ -1,4 +1,4 @@
-# 🌱 CarbonWise — Carbon Footprint Awareness Platform
+# CarbonWise — Carbon Footprint Awareness Platform
 
 [![React Version](https://img.shields.io/badge/react-v19.0-blue.svg)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/build-Vite%20v8.0-fast.svg)](https://vite.dev/)
@@ -13,9 +13,9 @@ Developed for **[Challenge 3] Carbon Footprint Awareness Platform - Hack2Skill P
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-### 1. 📊 Multi-Category Carbon Calculator
+### 1. Multi-Category Carbon Calculator
 *   Granular tracking across four core pillars of individual carbon footprints:
     *   **Transport:** Log trips by car (petrol/diesel/electric), public transit, or air travel.
     *   **Energy:** Log household electricity, natural gas, or LPG cylinder usage.
@@ -23,45 +23,45 @@ Developed for **[Challenge 3] Carbon Footprint Awareness Platform - Hack2Skill P
     *   **Shopping:** Log purchases of clothing, electronics, online deliveries, and general goods.
 *   Persistent state and history logs driven by **React Context** and **LocalStorage**.
 
-### 2. 🌍 Interactive 3D Earth Globe
+### 2. Interactive 3D Earth Globe
 *   Built with raw **Three.js** and **WebGL**, displaying a rotating 3D Earth with custom ambient atmosphere glows, direction-based lighting, and interactive orange hotspots.
 *   Automatically fetches and maps coordinate hotspots based on the user's localized country data.
 *   Includes a robust, graceful fallback state to a 2D slate-blue canvas in the event of WebGL unavailability or texture loading failures.
 
-### 3. 📈 Code-Split Analytics & Insights
+### 3. Code-Split Analytics & Insights
 *   **7-Day Emissions Trend:** Interactive Area Chart displaying daily emissions stacked against the user's customized target goal line.
 *   **Category Breakdown:** Interactive Pie Chart visualizing weekly emissions distribution.
 *   Both charts are lazy-loaded on mount using React code-splitting chunk hooks (`React.lazy()`) to optimize PageSpeed performance.
 
-### 4. 🏆 Gamified Achievements & Streaks
+### 4. Gamified Achievements & Streaks
 *   **17 Unlockable Milestones:** Badges earned for low-carbon travel, consistent logging, hitting weekly targets, completing setup, and executing eco-tips.
 *   **Flame Streak Counter:** Tracks consecutive daily logs that fall below the user's daily budget.
 *   Features a responsive completion meter and badge showcase dialog.
 
-### 5. 💡 Action Hub & Eco Tips
+### 5. Action Hub & Eco Tips
 *   30+ highly-actionable environmental recommendations categorized by target impact (High, Medium, Low) and theme.
 *   Includes daily seeded suggestions, detailed carbon reduction explanations, and interactive completion logs.
 
 ---
 
-## 🚀 Performance & Architecture Highlights
+## Performance & Architecture Highlights
 
-### ⚡ 3D Globe Mobile Viewport Optimization
+### 3D Globe Mobile Viewport Optimization
 *   **The Issue:** Running `Three.js` (WebGL) and compiling complex shaders on mobile viewports blocks CPU threads, degrading the mobile PageSpeed Performance score.
 *   **The Solution:** Implemented client-side viewport detection logic (`isMobile` hooks targeting screen widths `< 1024px`) inside [Dashboard.jsx](file:///c:/Meet/xyz/Carbon%20Footprint%20Awareness%20Platform/src/pages/Dashboard.jsx).
 *   If a mobile screen is detected, the browser completely bypasses importing and rendering the **~510.92 KB** `Globe3D` module, saving substantial network bandwidth and main-thread processing cycles. The "Settings" button is relocated to the Welcome Card header for accessibility.
 
-### 📦 Code-Splitting & Asset Optimization
+### Code-Splitting & Asset Optimization
 *   All heavy non-critical components (charts, modals, and WebGL elements) are code-split into distinct dynamic modules via `React.lazy()` and rendered under React `<Suspense>` loaders.
 *   Optimized asset sizes: Embedded a highly compressed, low-latency, local Earth texture map (92.57 KB) inside `public/textures/earth.jpg`, resolving external CDN blocks and minimizing load latency.
 
-### 🔄 Progressive Web App (PWA) & Service Worker Cache Control
+### Progressive Web App (PWA) & Service Worker Cache Control
 *   Configured with service worker caching rules to support full offline accessibility for calculator actions, history logging, and achievement tracking.
 *   Includes a custom developer-mode bypass in `index.html` that automatically unregisters caching service workers on `localhost` / `127.0.0.1` to prevent dynamic chunk caching issues during rapid hot reloading.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 *   **Core Framework:** [React v19](https://react.dev/) + [Vite v8](https://vite.dev/)
 *   **Routing:** [React Router v7](https://reactrouter.com/)
@@ -73,7 +73,7 @@ Developed for **[Challenge 3] Carbon Footprint Awareness Platform - Hack2Skill P
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 Carbon Footprint Awareness Platform/
@@ -117,7 +117,7 @@ Carbon Footprint Awareness Platform/
 
 ---
 
-## 📈 Emission Factors & Calculation Methodology
+## Emission Factors & Calculation Methodology
 
 Calculations are aligned with international guidelines from the **US Environmental Protection Agency (EPA) Emission Factors Hub**, **IPCC AR6 Reports**, and **CarbonIndependent.org**:
 
@@ -144,7 +144,7 @@ Calculations are aligned with international guidelines from the **US Environment
 
 ---
 
-## ♿ Accessibility & Design Standards
+## Accessibility & Design Standards
 
 *   **WCAG AA Compliance:** High contrast theme utilizing curated colors (`#F7931A` orange-amber accents, `#10B981` success greens, and `#EF4444` alerts). Every input field includes descriptive `<label>` tags and matching `aria-label` hooks.
 *   **Haptic / Motion Rules:** Incorporates the `prefers-reduced-motion` CSS media query and JavaScript event checks. Users with motion sensitivities automatically receive static, non-rotating layouts with tilt hooks and keyframe animations disabled.
@@ -152,7 +152,7 @@ Calculations are aligned with international guidelines from the **US Environment
 
 ---
 
-## 🚀 How to Run Locally
+## How to Run Locally
 
 ### 1. Installation
 Install dependencies via npm:
@@ -177,7 +177,7 @@ Open `http://localhost:4173` to test the production build locally.
 
 ---
 
-## 🧪 How to Test
+## How to Test
 
 Run the full automated unit testing suite powered by Vitest:
 ```bash
