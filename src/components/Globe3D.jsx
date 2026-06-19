@@ -9,7 +9,7 @@ import * as THREE from 'three'
  *  - rAF loop paused when tab is hidden (Page Visibility API)
  *  - prefers-reduced-motion: static single frame, no rAF loop
  *  - Full cleanup on unmount: geometry, material, texture, renderer disposed
- *  - Texture loaded from CDN (NOT bundled) — cached by browser
+ *  - Texture loaded from local public folder (NOT bundled) — cached by browser
  *
  * @param {Object} props
  * @param {number|null} props.latitude   User's lat from countryData (optional)
@@ -24,7 +24,9 @@ export default function Globe3D({ latitude = null, longitude = null }) {
     if (!canvas) return
 
     // ── Capability checks ───────────────────────────────────────────────
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const prefersReduced = typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     // ── Renderer ────────────────────────────────────────────────────────
     const renderer = new THREE.WebGLRenderer({
@@ -56,13 +58,22 @@ export default function Globe3D({ latitude = null, longitude = null }) {
     // ── Earth Geometry ──────────────────────────────────────────────────
     const geometry = new THREE.SphereGeometry(1.5, 64, 64)
 
-    // Texture: free, MIT-licensed texture from Three.js official examples repo
-    // Fetched from CDN at runtime — NOT bundled into JS
+    // Texture: loaded from local path under public/textures/earth.jpg
+    // Fallback: If texture loading fails, it falls back to a solid dark-blue sphere
+    // with ambient, sun, and rim lighting + orange markers + atmosphere glow.
     const textureLoader = new THREE.TextureLoader()
     const texture = textureLoader.load(
-      'https://unpkg.com/three@0.128.0/examples/textures/planets/earth_atmos_2048.jpg',
+      '/textures/earth.jpg',
       () => {
-        // Force re-render once texture is loaded
+        // Force re-render once texture is loaded successfully
+        renderer.render(scene, camera)
+      },
+      undefined,
+      (err) => {
+        console.error('Failed to load local Earth texture, using solid-color fallback:', err)
+        material.map = null
+        material.color.setHex(0x0f172a) // Deep slate blue/black to blend with dark mode
+        material.needsUpdate = true
         renderer.render(scene, camera)
       }
     )

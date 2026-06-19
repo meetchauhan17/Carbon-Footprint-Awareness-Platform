@@ -1,5 +1,14 @@
 import { useRef, useCallback, useEffect } from 'react'
 
+// Capability checks (stable across renders, evaluated once at module scope level)
+const isTouchOnly = typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(hover: none) and (pointer: coarse)').matches
+
+const prefersReduced = typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 /**
  * use3DTilt — High-performance 3D card tilt + holographic cursor tracking.
  *
@@ -23,17 +32,6 @@ export function use3DTilt({ maxTilt = 12, scale = 1.02, perspective = 1000 } = {
   const ref = useRef(null)
   const rafId = useRef(null)           // rAF handle — prevents queuing multiple frames
   const pendingEvent = useRef(null)    // stores the latest mousemove event data
-
-  // ── Capability checks (stable across renders) ──────────────────────────
-  // These run once at module scope level to avoid repeated matchMedia calls.
-  const isTouchOnly = useRef(
-    typeof window !== 'undefined' &&
-    window.matchMedia('(hover: none) and (pointer: coarse)').matches
-  )
-  const prefersReduced = useRef(
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
 
   // Apply initial identity transform to element once mounted
   useEffect(() => {
@@ -75,9 +73,9 @@ export function use3DTilt({ maxTilt = 12, scale = 1.02, perspective = 1000 } = {
   // ── Event handlers ─────────────────────────────────────────────────────
   const handleMouseMove = useCallback((e) => {
     // Guard 1: touch-only devices — skip entirely
-    if (isTouchOnly.current) return
+    if (isTouchOnly) return
     // Guard 2: reduced motion — skip tilt transforms
-    if (prefersReduced.current) return
+    if (prefersReduced) return
 
     pendingEvent.current = e  // store latest event data
 
@@ -89,7 +87,7 @@ export function use3DTilt({ maxTilt = 12, scale = 1.02, perspective = 1000 } = {
   }, [processFrame])
 
   const handleMouseLeave = useCallback(() => {
-    if (isTouchOnly.current) return
+    if (isTouchOnly) return
 
     // Cancel any pending rAF (event left element mid-frame)
     if (rafId.current !== null) {
@@ -119,10 +117,8 @@ export function use3DTilt({ maxTilt = 12, scale = 1.02, perspective = 1000 } = {
 
   return {
     ref,
-    // style prop no longer needed (transforms applied directly to DOM)
-    // kept for backward-compat so callers don't break — returns empty object
     style: {},
-    onMouseMove:  isTouchOnly.current || prefersReduced.current ? undefined : handleMouseMove,
-    onMouseLeave: isTouchOnly.current || prefersReduced.current ? undefined : handleMouseLeave,
+    onMouseMove:  isTouchOnly || prefersReduced ? undefined : handleMouseMove,
+    onMouseLeave: isTouchOnly || prefersReduced ? undefined : handleMouseLeave,
   }
 }
