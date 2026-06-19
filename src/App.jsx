@@ -5,7 +5,7 @@ import { useCarbon } from './context/CarbonContext.jsx'
 import { checkWeeklyDigest, checkDailyTipSuggestion } from './utils/notifications.js'
 import { TIPS_DATA } from './data/tipsData.js'
 
-import Dashboard from './pages/Dashboard.jsx'
+const Dashboard = React.lazy(() => import('./pages/Dashboard.jsx'))
 const Calculator = React.lazy(() => import('./pages/Calculator.jsx'))
 const Tips = React.lazy(() => import('./pages/Tips.jsx'))
 const History = React.lazy(() => import('./pages/History.jsx'))
