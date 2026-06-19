@@ -8,14 +8,14 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
+    // Increase warning threshold slightly — our split chunks are intentionally large (recharts)
+    chunkSizeWarningLimit: 400,
     rollupOptions: {
       output: {
+        // Only split router away from the main React bundle.
+        // react + react-dom intentionally stay together in index — splitting them
+        // adds a second waterfall RTT before the app can boot, worsening LCP.
         manualChunks(id) {
-          // Split React core into a separately-cached vendor chunk
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-            return 'vendor-react'
-          }
-          // Router in its own chunk
           if (id.includes('node_modules/react-router-dom/') || id.includes('node_modules/react-router/')) {
             return 'vendor-router'
           }
@@ -29,4 +29,3 @@ export default defineConfig({
     setupFiles: './src/test/setup.js',
   },
 })
-

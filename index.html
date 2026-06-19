@@ -11,23 +11,37 @@
     <meta property="og:description" content="Track, calculate, and reduce your carbon footprint with actionable eco-friendly tips and data-driven insights." />
     <link rel="manifest" href="/manifest.json" />
     <title>CarbonWise — Carbon Footprint Awareness Platform</title>
-    <!-- Critical inline CSS: ensures dark background and system fonts on first paint -->
+
+    <!--
+      CRITICAL INLINE CSS
+      Renders instantly with zero network requests:
+      - Dark background prevents white flash
+      - System font stack renders text immediately (no FOIT/FOUT)
+      - Skeleton @keyframes defined here so pre-render animations work
+    -->
     <style>
       *,*::before,*::after{box-sizing:border-box}
-      body{margin:0;background:#030304;color:#fff;font-family:system-ui,-apple-system,sans-serif}
+      html{scroll-behavior:smooth}
+      body{margin:0;background:#030304;color:#fff;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
       #root{min-height:100vh}
+      @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
     </style>
-    <!-- Google Fonts loaded fully async — does NOT block render -->
+
+    <!--
+      GOOGLE FONTS — Non-blocking async load
+      Using the media="print" trick: browser fetches the stylesheet but
+      does NOT block rendering. onload switches it to media="all".
+      This is the spec-recommended pattern and does NOT cause forced reflow
+      because the link element is already in the DOM before any layout occurs.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <script>
-      (function(){
-        var l=document.createElement('link');
-        l.rel='stylesheet';
-        l.href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap';
-        document.head.appendChild(l);
-      })();
-    </script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
     <noscript>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" />
     </noscript>
@@ -35,19 +49,24 @@
   <body>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-[#0F1115] text-[#F7931A] border border-[#F7931A]/30 px-4 py-2 rounded-full shadow-[0_0_15px_rgba(247,147,26,0.25)] z-50">Skip to main content</a>
     <div id="root">
-      <!-- Pre-rendered page shell: visible instantly, before any JS executes -->
+      <!--
+        PRE-RENDERED SHELL
+        Visible instantly before React hydrates. Uses pure inline styles
+        (no Tailwind dependency) so it renders correctly with only the
+        critical CSS above. React will replace this once it boots.
+      -->
       <nav style="position:sticky;top:0;z-index:50;background:rgba(15,17,21,0.92);border-bottom:1px solid rgba(255,255,255,0.1);height:64px;display:flex;align-items:center;padding:0 1rem;">
         <div style="max-width:80rem;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:1rem;">
             <div style="width:28px;height:28px;transform:rotate(45deg);border:1px solid rgba(247,147,26,0.4);display:flex;align-items:center;justify-content:center;background:#0F1115;border-radius:6px;">
-              <svg style="transform:rotate(-45deg);width:16px;height:16px;color:#F7931A;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 2 5.5a7 7 0 0 1-7 7h-3Z"></path><path d="M9 22v-4H5"></path></svg>
+              <svg style="transform:rotate(-45deg);width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="#F7931A" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 2 5.5a7 7 0 0 1-7 7h-3Z"></path><path d="M9 22v-4H5"></path></svg>
             </div>
             <span style="font-size:1.25rem;font-weight:700;background:linear-gradient(to right,#F7931A,#FFD600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.1em;">CarbonWise</span>
           </div>
         </div>
       </nav>
       <main style="padding-top:80px;">
-        <div style="max-width:80rem;margin:0 auto;padding:2rem 1rem;display:flex;flex-direction:column;gap:2rem;">
+        <div style="max-width:80rem;margin:0 auto;padding:2rem 1rem;display:flex;flex-direction:column;gap:2rem;" aria-hidden="true">
           <div style="height:9rem;background:rgba(20,20,20,0.85);border:1px solid rgba(212,175,55,0.2);border-radius:4px;animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite;"></div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;">
             <div style="height:11rem;background:rgba(20,20,20,0.85);border:1px solid rgba(212,175,55,0.2);border-radius:4px;animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite;"></div>
@@ -57,7 +76,6 @@
           <div style="height:16rem;background:rgba(20,20,20,0.85);border:1px solid rgba(212,175,55,0.2);border-radius:4px;animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite;"></div>
         </div>
       </main>
-      <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
     </div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
