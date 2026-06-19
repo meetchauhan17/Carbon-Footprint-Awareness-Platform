@@ -3,7 +3,7 @@ import { useCarbon } from '../context/CarbonContext.jsx'
 import { useCarbonStats } from '../hooks/useCarbonStats.js'
 import {
   Info, User, CheckCircle, Save, Trash2, ShieldAlert,
-  ToggleLeft, ToggleRight, Lightbulb
+  ToggleLeft, ToggleRight, Lightbulb, Cpu, Tag, Paintbrush, BarChart3, Database
 } from 'lucide-react'
 
 import ToastNotification from '../components/ToastNotification.jsx'
@@ -409,12 +409,22 @@ function About() {
               onMouseMove={creditsTilt.onMouseMove}
               onMouseLeave={creditsTilt.onMouseLeave}
               style={creditsTilt.style}
-              className="glass-card rounded-2xl p-6 space-y-3"
+              className="glass-card rounded-2xl p-6 space-y-4 flex flex-col justify-between"
             >
-              <h3 className="text-sm font-bold text-white uppercase font-display">Data &amp; Methodology</h3>
-              <p className="text-xs text-[#94A3B8] leading-relaxed font-sans font-medium">
-                Emission factors and carbon conversions are modeled in equivalence values (CO₂e) based on established governmental and scientific datasets, including the **EPA** (Environmental Protection Agency), **IPCC** (Intergovernmental Panel on Climate Change), and UK **DEFRA** conversions.
-              </p>
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider font-display flex items-center gap-2 border-b border-white/10 pb-2.5">
+                  <Database className="w-4 h-4 text-clay-success" />
+                  Data &amp; Methodology
+                </h3>
+                <p className="text-xs text-[#94A3B8] leading-relaxed font-sans font-medium mt-3">
+                  Emission factors and carbon conversions are modeled in equivalence values (CO₂e) based on established governmental and scientific datasets.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <span className="text-[10px] font-bold text-[#10B981] bg-[#030304]/60 border border-[#10B981]/25 px-2.5 py-1 rounded-md font-mono select-none">EPA HUB</span>
+                <span className="text-[10px] font-bold text-[#10B981] bg-[#030304]/60 border border-[#10B981]/25 px-2.5 py-1 rounded-md font-mono select-none">IPCC AR6</span>
+                <span className="text-[10px] font-bold text-[#10B981] bg-[#030304]/60 border border-[#10B981]/25 px-2.5 py-1 rounded-md font-mono select-none">UK DEFRA</span>
+              </div>
             </div>
 
             {/* Tech Stack */}
@@ -423,14 +433,41 @@ function About() {
               onMouseMove={techTilt.onMouseMove}
               onMouseLeave={techTilt.onMouseLeave}
               style={techTilt.style}
-              className="glass-card rounded-2xl p-6 space-y-3"
+              className="glass-card rounded-2xl p-6 space-y-4"
             >
-              <h3 className="text-sm font-bold text-white uppercase font-display">Technical Information</h3>
-              <div className="space-y-1.5 text-xs text-[#94A3B8] font-medium font-sans">
-                <p>App Version: <span className="text-white font-bold font-mono">1.1.0 (Production)</span></p>
-                <p>Core Framework: <span className="text-white font-bold font-mono">React 19 &amp; Vite</span></p>
-                <p>Styling Engine: <span className="text-white font-bold font-mono">Tailwind CSS v4</span></p>
-                <p>Charts &amp; Icons: <span className="text-white font-bold font-mono">Recharts &amp; Lucide Icons</span></p>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider font-display flex items-center gap-2 border-b border-white/10 pb-2.5">
+                <Cpu className="w-4 h-4 text-clay-primary" />
+                Technical Information
+              </h3>
+              <div className="space-y-3 pt-1">
+                <div className="flex items-center justify-between py-1 border-b border-white/5 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-2.5">
+                    <Tag className="w-3.5 h-3.5 text-[#94A3B8]" />
+                    <span className="text-xs text-[#94A3B8] font-medium font-sans">App Version</span>
+                  </div>
+                  <span className="text-[11px] font-bold text-white font-mono bg-[#030304]/60 border border-white/10 px-2 py-0.5 rounded-md select-none">1.1.0 (Prod)</span>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-white/5 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-2.5">
+                    <Cpu className="w-3.5 h-3.5 text-[#94A3B8]" />
+                    <span className="text-xs text-[#94A3B8] font-medium font-sans">Core Framework</span>
+                  </div>
+                  <span className="text-[11px] font-bold text-white font-mono bg-[#030304]/60 border border-white/10 px-2 py-0.5 rounded-md select-none">React 19 &amp; Vite</span>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-white/5 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-2.5">
+                    <Paintbrush className="w-3.5 h-3.5 text-[#94A3B8]" />
+                    <span className="text-xs text-[#94A3B8] font-medium font-sans">Styling Engine</span>
+                  </div>
+                  <span className="text-[11px] font-bold text-white font-mono bg-[#030304]/60 border border-white/10 px-2 py-0.5 rounded-md select-none">Tailwind v4</span>
+                </div>
+                <div className="flex items-center justify-between py-1 border-b border-white/5 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-2.5">
+                    <BarChart3 className="w-3.5 h-3.5 text-[#94A3B8]" />
+                    <span className="text-xs text-[#94A3B8] font-medium font-sans">Charts &amp; Icons</span>
+                  </div>
+                  <span className="text-[11px] font-bold text-white font-mono bg-[#030304]/60 border border-white/10 px-2 py-0.5 rounded-md select-none">Recharts &amp; Lucide</span>
+                </div>
               </div>
             </div>
 
