@@ -228,10 +228,19 @@ function Dashboard() {
   const goalTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
   const achievementsTilt = use3DTilt({ maxTilt: 4, scale: 1.01 })
   
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : true)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [settingsName, setSettingsName] = useState(userProfile?.name || '')
   const [settingsLocation, setSettingsLocation] = useState(userProfile?.location || '')
   const [settingsGoal, setSettingsGoal] = useState(monthlyGoal)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (isSettingsOpen) {
@@ -303,7 +312,7 @@ function Dashboard() {
           onMouseMove={welcomeTilt.onMouseMove}
           onMouseLeave={welcomeTilt.onMouseLeave}
           style={welcomeTilt.style}
-          className="lg:col-span-8 glass-card p-6 relative overflow-hidden flex flex-col justify-between h-full min-h-[340px] space-y-6"
+          className={`${isMobile ? 'lg:col-span-12' : 'lg:col-span-8'} glass-card p-6 relative overflow-hidden flex flex-col justify-between h-full min-h-[340px] space-y-6`}
         >
           {/* Background ambient glows */}
           <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
@@ -323,10 +332,25 @@ function Dashboard() {
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </p>
               </div>
-              {betterThanPct !== null && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)] self-start sm:self-center font-mono">
-                  <Award className="w-3.5 h-3.5 text-clay-primary animate-clay-breathe" />
-                  <span>Top {betterThanPct}%</span>
+              {(betterThanPct !== null || isMobile) && (
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  {betterThanPct !== null && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)] font-mono">
+                      <Award className="w-3.5 h-3.5 text-clay-primary animate-clay-breathe" />
+                      <span>Top {betterThanPct}%</span>
+                    </div>
+                  )}
+                  {isMobile && (
+                    <button
+                      onClick={() => setIsSettingsOpen(true)}
+                      className="btn-premium flex items-center gap-1.5 px-3.5 py-1.5 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none rounded-full"
+                      id="dashboard-settings-btn-mobile"
+                      aria-label="Edit profile and goals settings"
+                    >
+                      <Settings className="w-3.5 h-3.5 text-white" />
+                      <span>Settings</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -430,41 +454,43 @@ function Dashboard() {
         </div>
 
         {/* 3D Globe Card */}
-        <div
-          ref={globeTilt.ref}
-          onMouseMove={globeTilt.onMouseMove}
-          onMouseLeave={globeTilt.onMouseLeave}
-          style={globeTilt.style}
-          className="lg:col-span-4 glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]"
-        >
-          <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
-          
-          {/* Globe container */}
+        {!isMobile && (
           <div
-            className="relative flex items-center justify-center p-2 rounded-full shadow-[0_0_40px_rgba(247,147,26,0.12),0_0_80px_rgba(247,147,26,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] border border-[#F7931A]/20"
-            style={{
-              borderRadius: '50%',
-            }}
+            ref={globeTilt.ref}
+            onMouseMove={globeTilt.onMouseMove}
+            onMouseLeave={globeTilt.onMouseLeave}
+            style={globeTilt.style}
+            className="lg:col-span-4 glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]"
           >
-            <Suspense fallback={<GlobeFallback />}>
-              <Globe3D
-                latitude={countryData?.latlng?.[0] ?? null}
-                longitude={countryData?.latlng?.[1] ?? null}
-              />
-            </Suspense>
-          </div>
+            <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
+            
+            {/* Globe container */}
+            <div
+              className="relative flex items-center justify-center p-2 rounded-full shadow-[0_0_40px_rgba(247,147,26,0.12),0_0_80px_rgba(247,147,26,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] border border-[#F7931A]/20"
+              style={{
+                borderRadius: '50%',
+              }}
+            >
+              <Suspense fallback={<GlobeFallback />}>
+                <Globe3D
+                  latitude={countryData?.latlng?.[0] ?? null}
+                  longitude={countryData?.latlng?.[1] ?? null}
+                />
+              </Suspense>
+            </div>
 
-          {/* Floating Settings Button at bottom right */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="absolute bottom-4 right-4 btn-premium flex items-center gap-1.5 px-3.5 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none"
-            id="dashboard-settings-btn"
-            aria-label="Edit profile and goals settings"
-          >
-            <Settings className="w-3.5 h-3.5 text-white" />
-            Settings
-          </button>
-        </div>
+            {/* Floating Settings Button at bottom right */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="absolute bottom-4 right-4 btn-premium flex items-center gap-1.5 px-3.5 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none"
+              id="dashboard-settings-btn"
+              aria-label="Edit profile and goals settings"
+            >
+              <Settings className="w-3.5 h-3.5 text-white" />
+              Settings
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── SECTION 2: STATS BANNER (Row 2) ───────────────────────── */}
