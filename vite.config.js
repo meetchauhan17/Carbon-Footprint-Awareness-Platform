@@ -8,8 +8,10 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    // Increase warning threshold slightly — our split chunks are intentionally large (recharts)
-    chunkSizeWarningLimit: 400,
+    // Globe3D (Three.js ~510 kB) and CategoricalChart (recharts ~286 kB) are
+    // intentionally large lazy chunks — only loaded on demand. Raise limit to
+    // suppress the expected warning without hiding real oversights.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         // Only split router away from the main React bundle.

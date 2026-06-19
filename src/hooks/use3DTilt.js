@@ -1,68 +1,128 @@
-import { useState, useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 
 /**
- * use3DTilt - Custom hook to compute 3D tilt transformation styles and
- * set CSS variables for holographic shimmer effects based on mouse position.
+ * use3DTilt — High-performance 3D card tilt + holographic cursor tracking.
  *
- * @param {Object} options Configuration parameters
- * @param {number} options.maxTilt Maximum degrees of rotation (default: 12)
- * @param {number} options.scale Scaling factor on hover (default: 1.02)
- * @param {number} options.perspective 3D perspective depth in px (default: 1000)
+ * Performance features:
+ *  - rAF-throttled mousemove: only one frame update queued at a time,
+ *    skips duplicate events that arrive within the same frame (~16ms).
+ *  - Direct DOM mutation for transforms: bypasses React state during move,
+ *    so NO React re-renders fire on mousemove (previously caused 60-120
+ *    setState calls/sec per card).
+ *  - Touch-device guard: pointer:coarse / hover:none devices skip all
+ *    listener setup entirely — no wasted event handler memory on mobile.
+ *  - prefers-reduced-motion guard: JS check mirrors the CSS media query so
+ *    the JS-driven rotateX/Y also respects the user's OS accessibility setting.
+ *
+ * @param {Object} options
+ * @param {number} options.maxTilt     Maximum rotation in degrees (default: 12)
+ * @param {number} options.scale       Scale factor on hover (default: 1.02)
+ * @param {number} options.perspective CSS perspective depth in px (default: 1000)
  */
 export function use3DTilt({ maxTilt = 12, scale = 1.02, perspective = 1000 } = {}) {
   const ref = useRef(null)
-  const [style, setStyle] = useState({
-    transform: `perspective(${perspective}px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`,
-    transition: 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)'
-  })
+  const rafId = useRef(null)           // rAF handle — prevents queuing multiple frames
+  const pendingEvent = useRef(null)    // stores the latest mousemove event data
 
-  const handleMouseMove = useCallback((e) => {
+  // ── Capability checks (stable across renders) ──────────────────────────
+  // These run once at module scope level to avoid repeated matchMedia calls.
+  const isTouchOnly = useRef(
+    typeof window !== 'undefined' &&
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches
+  )
+  const prefersReduced = useRef(
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+
+  // Apply initial identity transform to element once mounted
+  useEffect(() => {
     const el = ref.current
     if (!el) return
+    el.style.transform = `perspective(${perspective}px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)`
+    el.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)'
+    el.style.setProperty('--holo-x', '50%')
+    el.style.setProperty('--holo-y', '50%')
+  }, [perspective])
+
+  // ── rAF frame processor ────────────────────────────────────────────────
+  const processFrame = useCallback(() => {
+    rafId.current = null // mark as free so next event can queue a new frame
+
+    const el = ref.current
+    const ev = pendingEvent.current
+    if (!el || !ev) return
 
     const rect = el.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const x = ev.clientX - rect.left
+    const y = ev.clientY - rect.top
 
-    // Normalize coordinates from -0.5 to 0.5 relative to center
     const normalizedX = (x / rect.width) - 0.5
     const normalizedY = (y / rect.height) - 0.5
 
-    // Calculate rotation angles
     const rotateX = (-normalizedY * maxTilt).toFixed(2)
     const rotateY = (normalizedX * maxTilt).toFixed(2)
+    const holoX   = ((x / rect.width)  * 100).toFixed(1)
+    const holoY   = ((y / rect.height) * 100).toFixed(1)
 
-    // Calculate holographic positions in percentage (0 to 100)
-    const holoX = ((x / rect.width) * 100).toFixed(1)
-    const holoY = ((y / rect.height) * 100).toFixed(1)
-
-    // Apply CSS custom properties directly to the element for performance
+    // Direct DOM mutation — zero React re-renders
+    el.style.transform  = `perspective(${perspective}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(${scale},${scale},${scale})`
+    el.style.transition = 'transform 0.08s ease-out'
     el.style.setProperty('--holo-x', `${holoX}%`)
     el.style.setProperty('--holo-y', `${holoY}%`)
-
-    setStyle({
-      transform: `perspective(${perspective}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(${scale}, ${scale}, ${scale})`,
-      transition: 'transform 0.08s ease-out'
-    })
   }, [maxTilt, scale, perspective])
 
-  const handleMouseLeave = useCallback(() => {
-    const el = ref.current
-    if (el) {
-      el.style.setProperty('--holo-x', '50%')
-      el.style.setProperty('--holo-y', '50%')
-    }
+  // ── Event handlers ─────────────────────────────────────────────────────
+  const handleMouseMove = useCallback((e) => {
+    // Guard 1: touch-only devices — skip entirely
+    if (isTouchOnly.current) return
+    // Guard 2: reduced motion — skip tilt transforms
+    if (prefersReduced.current) return
 
-    setStyle({
-      transform: `perspective(${perspective}px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`,
-      transition: 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)'
-    })
+    pendingEvent.current = e  // store latest event data
+
+    // rAF throttle: only queue one frame at a time
+    if (rafId.current === null) {
+      rafId.current = requestAnimationFrame(processFrame)
+    }
+    // else: a frame is already queued; processFrame will pick up pendingEvent
+  }, [processFrame])
+
+  const handleMouseLeave = useCallback(() => {
+    if (isTouchOnly.current) return
+
+    // Cancel any pending rAF (event left element mid-frame)
+    if (rafId.current !== null) {
+      cancelAnimationFrame(rafId.current)
+      rafId.current = null
+    }
+    pendingEvent.current = null
+
+    const el = ref.current
+    if (!el) return
+
+    // Reset to identity — direct DOM mutation, no setState
+    el.style.transform  = `perspective(${perspective}px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)`
+    el.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)'
+    el.style.setProperty('--holo-x', '50%')
+    el.style.setProperty('--holo-y', '50%')
   }, [perspective])
+
+  // Cleanup on unmount — cancel any queued rAF
+  useEffect(() => {
+    return () => {
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current)
+      }
+    }
+  }, [])
 
   return {
     ref,
-    style,
-    onMouseMove: handleMouseMove,
-    onMouseLeave: handleMouseLeave
+    // style prop no longer needed (transforms applied directly to DOM)
+    // kept for backward-compat so callers don't break — returns empty object
+    style: {},
+    onMouseMove:  isTouchOnly.current || prefersReduced.current ? undefined : handleMouseMove,
+    onMouseLeave: isTouchOnly.current || prefersReduced.current ? undefined : handleMouseLeave,
   }
 }

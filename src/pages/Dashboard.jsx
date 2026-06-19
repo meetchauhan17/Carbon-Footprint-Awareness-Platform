@@ -1,8 +1,11 @@
 import React, { useMemo, useState, useEffect, useCallback, Suspense, lazy } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-// Recharts components code-split out
+// Recharts components — code-split into separate chunks
 const DashboardAreaChart = lazy(() => import('../components/charts/DashboardAreaChart.jsx'));
-const DashboardPieChart = lazy(() => import('../components/charts/DashboardPieChart.jsx'));
+const DashboardPieChart  = lazy(() => import('../components/charts/DashboardPieChart.jsx'));
+// Three.js globe — largest lazy chunk, only loads on Dashboard
+const Globe3D = lazy(() => import('../components/Globe3D.jsx'));
+import GlobeFallback from '../components/GlobeFallback.jsx'
 import {
   Car, Zap, Utensils, ShoppingBag, Target, TrendingUp,
   Award, Flame, Leaf, ArrowRight, Lightbulb,
@@ -294,19 +297,23 @@ function Dashboard() {
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <div className="animate-fade-in-up">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-clay-primary uppercase tracking-widest bg-clay-primary/10 px-3 py-1 rounded-full border border-clay-primary/20 inline-block font-mono">
-              {greeting}{userName ? `, ${userName}` : ''}!
-            </p>
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#FFFFFF] leading-tight font-display">
-              Here's your carbon snapshot <span className="gradient-text inline-flex items-center gap-1"><EmojiIcon icon={Leaf} className="w-8 h-8" /></span>
-            </h1>
-            <p className="text-clay-muted text-sm font-semibold font-sans">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap font-mono">
+        {/* Hero: Greeting + Globe side-by-side on desktop */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
+
+          {/* Left: text content */}
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 flex-1">
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-clay-primary uppercase tracking-widest bg-clay-primary/10 px-3 py-1 rounded-full border border-clay-primary/20 inline-block font-mono">
+                {greeting}{userName ? `, ${userName}` : ''}!
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-[#FFFFFF] leading-tight font-display">
+                Here's your carbon snapshot <span className="gradient-text inline-flex items-center gap-1"><EmojiIcon icon={Leaf} className="w-8 h-8" /></span>
+              </h1>
+              <p className="text-clay-muted text-sm font-semibold font-sans">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap font-mono">
             {betterThanPct !== null && (
               <div className="flex items-center gap-2 px-4 py-2.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)]">
                 <Award className="w-4 h-4 text-clay-primary" />
@@ -324,8 +331,29 @@ function Dashboard() {
               <Settings className="w-4 h-4 text-white" />
               Edit Profile
             </button>
+            </div>
+          </div>{/* end left text */}
+
+          {/* Right: 3D Globe — lazy-loaded, shown only on Dashboard */}
+          <div className="flex justify-center lg:justify-end lg:shrink-0">
+            <div
+              className="glass-card p-2 rounded-full"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15,17,21,0.95) 0%, rgba(8,10,15,0.98) 100%)',
+                boxShadow: '0 0 40px rgba(247,147,26,0.12), 0 0 80px rgba(247,147,26,0.06), inset 0 1px 0 rgba(255,255,255,0.08)',
+                border: '1px solid rgba(247,147,26,0.2)',
+                borderRadius: '50%',
+              }}
+            >
+              <Suspense fallback={<GlobeFallback />}>
+                <Globe3D
+                  latitude={countryData?.latlng?.[0] ?? null}
+                  longitude={countryData?.latlng?.[1] ?? null}
+                />
+              </Suspense>
+            </div>
           </div>
-        </div>
+        </div>{/* end hero flex row */}
 
         {/* Profile Completion Motivational Bar */}
         {profileCompletion < 100 && (
