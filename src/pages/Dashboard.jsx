@@ -222,8 +222,8 @@ function Dashboard() {
   const [isBadgesOpen, setIsBadgesOpen] = useState(false)
 
   // 3D tilt interaction hooks for dashboard containers
-  const weatherTilt = use3DTilt({ maxTilt: 8, scale: 1.015 })
-  const countryTilt = use3DTilt({ maxTilt: 8, scale: 1.015 })
+  const welcomeTilt = use3DTilt({ maxTilt: 6, scale: 1.01 })
+  const globeTilt = use3DTilt({ maxTilt: 6, scale: 1.015 })
   const quickLogTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
   const goalTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
   const achievementsTilt = use3DTilt({ maxTilt: 4, scale: 1.01 })
@@ -295,272 +295,309 @@ function Dashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-      {/* ── HERO ──────────────────────────────────────────────────── */}
-      <div className="animate-fade-in-up">
-        {/* Hero: Greeting + Globe side-by-side on desktop */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
+      {/* ── SECTION 1: HERO CONTEXT (Row 1) ───────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in-up">
+        {/* Welcome & Context Card */}
+        <div
+          ref={welcomeTilt.ref}
+          onMouseMove={welcomeTilt.onMouseMove}
+          onMouseLeave={welcomeTilt.onMouseLeave}
+          style={welcomeTilt.style}
+          className="lg:col-span-8 glass-card p-6 relative overflow-hidden flex flex-col justify-between h-full min-h-[340px] space-y-6"
+        >
+          {/* Background ambient glows */}
+          <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-clay-success/5 blur-2xl pointer-events-none" />
 
-          {/* Left: text content */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 flex-1">
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-clay-primary uppercase tracking-widest bg-clay-primary/10 px-3 py-1 rounded-full border border-clay-primary/20 inline-block font-mono">
-                {greeting}{userName ? `, ${userName}` : ''}!
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-bold text-[#FFFFFF] leading-tight font-display">
-                Here's your carbon snapshot <span className="gradient-text inline-flex items-center gap-1"><EmojiIcon icon={Leaf} className="w-8 h-8" /></span>
-              </h1>
-              <p className="text-clay-muted text-sm font-semibold font-sans">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap font-mono">
-            {betterThanPct !== null && (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)]">
-                <Award className="w-4 h-4 text-clay-primary" />
-                <span>
-                  Better than {betterThanPct}% of users
-                </span>
-              </div>
-            )}
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="btn-premium flex items-center gap-2 px-5 py-2.5 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none"
-              id="dashboard-settings-btn"
-              aria-label="Edit profile and goals settings"
-            >
-              <Settings className="w-4 h-4 text-white" />
-              Edit Profile
-            </button>
-            </div>
-          </div>{/* end left text */}
-
-          {/* Right: 3D Globe — lazy-loaded, shown only on Dashboard */}
-          <div className="flex justify-center lg:justify-end lg:shrink-0">
-            <div
-              className="glass-card p-2 rounded-full"
-              style={{
-                background: 'linear-gradient(135deg, rgba(15,17,21,0.95) 0%, rgba(8,10,15,0.98) 100%)',
-                boxShadow: '0 0 40px rgba(247,147,26,0.12), 0 0 80px rgba(247,147,26,0.06), inset 0 1px 0 rgba(255,255,255,0.08)',
-                border: '1px solid rgba(247,147,26,0.2)',
-                borderRadius: '50%',
-              }}
-            >
-              <Suspense fallback={<GlobeFallback />}>
-                <Globe3D
-                  latitude={countryData?.latlng?.[0] ?? null}
-                  longitude={countryData?.latlng?.[1] ?? null}
-                />
-              </Suspense>
-            </div>
-          </div>
-        </div>{/* end hero flex row */}
-
-        {/* Profile Completion Motivational Bar */}
-        {profileCompletion < 100 && (
-          <div className="glass-card p-5 mb-6 animate-fade-in-up border-l-4 border-l-[#F7931A] relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-clay-warning/5 blur-xl" />
+          <div className="space-y-4">
+            {/* Header: Greeting & Leaf Icon & Better Than badge */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-2.5 w-2.5 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7931A] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F7931A]"></span>
-                  </span>
-                  <h2 className="text-sm font-bold text-clay-text font-display">Complete your profile to unlock local tips!</h2>
-                </div>
-                <p className="text-xs text-clay-muted font-medium font-sans">
-                  Your profile setup is <span className="font-extrabold text-[#F7931A]">{profileCompletion}%</span> complete. Fill in your details to refine carbon estimates.
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-clay-primary uppercase tracking-widest bg-clay-primary/10 px-3 py-1 rounded-full border border-clay-primary/20 inline-block font-mono">
+                  {greeting}{userName ? `, ${userName}` : ''}!
+                </p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#FFFFFF] leading-tight font-display flex items-center gap-2">
+                  Here's your carbon snapshot <span className="gradient-text inline-flex items-center"><EmojiIcon icon={Leaf} className="w-7 h-7 text-clay-success animate-clay-breathe" /></span>
+                </h1>
+                <p className="text-clay-muted text-xs font-semibold font-sans">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </p>
               </div>
-              <div className="flex items-center gap-4 min-w-[200px] sm:justify-end">
-                <div className="flex-1 max-w-[150px]">
-                  <ProgressBar
-                    value={profileCompletion}
-                    max={100}
-                    color="bg-gradient-to-r from-[#EA580C] to-[#F7931A]"
-                  />
+              {betterThanPct !== null && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)] self-start sm:self-center font-mono">
+                  <Award className="w-3.5 h-3.5 text-clay-primary animate-clay-breathe" />
+                  <span>Top {betterThanPct}%</span>
                 </div>
-                <Link 
-                  to="/about?tab=profile" 
-                  className="btn-premium px-4 py-2 text-white font-bold text-xs cursor-pointer shrink-0"
-                >
-                  Complete Setup
-                </Link>
+              )}
+            </div>
+
+            {/* Integrated mini weather & country comparison side-by-side */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              {/* Integrated Mini Weather */}
+              <div className="bg-[#0D0F13]/80 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:border-sky-500/20 transition-all duration-300">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shrink-0">
+                    {weatherLoading ? (
+                      <CloudSun className="w-4 h-4 text-sky-400 animate-pulse" />
+                    ) : (
+                      <Thermometer className="w-4 h-4 text-sky-500" />
+                    )}
+                  </div>
+                  <div className="min-w-0 font-sans">
+                    {weatherLoading ? (
+                      <div className="h-3.5 w-16 bg-gray-100/5 rounded animate-pulse" />
+                    ) : temperature !== null ? (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-bold text-white">{temperature}°C</span>
+                        <span className="text-[10px] text-clay-muted truncate max-w-[80px]">({resolvedCity})</span>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-clay-muted">Weather N/A</span>
+                    )}
+                  </div>
+                </div>
+                {weatherLoading ? (
+                  <div className="h-3 w-28 bg-gray-100/5 rounded animate-pulse mt-2" />
+                ) : weatherTip && temperature !== null ? (
+                  <p className="text-[11px] text-sky-400 mt-2 font-semibold flex items-center gap-1 font-sans">
+                    <EmojiIcon icon={weatherTip.icon} className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{weatherTip.message}</span>
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-clay-muted mt-2 font-semibold font-sans">
+                    No tips available
+                  </p>
+                )}
+              </div>
+
+              {/* Integrated Mini Country Comparison */}
+              <div className="bg-[#0D0F13]/80 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:border-clay-primary/20 transition-all duration-300">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shrink-0">
+                    <Globe className="w-4 h-4 text-clay-primary" />
+                  </div>
+                  <div className="min-w-0 font-sans">
+                    {countryLoading ? (
+                      <div className="h-3.5 w-20 bg-gray-100/5 rounded animate-pulse" />
+                    ) : motivationalMsg ? (
+                      <div className="flex items-center gap-1.5">
+                        {countryData?.flag && (
+                          <img src={countryData.flag} alt="" className="w-4 h-3 rounded-sm object-cover" />
+                        )}
+                        <span className="text-xs font-bold text-white truncate max-w-[100px]">{motivationalMsg.country}</span>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-clay-muted">Set location in profile</span>
+                    )}
+                  </div>
+                </div>
+                {countryLoading ? (
+                  <div className="h-3 w-24 bg-gray-100/5 rounded animate-pulse mt-2" />
+                ) : motivationalMsg ? (
+                  <p className="text-[11px] text-clay-primary mt-2 font-semibold truncate font-sans">
+                    {co2PerCapita} t/yr per capita avg
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-clay-muted mt-2 font-semibold font-sans">
+                    No country data
+                  </p>
+                )}
               </div>
             </div>
           </div>
-        )}
 
-        {/* Hero metric cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          {/* Today */}
-          <CarbonCard
-            label="Today's Footprint"
-            value={`${todayKg.toFixed(1)}`}
-            subText="kg CO₂"
-            accentColor={todayColor}
-            trend={todayKg <= dailyGoal ? 'down' : 'up'}
-            trendText={
-              todayKg < 5 ? 'Low emissions day' :
-              todayKg < 10 ? 'Moderate day' :
-              todayKg < 20 ? 'High emissions day' : 'Critical — take action!'
-            }
-          />
+          {/* Integrated Quote Carousel at bottom */}
+          {quote && (
+            <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-3 relative">
+              <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                <Quote className="w-4 h-4 text-clay-success shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1 font-sans">
+                  <p className="text-xs text-clay-text italic leading-relaxed font-medium line-clamp-2">
+                    "{quote.content}"
+                  </p>
+                  <p className="text-[10px] text-[#F7931A] font-bold mt-0.5 font-mono">— {quote.author}</p>
+                </div>
+              </div>
+              <button
+                onClick={nextQuote}
+                className="p-1.5 rounded-full hover:bg-white/5 text-clay-muted hover:text-clay-primary transition-all shrink-0 cursor-pointer active:scale-90 shadow-sm border border-white/5"
+                title="New quote"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
 
-          {/* Weekly avg */}
-          <CarbonCard
-            label="7-Day Average"
-            value={weekAvgKg > 0 ? `${weekAvgKg.toFixed(1)} kg` : '—'}
-            subText={`Daily goal: ${dailyGoal} kg`}
-            icon={TrendingUp}
-            accentColor="#0EA5E9"
-            delay={100}
-            trend={weekAvgKg > 0 ? (weekAvgKg <= dailyGoal ? 'down' : 'up') : undefined}
-            trendText={
-              weekAvgKg > 0
-                ? weekAvgKg <= dailyGoal
-                  ? `${((dailyGoal - weekAvgKg) / dailyGoal * 100).toFixed(0)}% below target`
-                  : `${((weekAvgKg - dailyGoal) / dailyGoal * 100).toFixed(0)}% above target`
-                : undefined
-            }
-          />
-
-          {/* Monthly total */}
-          <CarbonCard
-            label="Monthly Total"
-            value={formatCO2(monthKg)}
-            subText={`of ${formatCO2(monthlyGoal)} goal`}
-            icon={Calendar}
-            accentColor={goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}
-            delay={200}
+        {/* 3D Globe Card */}
+        <div
+          ref={globeTilt.ref}
+          onMouseMove={globeTilt.onMouseMove}
+          onMouseLeave={globeTilt.onMouseLeave}
+          style={globeTilt.style}
+          className="lg:col-span-4 glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]"
+        >
+          <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
+          
+          {/* Globe container */}
+          <div
+            className="relative flex items-center justify-center p-2 rounded-full shadow-[0_0_40px_rgba(247,147,26,0.12),0_0_80px_rgba(247,147,26,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] border border-[#F7931A]/20"
+            style={{
+              borderRadius: '50%',
+            }}
           >
+            <Suspense fallback={<GlobeFallback />}>
+              <Globe3D
+                latitude={countryData?.latlng?.[0] ?? null}
+                longitude={countryData?.latlng?.[1] ?? null}
+              />
+            </Suspense>
+          </div>
+
+          {/* Floating Settings Button at bottom right */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="absolute bottom-4 right-4 btn-premium flex items-center gap-1.5 px-3.5 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none"
+            id="dashboard-settings-btn"
+            aria-label="Edit profile and goals settings"
+          >
+            <Settings className="w-3.5 h-3.5 text-white" />
+            Settings
+          </button>
+        </div>
+      </div>
+
+      {/* ── SECTION 2: STATS BANNER (Row 2) ───────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Today's Footprint */}
+        <CarbonCard
+          label="Today's Footprint"
+          value={`${todayKg.toFixed(1)}`}
+          subText="kg CO₂"
+          accentColor={todayColor}
+          trend={todayKg <= dailyGoal ? 'down' : 'up'}
+          trendText={
+            todayKg < 5 ? 'Low emissions day' :
+            todayKg < 10 ? 'Moderate day' :
+            todayKg < 20 ? 'High emissions day' : 'Critical — take action!'
+          }
+        />
+
+        {/* 7-Day Average */}
+        <CarbonCard
+          label="7-Day Average"
+          value={weekAvgKg > 0 ? `${weekAvgKg.toFixed(1)} kg` : '—'}
+          subText={`Daily goal: ${dailyGoal} kg`}
+          icon={TrendingUp}
+          accentColor="#0EA5E9"
+          trend={weekAvgKg > 0 ? (weekAvgKg <= dailyGoal ? 'down' : 'up') : undefined}
+          trendText={
+            weekAvgKg > 0
+              ? weekAvgKg <= dailyGoal
+                ? `${((dailyGoal - weekAvgKg) / dailyGoal * 100).toFixed(0)}% below target`
+                : `${((weekAvgKg - dailyGoal) / dailyGoal * 100).toFixed(0)}% above target`
+              : undefined
+          }
+        />
+
+        {/* Combined Budget Gauge & Streak Card */}
+        <div
+          ref={goalTilt.ref}
+          onMouseMove={goalTilt.onMouseMove}
+          onMouseLeave={goalTilt.onMouseLeave}
+          style={{
+            ...goalTilt.style,
+            borderLeft: `3px solid ${goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}`,
+            animationDelay: '200ms'
+          }}
+          className="glass-card shimmer-container p-5 flex flex-col justify-between animate-fade-in-up"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="text-xs font-bold text-clay-muted uppercase tracking-widest font-mono">Monthly Budget</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-clay-text font-display">{formatCO2(monthKg)}</span>
+                <span className="text-xs text-clay-muted font-medium font-sans">/ {formatCO2(monthlyGoal)}</span>
+              </div>
+              
+              {/* Flame Streak Badge */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#030304]/60 border border-[#F7931A]/35 text-[#F7931A] text-[10px] font-bold rounded-lg font-mono shadow-[0_0_10px_rgba(247,147,26,0.06)] mt-1">
+                <Flame className={`w-3.5 h-3.5 ${streak > 0 ? 'text-[#F7931A] fill-[#F7931A]/10' : 'text-gray-600 animate-pulse'}`} />
+                <span>{streak} Day Streak</span>
+              </div>
+            </div>
+
+            {/* Mini EmissionGauge */}
+            <div className="shrink-0 scale-75 -my-6 -mx-4">
+              <EmissionGauge
+                value={goalProgress}
+                max={100}
+                label="used"
+                levelText={goalProgress >= 100 ? 'exceeded' : 'on track'}
+                colorOverride={goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}
+              />
+            </div>
+          </div>
+
+          {/* Budget Progress Bar */}
+          <div className="mt-2.5">
             <ProgressBar
               value={goalProgress}
               max={100}
-              className="mt-3"
               color={goalProgress >= 100 ? 'bg-[#EF4444]' : goalProgress >= 75 ? 'bg-[#EA580C]' : 'bg-[#10B981]'}
             />
-            <p className="text-[10px] text-clay-muted font-bold mt-1.5 font-sans">{goalProgress.toFixed(0)}% of monthly budget used</p>
-          </CarbonCard>
-        </div>
-
-        {/* ── WEATHER + COUNTRY ROW ─────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Weather Widget */}
-          <div
-            ref={weatherTilt.ref}
-            onMouseMove={weatherTilt.onMouseMove}
-            onMouseLeave={weatherTilt.onMouseLeave}
-            style={weatherTilt.style}
-            className="glass-card shimmer-container p-5 relative overflow-hidden"
-          >
-            <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full bg-sky-500/5 blur-xl" />
-            <div className="flex items-center gap-3 relative">
-              <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
-                {weatherLoading ? (
-                  <CloudSun className="w-5 h-5 text-sky-400 animate-pulse" />
-                ) : (
-                  <Thermometer className="w-5 h-5 text-sky-500" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0 font-sans">
-                {weatherLoading ? (
-                  <div className="space-y-1.5 font-sans">
-                    <div className="h-4 w-24 bg-gray-100/5 rounded animate-pulse" />
-                    <div className="h-3 w-32 bg-gray-50/5 rounded animate-pulse" />
-                  </div>
-                ) : temperature !== null ? (
-                  <>
-                    <div className="flex items-baseline gap-1.5 font-sans">
-                      <span className="text-xl font-bold text-white font-display">{temperature}°C</span>
-                      <span className="text-xs text-clay-muted font-medium">{resolvedCity}</span>
-                    </div>
-                    {weatherTip && (
-                      <p className="text-xs text-sky-400 mt-1 leading-relaxed font-semibold flex items-center gap-1 font-sans">
-                        <EmojiIcon icon={weatherTip.icon} className="w-4 h-4" />
-                        {weatherTip.message}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-xs text-clay-muted font-bold">Weather data unavailable</p>
-                )}
-              </div>
+            <div className="flex justify-between items-center mt-2 text-[10px] font-sans font-semibold text-clay-muted">
+              <span>
+                {monthKg >= monthlyGoal ? 'Goal exceeded!' : `${formatCO2(monthlyGoal - monthKg)} remaining`}
+              </span>
+              <span className="font-mono">
+                Daily target: {dailyGoal} kg
+              </span>
             </div>
-            {weatherTip && temperature !== null && (
-              <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-1 font-sans">
-                <EmojiIcon icon={Lightbulb} className="w-3.5 h-3.5" />
-                <p className="text-[10px] text-clay-muted font-bold">
-                  <span className="text-white">{weatherTip.savings}</span>
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Country Comparison Widget */}
-          <div
-            ref={countryTilt.ref}
-            onMouseMove={countryTilt.onMouseMove}
-            onMouseLeave={countryTilt.onMouseLeave}
-            style={countryTilt.style}
-            className="glass-card shimmer-container p-5 relative overflow-hidden"
-          >
-            <div className="absolute -top-8 -right-8 w-20 h-20 rounded-full bg-violet-500/5 blur-xl" />
-            <div className="flex items-center gap-3 relative">
-              <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
-                <Globe className="w-5 h-5 text-clay-primary" />
-              </div>
-              <div className="flex-1 min-w-0 font-sans">
-                {countryLoading ? (
-                  <div className="space-y-1.5 font-sans">
-                    <div className="h-4 w-28 bg-gray-100/5 rounded animate-pulse" />
-                    <div className="h-3 w-36 bg-gray-50/5 rounded animate-pulse" />
-                  </div>
-                ) : motivationalMsg ? (
-                  <>
-                    <div className="flex items-center gap-2 font-sans">
-                      {countryData?.flag && (
-                        <img src={countryData.flag} alt={`${motivationalMsg.country} flag`} className="w-5 h-3.5 rounded-sm object-cover shadow-sm" />
-                      )}
-                      <span className="text-sm font-bold text-white font-display">{motivationalMsg.country}</span>
-                      <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#030304] text-[#FFD600] font-bold border border-[#FFD600]/25 shadow-[0_0_10px_rgba(255,214,0,0.06)] font-mono">
-                        {co2PerCapita} t/yr per capita
-                      </span>
-                    </div>
-                    <p className="text-xs text-clay-primary mt-1.5 font-bold font-sans">
-                      {motivationalMsg.text} — you're at {formatCO2(monthKg)}/month
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-bold text-white font-display">Country Comparison</p>
-                    <p className="text-xs text-clay-muted mt-1 font-semibold font-sans">
-                      Set your location in{' '}
-                      <Link to="/about?tab=profile" className="text-clay-primary underline underline-offset-2 font-bold">
-                        Profile
-                      </Link>{' '}
-                      to see your country's CO₂ average
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-            {motivationalMsg && (
-              <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-1 font-sans">
-                <EmojiIcon icon={BarChart2} className="w-3.5 h-3.5" />
-                <p className="text-[10px] text-clay-muted font-bold">
-                  <span className="text-white">{motivationalMsg.detail}</span>
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* ── CHARTS ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── PROFILE COMPLETION BAR ────────────────────────────────── */}
+      {profileCompletion < 100 && (
+        <div className="glass-card p-5 animate-fade-in-up border-l-4 border-l-[#F7931A] relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-clay-warning/5 blur-xl" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2.5 w-2.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F7931A] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#F7931A]"></span>
+                </span>
+                <h2 className="text-sm font-bold text-clay-text font-display">Complete your profile to unlock local tips!</h2>
+              </div>
+              <p className="text-xs text-clay-muted font-medium font-sans">
+                Your profile setup is <span className="font-extrabold text-[#F7931A]">{profileCompletion}%</span> complete. Fill in your details to refine carbon estimates.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 min-w-[200px] sm:justify-end">
+              <div className="flex-1 max-w-[150px]">
+                <ProgressBar
+                  value={profileCompletion}
+                  max={100}
+                  color="bg-gradient-to-r from-[#EA580C] to-[#F7931A]"
+                />
+              </div>
+              <Link 
+                to="/about?tab=profile" 
+                className="btn-premium px-4 py-2 text-white font-bold text-xs cursor-pointer shrink-0"
+              >
+                Complete Setup
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── SECTION 3: ANALYTICS ROW (Row 3) ──────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Line chart — 7-day trend */}
-        <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+        <div className="lg:col-span-8 glass-card p-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
           <div className="flex items-center justify-between mb-4 font-sans">
             <div>
               <h2 className="text-base font-bold text-clay-text font-display">7-Day Emissions Trend</h2>
@@ -589,7 +626,7 @@ function Dashboard() {
         </div>
 
         {/* Pie chart — category breakdown this week */}
-        <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+        <div className="lg:col-span-4 glass-card p-6 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
           <div className="mb-4 text-center">
             <h2 className="text-base font-bold text-clay-text font-display">This Week by Category</h2>
             <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Where your emissions are coming from</p>
@@ -607,196 +644,131 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* ── QUICK LOG + GOALS ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-        {/* Quick log — 3/5 width */}
-        <div
-          ref={quickLogTilt.ref}
-          onMouseMove={quickLogTilt.onMouseMove}
-          onMouseLeave={quickLogTilt.onMouseLeave}
-          style={{
-            ...quickLogTilt.style,
-            animationDelay: '500ms'
-          }}
-          className="lg:col-span-3 glass-card p-6 animate-fade-in-up"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="w-5 h-5 text-clay-warning" />
-            <h2 className="text-base font-bold text-white font-display">Quick Log</h2>
-            <span className="text-xs text-clay-muted font-medium ml-1 font-sans">— tap to instantly log an activity</span>
+      {/* ── SECTION 4: INTERACTIVE HUB (Row 4) ────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column (Quick Log + Eco Tips) */}
+        <div className="lg:col-span-7 space-y-6 flex flex-col justify-between">
+          {/* Quick Log */}
+          <div
+            ref={quickLogTilt.ref}
+            onMouseMove={quickLogTilt.onMouseMove}
+            onMouseLeave={quickLogTilt.onMouseLeave}
+            style={{
+              ...quickLogTilt.style,
+              animationDelay: '500ms'
+            }}
+            className="glass-card p-6 animate-fade-in-up flex-1 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-5 h-5 text-clay-warning" />
+                <h2 className="text-base font-bold text-white font-display">Quick Log</h2>
+                <span className="text-xs text-clay-muted font-medium ml-1 font-sans">— tap to instantly log an activity</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {QUICK_LOGS.map(log => (
+                  <QuickLogButton
+                    key={log.id}
+                    log={log}
+                    flashed={flashedId === log.id}
+                    onClick={() => handleQuickLog(log)}
+                  />
+                ))}
+              </div>
+            </div>
+            {flashedId && (
+              <div className="mt-3 flex items-center gap-2 text-xs text-clay-success bg-green-50/10 border border-[#10B981]/25 rounded-xl px-3 py-2 animate-fade-in-up font-bold font-sans">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                Entry logged and saved to your history!
+              </div>
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {QUICK_LOGS.map(log => (
-              <QuickLogButton
-                key={log.id}
-                log={log}
-                flashed={flashedId === log.id}
-                onClick={() => handleQuickLog(log)}
+
+          {/* Today's Eco Tips */}
+          <div className="animate-fade-in-up space-y-4" style={{ animationDelay: '600ms' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-clay-warning animate-clay-breathe" />
+                <h2 className="text-base font-bold text-white font-display">Today's Eco Tips</h2>
+              </div>
+              <Link
+                to="/tips"
+                className="flex items-center gap-1 text-sm font-bold text-[#F7931A] hover:underline transition-colors font-sans"
+              >
+                See all tips <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {tips3.map((tip, i) => (
+                <DashboardTipCard key={tip.title} tip={tip} i={i} impactBadge={IMPACT_BADGE} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column (Achievements) */}
+        <div
+          ref={achievementsTilt.ref}
+          onMouseMove={achievementsTilt.onMouseMove}
+          onMouseLeave={achievementsTilt.onMouseLeave}
+          style={{
+            ...achievementsTilt.style,
+            animationDelay: '650ms'
+          }}
+          className="lg:col-span-5 glass-card p-6 flex flex-col justify-between animate-fade-in-up"
+        >
+          <div className="space-y-4 h-full flex flex-col justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3 font-sans">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-clay-primary animate-clay-breathe" />
+                <div>
+                  <h2 className="text-base font-bold text-white font-display">My Achievements</h2>
+                  <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Unlocked milestones</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBadgesOpen(true)}
+                className="btn-premium flex items-center gap-1.5 px-3 py-1.5 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-[#F7931A]/30 focus:outline-none border-none"
+                aria-label={`View All Badges, unlocked ${badges?.length || 0} of 17`}
+              >
+                View All ({badges?.length || 0}/17)
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Badges Progress Bar */}
+            <div className="bg-[#030304]/40 border border-white/5 rounded-xl p-3">
+              <div className="flex justify-between items-center mb-1.5 text-[10px] font-sans font-bold text-clay-muted">
+                <span>Badge Completion</span>
+                <span className="font-mono text-[#F7931A]">{((badges?.length || 0) / 17 * 100).toFixed(0)}%</span>
+              </div>
+              <ProgressBar
+                value={(badges?.length || 0)}
+                max={17}
+                color="bg-gradient-to-r from-clay-primary to-clay-success"
               />
-            ))}
-          </div>
-          {flashedId && (
-            <div className="mt-3 flex items-center gap-2 text-xs text-clay-success bg-green-50/10 border border-[#10B981]/25 rounded-xl px-3 py-2 animate-fade-in-up font-bold font-sans">
-              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-              Entry logged and saved to your history!
             </div>
-          )}
-        </div>
 
-        {/* Goals — 2/5 width */}
-        <div
-          ref={goalTilt.ref}
-          onMouseMove={goalTilt.onMouseMove}
-          onMouseLeave={goalTilt.onMouseLeave}
-          style={{
-            ...goalTilt.style,
-            animationDelay: '600ms'
-          }}
-          className="lg:col-span-2 glass-card p-6 animate-fade-in-up"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Target className="w-5 h-5 text-clay-primary" />
-            <h2 className="text-base font-bold text-white font-display">Monthly Goal</h2>
-          </div>
-
-          <div className="flex justify-center mb-4">
-            <EmissionGauge
-              value={goalProgress}
-              max={100}
-              label="used"
-              levelText={goalProgress >= 100 ? 'exceeded' : 'on track'}
-              colorOverride={goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}
-              className="scale-75 -my-6"
-            />
-          </div>
-
-          <div className="space-y-2 text-xs font-bold" style={{ fontFamily: 'Nunito, sans-serif' }}>
-            <div className="flex justify-between">
-              <span className="text-clay-muted">Current</span>
-              <span className="text-clay-text">{formatCO2(monthKg)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-clay-muted">Goal</span>
-              <span className="text-clay-text">{formatCO2(monthlyGoal)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-clay-muted">Remaining</span>
-              <span className={`${monthKg >= monthlyGoal ? 'text-clay-secondary font-black' : 'text-clay-success font-black'}`}>
-                {monthKg >= monthlyGoal ? 'Goal exceeded!' : formatCO2(monthlyGoal - monthKg)}
-              </span>
-            </div>
-          </div>
-
-          {/* Streak */}
-          <div className="mt-4 pt-4 border-t border-white/5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
-              <Flame className={`w-5 h-5 ${streak > 0 ? 'text-[#F7931A]' : 'text-gray-600 animate-pulse'}`} />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-white font-sans">
-                {streak > 0 ? `${streak} day${streak > 1 ? 's' : ''} below goal!` : 'No streak yet'}
-              </p>
-              <p className="text-[10px] text-clay-muted font-medium mt-0.5 font-sans">
-                {streak > 0 ? 'Keep it up — you\'re on a roll' : 'Log entries to start a streak'}
-              </p>
-            </div>
+            {/* Badges Grid (2x2 on desktop / sm grid on mobile) */}
+            {badges && badges.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {badges.slice(0, 4).map(badge => (
+                  <DashboardBadgeCard key={badge.id} badge={badge} />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-[#0F1115]/40 border border-white/5 shadow-inner rounded-xl p-5 text-center text-clay-muted space-y-2 font-sans my-auto">
+                <Award className="w-7 h-7 text-clay-muted/30 mx-auto" />
+                <p className="text-xs font-bold text-white font-display">No achievements yet</p>
+                <p className="text-[10px] leading-relaxed font-medium">
+                  Log activities or complete eco tips to earn badges!
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── ACHIEVEMENTS ──────────────────────────────────────────── */}
-      <div
-        ref={achievementsTilt.ref}
-        onMouseMove={achievementsTilt.onMouseMove}
-        onMouseLeave={achievementsTilt.onMouseLeave}
-        style={{
-          ...achievementsTilt.style,
-          animationDelay: '650ms'
-        }}
-        className="glass-card p-6 animate-fade-in-up"
-      >
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-5 font-sans">
-          <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-clay-primary animate-clay-breathe" />
-            <div>
-              <h2 className="text-base font-bold text-white font-display">My Achievements</h2>
-              <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Track your unlocked badges and eco-milestones</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsBadgesOpen(true)}
-            className="btn-premium flex items-center gap-1.5 px-4 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-[#F7931A]/30 focus:outline-none border-none"
-            aria-label={`View All Badges, unlocked ${badges?.length || 0} of 17`}
-          >
-            View All Badges ({badges?.length || 0}/17)
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Recently Earned Row */}
-        {badges && badges.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {badges.slice(0, 4).map(badge => (
-              <DashboardBadgeCard key={badge.id} badge={badge} />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-[#0F1115]/40 border border-white/5 shadow-inner rounded-xl p-6 text-center text-clay-muted space-y-2 max-w-md mx-auto font-sans">
-            <Award className="w-8 h-8 text-clay-muted/30 mx-auto" />
-            <p className="text-xs font-bold text-white font-display">No achievements unlocked yet</p>
-            <p className="text-[10px] leading-relaxed font-medium">
-              Log activities in the Carbon Calculator or mark eco tips as done to unlock badges!
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* ── DAILY ECO TIPS PREVIEW ────────────────────────────────── */}
-      <div className="animate-fade-in-up" style={{ animationDelay: '700ms' }}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-clay-warning" />
-            <h2 className="text-base font-bold text-white font-display">Today's Eco Tips</h2>
-          </div>
-          <Link
-            to="/tips"
-            className="flex items-center gap-1 text-sm font-bold text-[#F7931A] hover:underline transition-colors font-sans"
-          >
-            See all tips <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {tips3.map((tip, i) => (
-            <DashboardTipCard key={tip.title} tip={tip} i={i} impactBadge={IMPACT_BADGE} />
-          ))}
-        </div>
-      </div>
-
-      {/* ── ENVIRONMENTAL QUOTE ──────────────────────────────── */}
-      {quote && (
-        <div className="glass-card shimmer-container p-5 relative overflow-hidden border-l-4 border-l-[#10B981] animate-fade-in-up" style={{ animationDelay: '750ms' }}>
-          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-[#10B981]/5 blur-xl animate-pulse" />
-          <div className="flex items-start gap-3 relative">
-            <div className="w-10 h-10 rounded-lg bg-[#030304] flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
-              <Quote className="w-4 h-4 text-[#F7931A]" />
-            </div>
-            <div className="flex-1 min-w-0 font-sans">
-              <p className="text-sm text-clay-text italic leading-relaxed font-medium">
-                "{quote.content}"
-              </p>
-              <p className="text-xs text-[#F7931A] font-bold mt-1.5 font-mono">— {quote.author}</p>
-            </div>
-            <button
-              onClick={nextQuote}
-              className="p-1.5 rounded-full hover:bg-white/5 text-clay-muted hover:text-clay-primary transition-all shrink-0 cursor-pointer active:scale-90 shadow-sm"
-              title="New quote"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ── PROFILE & GOALS SETTINGS MODAL ───────────────────────── */}
       {isSettingsOpen && (

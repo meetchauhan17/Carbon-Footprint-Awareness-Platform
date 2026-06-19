@@ -80,13 +80,27 @@
     <script type="module" src="/src/main.jsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          setTimeout(() => {
-            navigator.serviceWorker.register('/sw.js')
-              .then(reg => console.log('Service Worker registered', reg))
-              .catch(err => console.error('Service Worker registration failed', err));
-          }, 3000);
-        });
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          // Unregister any active service worker on localhost to prevent dev caching issues
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+              registration.unregister().then((success) => {
+                if (success) {
+                  console.log('[Service Worker] Unregistered active dev SW successfully');
+                  window.location.reload(); // reload once to ensure all caching is cleared
+                }
+              });
+            }
+          });
+        } else {
+          window.addEventListener('load', () => {
+            setTimeout(() => {
+              navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.error('Service Worker registration failed', err));
+            }, 3000);
+          });
+        }
       }
     </script>
   </body>
