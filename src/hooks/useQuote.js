@@ -90,7 +90,7 @@ export function useQuote() {
   useEffect(() => {
     const t = setTimeout(() => {
       fetchQuote()
-    }, 100)
+    }, 2000)
     return () => clearTimeout(t)
   }, [fetchQuote])
 

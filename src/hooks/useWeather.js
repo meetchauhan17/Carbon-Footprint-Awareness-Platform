@@ -135,14 +135,13 @@ export function useWeather(location) {
     }
   }, []) // stable — reads location via ref
 
-  // Re-fetch when location string changes
   useEffect(() => {
     // Clear cached resolved city when location changes so UI updates
     setResolvedCity(null)
     setTemperature(null)
     const t = setTimeout(() => {
       fetchWeather()
-    }, 100)
+    }, 2000)
     return () => clearTimeout(t)
   }, [location, fetchWeather]) // eslint-disable-line react-hooks/exhaustive-deps
 

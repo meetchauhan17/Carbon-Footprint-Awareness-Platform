@@ -169,7 +169,7 @@ export function useCountryData(locationStr) {
   useEffect(() => {
     const t = setTimeout(() => {
       fetchCountryData(locationStr)
-    }, 100)
+    }, 2000)
     return () => clearTimeout(t)
   }, [locationStr, fetchCountryData])
 
