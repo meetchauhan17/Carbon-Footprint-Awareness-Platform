@@ -44,9 +44,11 @@ function App() {
   const { state } = useCarbon()
 
   useEffect(() => {
-    // Run initial checks on app load
-    checkWeeklyDigest()
-    checkDailyTipSuggestion(TIPS_DATA)
+    // Run initial checks on app load after 3 seconds to unblock main thread
+    const t = setTimeout(() => {
+      checkWeeklyDigest()
+      checkDailyTipSuggestion(TIPS_DATA)
+    }, 3000)
 
     // Run scheduled reminders periodically in the background (every minute)
     const interval = setInterval(() => {
@@ -54,7 +56,10 @@ function App() {
       checkDailyTipSuggestion(TIPS_DATA)
     }, 60000)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearTimeout(t)
+      clearInterval(interval)
+    }
   }, [state?.carbonEntries, state?.completedTips])
 
   return (
