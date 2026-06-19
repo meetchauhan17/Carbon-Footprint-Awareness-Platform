@@ -61,6 +61,42 @@ Developed for **[Challenge 3] Carbon Footprint Awareness Platform - Hack2Skill P
 
 ---
 
+## Real-Time External API Integrations
+
+To provide localized environmental context without blocking critical paint times, CarbonWise integrates three external data streams using a deferred load strategy (fetches are automatically delayed by **2000ms** after mount):
+
+1.  **Weather Context (Open-Meteo API):** 
+    *   Fetches current temperature and weather conditions based on the user's configured location.
+    *   Translates weather states into actionable suggestions (e.g. suggesting opening windows instead of running air conditioning on mild days).
+2.  **Geographic & Population Data (REST Countries API):**
+    *   Retrieves country flag metrics, latitudinal/longitudinal coordinates, and per-capita carbon averages.
+    *   Provides motivational benchmarks comparing the user's footprint against their nation's per-capita emission rates.
+3.  **Environmental Motivation (Quotable API / Local Fallback):**
+    *   Integrates a rotating quote carousel featuring environmental wisdom from global leaders and scientists, encouraging user logging streaks.
+
+---
+
+## State Management & Gamification Flow
+
+CarbonWise uses a centralized **React Context** (`CarbonContext`) mapped to **LocalStorage** for secure, local-first data persistence:
+
+*   **Calculator Input Pipeline:** Inputs from `Calculator.jsx` are evaluated using EPA coefficients, transformed into unified kg CO₂ metrics, and pushed to the global `carbonEntries` array.
+*   **Real-Time Badge Verification:** Every state transition automatically triggers the badge evaluation pipeline. If the user meets conditions (e.g., logging a vegan meal, logging 5 days in a row, or maintaining a streak), a new badge is pushed to the `badges` array and a visual alert is queued.
+*   **Streak Tracking Engine:** Streaks are calculated dynamically on load by sorting historical daily entries and analyzing consecutive daily carbon values against the user's customized carbon budget limits.
+
+---
+
+## High-Performance 3D Interaction & Haptic Rules
+
+CarbonWise features interactive cards with responsive 3D hover tilt and holographic reflections:
+
+*   **RequestAnimationFrame Throttling:** Cursor coordinate tracking in the `use3DTilt` hook runs inside a `requestAnimationFrame` loop. This avoids triggering synchronous layout reflows on high-refresh-rate displays.
+*   **Sensory and Motion Accommodation:**
+    *   **Haptic Bypass:** The `use3DTilt` hook checks `window.matchMedia('(prefers-reduced-motion: reduce)')`. If reduced motion is requested, all rotations, keyframe animations, and shine overlays are strictly disabled.
+    *   **Touch Screen Safeguards:** Touch-only devices automatically skip attaching mousemove and hover listeners, saving battery and CPU usage on mobile devices while providing clean static cards.
+
+---
+
 ## Tech Stack
 
 *   **Core Framework:** [React v19](https://react.dev/) + [Vite v8](https://vite.dev/)
