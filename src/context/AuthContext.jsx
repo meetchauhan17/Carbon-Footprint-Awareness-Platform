@@ -24,11 +24,35 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Silently wake up the Render backend on mount (free tier spins down after 15 min inactivity).
-  // This fires before the user interacts, so the server is warm by the time they log in or load tips.
+  // ── Keep Render backend alive in the background ──────────────────────────
+  // Free Render instances spin down after 15 min of inactivity.
+  // We ping /api/health every 10 min to prevent that.
+  // Uses Page Visibility API so pings pause when the tab is hidden — no
+  // wasted network requests while the user isn't on the site.
   useEffect(() => {
     if (API_URL.includes('localhost')) return; // skip in local dev
-    fetch(`${API_URL}/health`, { method: 'GET' }).catch(() => {}); // silent — ignore all errors
+
+    const ping = () => {
+      if (!document.hidden) {
+        fetch(`${API_URL}/health`, { method: 'GET' }).catch(() => {}); // silent
+      }
+    };
+
+    ping(); // immediate warm-up on mount
+
+    // Repeat every 10 minutes (Render idles at 15 min, so 10 min keeps it warm)
+    const intervalId = setInterval(ping, 10 * 60 * 1000);
+
+    // Also ping whenever the user returns to the tab (tab becomes visible again)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) ping();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Fetch current user details on load if token exists
