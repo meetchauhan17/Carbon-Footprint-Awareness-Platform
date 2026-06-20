@@ -57,7 +57,7 @@ const TipCard = memo(function TipCard({ tip, i, isCompleted, toggleTipCompleted,
         contentVisibility: 'auto',
         containIntrinsicSize: '0 300px',
       }}
-      className={`glass-card flex flex-col justify-between p-3.5 sm:p-5 md:p-6 transition-all duration-300 relative group overflow-hidden h-full hover:-translate-y-1 ${
+      className={`glass-card flex flex-col justify-between p-3 sm:p-5 md:p-6 transition-all duration-300 relative group overflow-hidden h-full hover:-translate-y-1 ${
         isCompleted
           ? 'border-[#F7931A] bg-[#F7931A]/5 shadow-[0_0_25px_rgba(247,147,26,0.15)] holo-shine'
           : ''
@@ -72,14 +72,14 @@ const TipCard = memo(function TipCard({ tip, i, isCompleted, toggleTipCompleted,
       <div className="space-y-2.5 sm:space-y-4">
         <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
           <CategoryBadge category={tip.category} showIcon={true} className="scale-90 origin-left sm:scale-100" />
-          <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border w-max ${DIFFICULTY_STYLES[tip.difficulty]}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+          <span className={`text-[9px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border w-max ${DIFFICULTY_STYLES[tip.difficulty]}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             {tip.difficulty}
           </span>
         </div>
 
         <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 sm:gap-3.5">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#EA580C]/10 border border-[#EA580C]/30 flex items-center justify-center shrink-0 group-hover:border-[#F7931A]/60 group-hover:shadow-[0_0_15px_rgba(247,147,26,0.3)] transition-all duration-300">
-            <EmojiIcon icon={tip.icon} className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            <EmojiIcon icon={tip.icon} className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <h3 className={`font-bold text-xs sm:text-base leading-snug tracking-wide font-display ${
             isCompleted ? 'text-clay-muted line-through decoration-[#F7931A]/40' : 'text-white'
@@ -88,15 +88,15 @@ const TipCard = memo(function TipCard({ tip, i, isCompleted, toggleTipCompleted,
           </h3>
         </div>
 
-        <p className={`text-[10px] sm:text-xs leading-normal sm:leading-relaxed ${isCompleted ? 'text-white/60 font-medium' : 'text-clay-muted font-medium'}`}>
+        <p className={`text-[10px] sm:text-xs leading-relaxed ${isCompleted ? 'text-white/60 font-medium' : 'text-clay-muted font-medium'}`}>
           {tip.description}
         </p>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-white/5 flex flex-col xs:flex-row xs:items-center justify-between gap-2.5">
+      <div className="mt-3 sm:mt-4 pt-3 border-t border-white/5 flex flex-col xs:flex-row xs:items-center justify-between gap-2.5">
         <div className="shrink-0">
-          <p className="text-[8px] sm:text-[9px] font-bold text-clay-muted uppercase tracking-wider font-display">Potential Savings</p>
-          <p className="text-[10px] sm:text-xs font-bold text-[#F7931A] leading-none mt-1 font-mono">
+          <p className="text-[8px] sm:text-[10px] font-bold text-clay-muted uppercase tracking-wider font-display">Potential Savings</p>
+          <p className="text-[10px] sm:text-sm font-bold text-[#F7931A] leading-none mt-1 font-mono">
             Saves {tip.co2Saved} kg
           </p>
         </div>
@@ -104,7 +104,7 @@ const TipCard = memo(function TipCard({ tip, i, isCompleted, toggleTipCompleted,
         <button
           type="button"
           onClick={() => toggleTipCompleted(tip.id)}
-          className={`flex items-center justify-center gap-1 px-2.5 py-1.5 h-8 sm:h-10 sm:px-4 sm:py-2 rounded-full text-[9px] sm:text-xs font-bold font-display cursor-pointer focus:outline-none transition-all duration-200 w-full xs:w-auto ${
+          className={`flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1.5 h-8 sm:h-10 sm:px-4 rounded-full text-[9px] sm:text-xs font-bold font-display cursor-pointer focus:outline-none transition-all duration-200 w-full xs:w-auto ${
             isCompleted
               ? 'border border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981] hover:bg-[#10B981]/20'
               : 'btn-premium'
@@ -196,7 +196,7 @@ function Tips() {
   }, [completedTips])
 
   return (
-    <main id="tips-main" aria-label="Eco action tips" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 font-sans">
+    <main id="tips-main" aria-label="Eco action tips" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-8 font-sans">
       
       {/* ── HEADER & PROGRESS ────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
@@ -324,7 +324,7 @@ function Tips() {
 
       {/* ── TIPS GRID ────────────────────────────────────────────── */}
       {filteredAndSortedTips.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
           {filteredAndSortedTips.map((tip, i) => {
             const isCompleted = completedTips.includes(tip.id)
             return (

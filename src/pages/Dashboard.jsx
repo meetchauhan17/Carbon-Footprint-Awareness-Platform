@@ -452,7 +452,7 @@ function Dashboard() {
 
 
       {/* ── SECTION 2: STATS BANNER (Row 2) ───────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {/* Today's Footprint */}
         <CarbonCard
           label="Today's Footprint"

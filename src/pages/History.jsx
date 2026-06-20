@@ -550,14 +550,14 @@ function History() {
             </div>
 
             {/* Weekdays Row */}
-            <div className="grid grid-cols-7 gap-2.5 text-center mb-2.5 font-display">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2.5 text-center mb-2 sm:mb-2.5 font-display">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
                 <span key={i} className="text-[10px] font-bold text-clay-muted uppercase tracking-wider">{day}</span>
               ))}
             </div>
 
             {/* Grid days */}
-            <div className="grid grid-cols-7 gap-2.5">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2.5">
               {heatmapData.map((d, index) => {
                 if (d.padding) {
                   return <div key={`pad-${index}`} className="aspect-square bg-transparent" />

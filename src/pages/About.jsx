@@ -204,7 +204,7 @@ function About() {
   }, [clearHistory])
 
   return (
-    <main id="about-main" aria-label="About CarbonWise" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <main id="about-main" aria-label="About CarbonWise" className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-8">
       
       {/* Toast Notification */}
       <ToastNotification message={toastMessage} show={showToast} onClose={() => setShowToast(false)} />
@@ -303,10 +303,10 @@ function About() {
           {/* Section: Why it matters (3 Stats) */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider font-display">Why It Matters</h3>
-            <div className="flex overflow-x-auto pb-2 gap-4 no-scrollbar snap-x snap-mandatory md:grid md:grid-cols-3 md:pb-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               
               {/* Stat 1 */}
-              <div className="w-[80vw] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none">
+              <div>
                 <div
                   ref={globalAvgTilt.ref}
                   onMouseMove={globalAvgTilt.onMouseMove}
@@ -323,7 +323,7 @@ function About() {
               </div>
 
               {/* Stat 2 */}
-              <div className="w-[80vw] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none">
+              <div>
                 <div
                   ref={targetTilt.ref}
                   onMouseMove={targetTilt.onMouseMove}
@@ -340,7 +340,7 @@ function About() {
               </div>
 
               {/* Stat 3 */}
-              <div className="w-[80vw] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none">
+              <div>
                 <div
                   ref={thresholdTilt.ref}
                   onMouseMove={thresholdTilt.onMouseMove}
