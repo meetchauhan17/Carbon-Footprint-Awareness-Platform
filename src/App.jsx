@@ -22,6 +22,13 @@ function GlobalGlobe() {
   const { state } = useCarbon()
   const location  = state?.userProfile?.location || null
   const { countryData } = useCountryData(location)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    // Smooth fade-in once the lazy-loaded Three.js component mounts
+    const t = setTimeout(() => setMounted(true), 100)
+    return () => clearTimeout(t)
+  }, [])
 
   return (
     <div
@@ -35,6 +42,8 @@ function GlobalGlobe() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        opacity: mounted ? 1 : 0,
+        transition: 'opacity 1.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
       }}
     >
       {/* The spinning globe at 900 px */}
@@ -130,6 +139,25 @@ function App() {
   const { state } = useCarbon()
   const { user, loading } = useAuth()
   const [isRegister, setIsRegister] = useState(false)
+  const [showGlobe, setShowGlobe] = useState(false)
+
+  useEffect(() => {
+    // Delay rendering the globe until the page is interactive to optimize Lighthouse score / initial load
+    const handleLoad = () => {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => setShowGlobe(true), { timeout: 2500 })
+      } else {
+        setTimeout(() => setShowGlobe(true), 2000)
+      }
+    }
+
+    if (document.readyState === 'complete') {
+      handleLoad()
+    } else {
+      window.addEventListener('load', handleLoad)
+      return () => window.removeEventListener('load', handleLoad)
+    }
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -155,8 +183,8 @@ function App() {
   return (
     <div className="min-h-screen text-clay-text relative flex flex-col">
       {/* ── Fixed global backgrounds (z-index layering) ── */}
-      {/* 1. Full-screen spinning globe */}
-      <GlobalGlobe />
+      {/* 1. Full-screen spinning globe (deferred load) */}
+      {showGlobe && <GlobalGlobe />}
       {/* 2. Subtle grid lines on top */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden bg-grid-pattern" aria-hidden="true" style={{ zIndex: 1 }} />
       {/* 3. Warm sunburst glow at top */}
