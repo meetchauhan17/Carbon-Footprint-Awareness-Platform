@@ -38,7 +38,7 @@ function GlobalGlobe() {
       }}
     >
       {/* The spinning globe at 900 px */}
-      <div style={{ opacity: 0.13, filter: 'blur(0px)' }}>
+      <div style={{ opacity: 0.75, filter: 'blur(0px)' }}>
         <Suspense fallback={null}>
           <Globe3D
             size={900}
@@ -54,7 +54,7 @@ function GlobalGlobe() {
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, #030304 80%)',
+            'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 40%, #030304 92%)',
         }}
       />
     </div>
