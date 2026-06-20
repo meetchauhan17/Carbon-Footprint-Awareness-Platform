@@ -59,6 +59,13 @@ Granular tracking across four core emission pillars:
 - Graceful fallback to a 2D slate-blue canvas on WebGL-unsupported devices
 - Completely bypassed on mobile (`< 1024px`) to preserve PageSpeed scores
 
+### 🛡️ Robustness & Multi-User Readiness
+- **Global Error Boundaries** to gracefully catch React crashes and display fallback UIs
+- **Strict PropTypes** validation across all functional components to prevent runtime data bugs
+- **ESLint** configured to enforce consistent code quality and prevent logical errors
+- **Offline-to-Online Guest Sync:** Try the app as a guest, and your local data will seamlessly merge into your cloud database upon registration—no data lost!
+- **Zero-Leakage Logout:** Hard-wipes browser `localStorage` and forces a React state refresh on logout to ensure total privacy on shared devices.
+
 ### 📈 Code-Split Analytics & Charts
 - **7-Day Area Chart** — emissions trend vs. personal goal line
 - **Category Pie Chart** — weekly breakdown by emission type
@@ -98,6 +105,8 @@ All fetches deferred **2000ms** post-mount to avoid blocking critical paint.
 | [Recharts](https://recharts.org/) | Area & Pie data charts |
 | [Lucide React](https://lucide.dev/) | Icon library |
 | [Vitest](https://vitest.dev/) | Unit testing |
+| [ESLint](https://eslint.org/) | Static code analysis & linting |
+| [PropTypes](https://www.npmjs.com/package/prop-types) | Runtime type-checking for React props |
 
 ### Backend
 | Technology | Purpose |
