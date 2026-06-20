@@ -6,7 +6,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Cloud-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Deployed on Vercel](https://img.shields.io/badge/Frontend-Vercel-000000?logo=vercel&logoColor=white)](https://carbon-footprint-awareness-platform-alpha.vercel.app)
-[![Backend on Render](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://render.com)
+[![Backend API](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://carbonwise-backend-4mq6.onrender.com/api/health)
 [![Tests](https://img.shields.io/badge/Tests-38%2F38%20Passed-success)](https://vitest.dev/)
 [![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%20AA-green)](#accessibility--design-standards)
 
@@ -386,7 +386,7 @@ npm run dev
 1. Push to GitHub — Vercel auto-deploys on every push to `main`
 2. In **Vercel Dashboard → Settings → Environment Variables**, add:
    ```
-   VITE_API_URL = https://your-backend.onrender.com/api
+   VITE_API_URL = https://carbonwise-backend-4mq6.onrender.com/api
    ```
 3. Trigger a **Redeploy** after adding the variable
 
