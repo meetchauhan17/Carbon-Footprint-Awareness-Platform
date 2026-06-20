@@ -137,7 +137,6 @@ export function AuthProvider({ children }) {
 
   // Forgot Password (Request OTP)
   const forgotPassword = useCallback(async (email) => {
-    setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_URL}/auth/forgot-password`, {
@@ -158,14 +157,11 @@ export function AuthProvider({ children }) {
     } catch (err) {
       setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Reset Password (Verify OTP & Update Password)
   const resetPassword = useCallback(async (email, otp, newPassword) => {
-    setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_URL}/auth/reset-password`, {
@@ -186,8 +182,6 @@ export function AuthProvider({ children }) {
     } catch (err) {
       setError(err.message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
