@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node init-db.js && node server.js",
+    "dev": "node init-db.js && node server.js",
     "init-db": "node init-db.js"
   },
   "dependencies": {
