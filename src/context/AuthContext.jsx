@@ -2,10 +2,24 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const AuthContext = createContext(null);
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const getInitialUser = () => {
+  try {
+    const stored = localStorage.getItem('carbonwise-data');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Ensure we have a profile with an email to assume logged in state
+      if (parsed.userProfile && parsed.userProfile.email) {
+        return parsed.userProfile;
+      }
+    }
+  } catch (e) {}
+  return null;
+};
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getInitialUser);
   const [token, setToken] = useState(localStorage.getItem('carbonwise-token') || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +29,13 @@ export function AuthProvider({ children }) {
     async function loadUser() {
       if (!token) {
         setLoading(false);
+        setUser(null);
         return;
+      }
+
+      // If we have a cached user, we can hide the loading skeleton immediately
+      if (user) {
+        setLoading(false);
       }
 
       try {
@@ -28,14 +48,15 @@ export function AuthProvider({ children }) {
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
-        } else {
-          // Token expired or invalid
+        } else if (response.status === 401 || response.status === 403) {
+          // Only clear session on explicit authentication failure
           localStorage.removeItem('carbonwise-token');
           setToken(null);
           setUser(null);
         }
       } catch (err) {
         console.error('Error fetching user profile:', err);
+        // Do NOT log the user out on network failure or server bootup time
       } finally {
         setLoading(false);
       }
