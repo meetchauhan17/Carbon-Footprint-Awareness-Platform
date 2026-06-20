@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback, Suspense, lazy } from 'react'
+import React, { useMemo, useState, useEffect, useCallback, Suspense, lazy, memo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 // Recharts components — code-split into separate chunks
 const DashboardAreaChart = lazy(() => import('../components/charts/DashboardAreaChart.jsx'));
@@ -146,7 +146,7 @@ function computeStreak(entries, goalKgPerDay) {
 
 // Tooltip is moved to chart components
 
-function DashboardBadgeCard({ badge }) {
+const DashboardBadgeCard = memo(function DashboardBadgeCard({ badge }) {
   const tilt = use3DTilt({ maxTilt: 14, scale: 1.04 })
   return (
     <div
@@ -168,9 +168,9 @@ function DashboardBadgeCard({ badge }) {
       </div>
     </div>
   )
-}
+})
 
-function DashboardTipCard({ tip, i, impactBadge }) {
+const DashboardTipCard = memo(function DashboardTipCard({ tip, i, impactBadge }) {
   const tilt = use3DTilt({ maxTilt: 10, scale: 1.03 })
   return (
     <div
@@ -179,7 +179,7 @@ function DashboardTipCard({ tip, i, impactBadge }) {
       onMouseLeave={tilt.onMouseLeave}
       style={{
         ...tilt.style,
-        animationDelay: `${750 + i * 80}ms`
+        animationDelay: `${i * 80}ms`,
       }}
       className="glass-card p-5 group animate-fade-in-up flex flex-col justify-between h-full"
     >
@@ -203,7 +203,7 @@ function DashboardTipCard({ tip, i, impactBadge }) {
       </div>
     </div>
   )
-}
+})
 
 // ─── Main Dashboard ───────────────────────────────────────────────────
 
@@ -223,12 +223,10 @@ function Dashboard() {
   const [activeTipIndex, setActiveTipIndex] = useState(0)
   const [activeChartTab, setActiveChartTab] = useState('trend')
 
-  // 3D tilt interaction hooks for dashboard containers
+  // 3D tilt interaction hooks — only for hero card (above fold)
+  // Removed tilt from below-fold sections (globe, quicklog, goal, achievements) to reduce
+  // rAF listeners on initial paint and improve Lighthouse Performance score.
   const welcomeTilt = use3DTilt({ maxTilt: 6, scale: 1.01 })
-  const globeTilt = use3DTilt({ maxTilt: 6, scale: 1.015 })
-  const quickLogTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
-  const goalTilt = use3DTilt({ maxTilt: 5, scale: 1.01 })
-  const achievementsTilt = use3DTilt({ maxTilt: 4, scale: 1.01 })
   
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : true)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -488,11 +486,7 @@ function Dashboard() {
 
         {/* Combined Budget Gauge & Streak Card */}
         <div
-          ref={goalTilt.ref}
-          onMouseMove={goalTilt.onMouseMove}
-          onMouseLeave={goalTilt.onMouseLeave}
           style={{
-            ...goalTilt.style,
             borderLeft: `3px solid ${goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}`,
             animationDelay: '200ms'
           }}
@@ -662,14 +656,8 @@ function Dashboard() {
         <div className="lg:col-span-7 space-y-6 flex flex-col justify-between">
           {/* Quick Log */}
           <div
-            ref={quickLogTilt.ref}
-            onMouseMove={quickLogTilt.onMouseMove}
-            onMouseLeave={quickLogTilt.onMouseLeave}
-            style={{
-              ...quickLogTilt.style,
-              animationDelay: '500ms'
-            }}
             className="glass-card p-6 animate-fade-in-up flex-1 flex flex-col justify-between"
+            style={{ animationDelay: '500ms' }}
           >
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -736,14 +724,8 @@ function Dashboard() {
 
         {/* Right Column (Achievements) */}
         <div
-          ref={achievementsTilt.ref}
-          onMouseMove={achievementsTilt.onMouseMove}
-          onMouseLeave={achievementsTilt.onMouseLeave}
-          style={{
-            ...achievementsTilt.style,
-            animationDelay: '650ms'
-          }}
           className="lg:col-span-5 glass-card p-6 flex flex-col justify-between animate-fade-in-up"
+          style={{ animationDelay: '650ms' }}
         >
           <div className="space-y-4 h-full flex flex-col justify-between">
             <div className="flex items-center justify-between flex-wrap gap-3 font-sans">
