@@ -25,9 +25,35 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretcarbonwisejwtkey123!';
 
-// Middleware
-app.use(cors());
+// Allowed origins — local dev + all Vercel previews + production
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://carbon-footprint-awareness-platform-alpha.vercel.app',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    // Allow any *.vercel.app subdomain (preview deployments)
+    if (/\.vercel\.app$/.test(origin) || ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Handle OPTIONS preflight for all routes
+app.options('*', cors());
+
 app.use(express.json());
+
+// Health check — used by frontend to wake up Render on cold start
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: Date.now() }));
 
 // Authentication Middleware
 const authenticateToken = (req, res, next) => {

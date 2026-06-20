@@ -24,6 +24,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Silently wake up the Render backend on mount (free tier spins down after 15 min inactivity).
+  // This fires before the user interacts, so the server is warm by the time they log in or load tips.
+  useEffect(() => {
+    if (API_URL.includes('localhost')) return; // skip in local dev
+    fetch(`${API_URL}/health`, { method: 'GET' }).catch(() => {}); // silent — ignore all errors
+  }, []);
+
   // Fetch current user details on load if token exists
   useEffect(() => {
     async function loadUser() {
