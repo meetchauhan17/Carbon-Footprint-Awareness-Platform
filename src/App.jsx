@@ -211,7 +211,7 @@ function App() {
             </header>
 
             {/* Main Auth Form Container */}
-            <main className="flex-1 flex items-center justify-center">
+            <main className="flex-1 flex items-center justify-center px-4 py-8">
               {isRegister ? (
                 <Register onToggleAuthMode={() => setIsRegister(false)} />
               ) : (

@@ -401,7 +401,7 @@ function History() {
         </div>
         
         {carbonEntries.length > 0 && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={exportToCSV}
               className="flex items-center gap-2 px-5 h-12 rounded-full border border-white/20 hover:border-white hover:bg-white/5 text-white hover:scale-102 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all cursor-pointer font-display font-bold text-xs"
@@ -521,7 +521,7 @@ function History() {
             style={{ ...heatmapContainerTilt.style, transformStyle: 'preserve-3d' }}
             className="lg:col-span-3 glass-card p-6 rounded-[32px] animate-fade-in-up"
           >
-            <div className="flex items-center justify-between mb-5 font-display">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5 font-display">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-[#F7931A]" />
                 <h2 className="text-sm font-bold text-white uppercase tracking-wider">Activity Heatmap</h2>
@@ -928,19 +928,19 @@ function History() {
                       <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-white/5 text-[10px] text-clay-muted font-mono">
                         <div>
                           <p className="text-[9px] text-clay-muted font-bold uppercase">TRA</p>
-                          <p className="font-bold text-[#0EA5E9] mt-0.5">{day.transport > 0 ? `${day.transport}k` : '—'}</p>
+                          <p className="font-bold text-[#0EA5E9] mt-0.5">{day.transport > 0 ? `${day.transport.toFixed(1)} kg` : '—'}</p>
                         </div>
                         <div>
                           <p className="text-[9px] text-clay-muted font-bold uppercase">ENE</p>
-                          <p className="font-bold text-[#FFD600] mt-0.5">{day.energy > 0 ? `${day.energy}k` : '—'}</p>
+                          <p className="font-bold text-[#FFD600] mt-0.5">{day.energy > 0 ? `${day.energy.toFixed(1)} kg` : '—'}</p>
                         </div>
                         <div>
                           <p className="text-[9px] text-clay-muted font-bold uppercase">FOO</p>
-                          <p className="font-bold text-[#10B981] mt-0.5">{day.food > 0 ? `${day.food}k` : '—'}</p>
+                          <p className="font-bold text-[#10B981] mt-0.5">{day.food > 0 ? `${day.food.toFixed(1)} kg` : '—'}</p>
                         </div>
                         <div>
                           <p className="text-[9px] text-clay-muted font-bold uppercase">SHO</p>
-                          <p className="font-bold text-[#EF44] mt-0.5">{day.shopping > 0 ? `${day.shopping}k` : '—'}</p>
+                          <p className="font-bold text-[#EF4444] mt-0.5">{day.shopping > 0 ? `${day.shopping.toFixed(1)} kg` : '—'}</p>
                         </div>
                       </div>
 

@@ -241,7 +241,7 @@ function StepTransport({ trips, setTrips }) {
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Mode */}
               <div>
                 <label htmlFor={`trip-select-${trip.id}`} className="block text-[10px] font-bold text-clay-muted uppercase tracking-wider mb-2 font-display">Vehicle type</label>
@@ -610,7 +610,7 @@ function Summary({ result, onSave, saving }) {
       {/* Color legend */}
       <div className="glass-card p-5 rounded-2xl">
         <p className="text-[10px] font-bold text-clay-muted uppercase tracking-wider mb-3 font-display">Emission Levels</p>
-        <div className="grid grid-cols-2 gap-3 font-mono">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono">
           {[
             { label: '< 5 kg',   tag: 'Low',      color: '#10B981', bg: 'bg-[#E6F4EA]'  },
             { label: '5–10 kg',  tag: 'Moderate', color: '#FFD600', bg: 'bg-[#FFF9E6]'  },

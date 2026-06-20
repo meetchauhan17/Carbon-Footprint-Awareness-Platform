@@ -3,6 +3,17 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import { CarbonProvider, useCarbon } from './CarbonContext'
 
+// Mock useAuth dependency
+vi.mock('./AuthContext.jsx', () => ({
+  useAuth: () => ({
+    token: null,
+    user: null,
+    updateLocalUser: vi.fn(),
+  }),
+  default: null,
+}))
+
+
 // Test consumer component
 function TestConsumer() {
   const {
