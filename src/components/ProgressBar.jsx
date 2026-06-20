@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
 /**
  * ProgressBar - Reusable animated progress bar with percentage labels and color configurations.
@@ -46,5 +47,15 @@ export default function ProgressBar({
       </div>
     </div>
   )
+}
+
+ProgressBar.propTypes = {
+  value: PropTypes.number,
+  max: PropTypes.number,
+  showLabel: PropTypes.bool,
+  labelStyle: PropTypes.oneOf(['percentage', 'fraction', 'none']),
+  color: PropTypes.string,
+  className: PropTypes.string,
+  labelClassName: PropTypes.string
 }
 

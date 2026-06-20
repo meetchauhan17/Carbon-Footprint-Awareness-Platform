@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
 import { use3DTilt } from '../hooks/use3DTilt.js'
 
@@ -100,4 +101,18 @@ export default function CarbonCard({
       </div>
     </div>
   )
+}
+
+CarbonCard.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  subText: PropTypes.string,
+  icon: PropTypes.elementType,
+  trend: PropTypes.oneOf(['up', 'down', 'neutral']),
+  trendText: PropTypes.string,
+  accentColor: PropTypes.string,
+  delay: PropTypes.number,
+  className: PropTypes.string,
+  onClick: PropTypes.func,
+  children: PropTypes.node
 }

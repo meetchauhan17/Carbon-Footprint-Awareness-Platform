@@ -1,8 +1,9 @@
-import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useRef } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useRef, useState } from 'react'
 import { getCategoryBreakdown, getWeeklyData, getMonthlyData, getTotalCO2 } from '../utils/calculations.js'
 import { evaluateBadges } from '../utils/badges.js'
 import { checkGoalAlert } from '../utils/notifications.js'
 import { useAuth } from './AuthContext.jsx'
+import ToastNotification from '../components/ToastNotification.jsx'
 
 const CarbonContext = createContext(null)
 
@@ -155,6 +156,11 @@ function carbonReducer(state, action) {
 export function CarbonProvider({ children }) {
   const [state, dispatch] = useReducer(carbonReducer, null, buildInitialState)
   const { token, user, updateLocalUser } = useAuth()
+  const [toast, setToast] = useState({ show: false, message: '', type: 'error' })
+
+  const showErrorToast = (message) => {
+    setToast({ show: true, message, type: 'error' })
+  }
 
   // Persist to localStorage on every state change (fallback)
   useEffect(() => {
@@ -227,6 +233,7 @@ export function CarbonProvider({ children }) {
         }
       } catch (err) {
         console.error('Failed to save carbon entry to DB:', err)
+        showErrorToast('Failed to sync entry with server. Saved locally.')
       }
     }
     // Fallback/Guest
@@ -246,6 +253,7 @@ export function CarbonProvider({ children }) {
         }
       } catch (err) {
         console.error('Failed to delete entry from DB:', err)
+        showErrorToast('Failed to delete entry from server. Removed locally.')
       }
     }
     // Fallback/Guest
@@ -271,6 +279,7 @@ export function CarbonProvider({ children }) {
         }
       } catch (err) {
         console.error('Failed to update profile in DB:', err)
+        showErrorToast('Failed to sync profile with server. Saved locally.')
       }
     }
     // Fallback/Guest
@@ -286,6 +295,7 @@ export function CarbonProvider({ children }) {
         })
       } catch (err) {
         console.error('Failed to clear history from DB:', err)
+        showErrorToast('Failed to clear history from server. Cleared locally.')
       }
     }
     dispatch({ type: 'CLEAR_HISTORY' })
@@ -338,6 +348,7 @@ export function CarbonProvider({ children }) {
         }
       } catch (err) {
         console.error('Failed to toggle eco tip in DB:', err)
+        showErrorToast('Failed to sync tip progress with server. Saved locally.')
       }
     }
     // Fallback/Guest
@@ -359,6 +370,12 @@ export function CarbonProvider({ children }) {
   return (
     <CarbonContext.Provider value={value}>
       {children}
+      <ToastNotification 
+        message={toast.message} 
+        show={toast.show} 
+        type={toast.type} 
+        onClose={() => setToast(prev => ({ ...prev, show: false }))} 
+      />
     </CarbonContext.Provider>
   )
 }

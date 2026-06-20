@@ -17,7 +17,7 @@ export default function EmptyState({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center p-8 bg-white/60 border border-white/50 rounded-[32px] shadow-[var(--shadow-clay-card)] max-w-md mx-auto space-y-4 animate-fade-in ${className}`}
+      className={`flex flex-col items-center justify-center text-center p-8 glass-card rounded-[32px] max-w-md mx-auto space-y-4 animate-fade-in ${className}`}
     >
       {/* Icon Circle */}
       <div className="w-16 h-16 rounded-full bg-clay-bg flex items-center justify-center shadow-[var(--shadow-clay-pressed)] border border-white/50">
@@ -25,10 +25,10 @@ export default function EmptyState({
       </div>
 
       <div className="space-y-1.5">
-        <h3 className="text-base font-extrabold text-clay-text leading-tight" style={{ fontFamily: 'Nunito, sans-serif' }}>
+        <h3 className="text-base font-extrabold text-white leading-tight" style={{ fontFamily: 'Nunito, sans-serif' }}>
           {title}
         </h3>
-        <p className="text-xs text-clay-muted max-w-xs mx-auto leading-relaxed font-medium">
+        <p className="text-xs text-gray-400 max-w-xs mx-auto leading-relaxed font-medium">
           {description}
         </p>
       </div>

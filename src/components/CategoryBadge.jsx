@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Car, Zap, Utensils, ShoppingBag, Leaf, HelpCircle } from 'lucide-react'
 
 // Categories color mapping following Claymorphism Palette
@@ -67,4 +68,10 @@ export default function CategoryBadge({
       <span>{config.label}</span>
     </span>
   )
+}
+
+CategoryBadge.propTypes = {
+  category: PropTypes.string,
+  showIcon: PropTypes.bool,
+  className: PropTypes.string
 }
