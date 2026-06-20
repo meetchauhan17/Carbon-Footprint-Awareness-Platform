@@ -80,6 +80,7 @@ function Register({ onToggleAuthMode }) {
               <input
                 type="text"
                 id="reg-name-input"
+                name="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. John Doe"
@@ -99,6 +100,7 @@ function Register({ onToggleAuthMode }) {
               <input
                 type="email"
                 id="reg-email-input"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -135,6 +137,7 @@ function Register({ onToggleAuthMode }) {
               <input
                 type="password"
                 id="reg-password-input"
+                name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 6 characters"

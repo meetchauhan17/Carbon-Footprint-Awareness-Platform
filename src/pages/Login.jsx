@@ -136,10 +136,12 @@ function Login({ onToggleAuthMode }) {
                   <input
                     type="email"
                     id="forgot-email-input"
+                    name="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     className="w-full h-14 pl-12 pr-4 focus:outline-none text-sm transition-all rounded-xl"
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -211,10 +213,12 @@ function Login({ onToggleAuthMode }) {
                   <input
                     type="text"
                     id="reset-otp-input"
+                    name="otp"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     placeholder="e.g. 123456"
                     className="w-full h-14 pl-12 pr-4 focus:outline-none text-sm transition-all rounded-xl font-mono tracking-widest text-center text-lg"
+                    autoComplete="one-time-code"
                     required
                   />
                 </div>
@@ -230,10 +234,12 @@ function Login({ onToggleAuthMode }) {
                   <input
                     type="password"
                     id="reset-newpassword-input"
+                    name="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 6 characters"
                     className="w-full h-14 pl-12 pr-4 focus:outline-none text-sm transition-all rounded-xl"
+                    autoComplete="new-password"
                     required
                   />
                 </div>
@@ -313,6 +319,7 @@ function Login({ onToggleAuthMode }) {
                   <input
                     type="email"
                     id="login-email-input"
+                    name="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
@@ -346,6 +353,7 @@ function Login({ onToggleAuthMode }) {
                   <input
                     type="password"
                     id="login-password-input"
+                    name="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
