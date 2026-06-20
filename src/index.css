@@ -30,7 +30,39 @@ body {
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
 }
+
+/* Focus visible ring — keyboard navigation accessibility */
+:focus-visible {
+  outline: 2px solid #F7931A;
+  outline-offset: 2px;
+}
+
+/* Screen-reader utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus\:not-sr-only:focus {
+  position: fixed;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
@@ -258,15 +290,16 @@ input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:foc
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation-delay: 0s !important;
-    animation-duration: 0s !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0s !important;
+    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-    transform: none !important;
   }
 }
+
 
 /* Bitcoin DeFi - Re-apply rounded corners to elements that had Gatsby overrides */
 .rounded-xl, .rounded-\[12px\] {

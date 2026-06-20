@@ -221,8 +221,16 @@ function App() {
           </div>
         ) : (
           <>
+            {/* Skip to main content — keyboard / screen-reader navigation */}
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold"
+              style={{ background: '#F7931A', color: '#030304' }}
+            >
+              Skip to main content
+            </a>
             <Navbar />
-            <main id="main-content" className="pt-20 pb-20 md:pb-0 flex-1 flex flex-col">
+            <div id="main-content" className="pt-20 pb-20 md:pb-0 flex-1 flex flex-col">
               <Suspense fallback={<PageSkeleton />}>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
@@ -232,7 +240,7 @@ function App() {
                   <Route path="/about" element={<About />} />
                 </Routes>
               </Suspense>
-            </main>
+            </div>
           </>
         )}
       </div>

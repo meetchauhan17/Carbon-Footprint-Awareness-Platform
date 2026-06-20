@@ -774,7 +774,7 @@ function Calculator() {
 
   // ── Render ──────────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+    <main id="calculator-main" aria-label="Carbon footprint calculator" className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
       {/* Page header */}
       <div className="mb-8 animate-fade-in-up">
         <h1 className="text-4xl sm:text-5xl font-bold gradient-text mb-1 font-display">Carbon Calculator</h1>
@@ -851,7 +851,7 @@ function Calculator() {
           </button>
         )}
       </div>
-    </div>
+    </main>
   )
 }
 
