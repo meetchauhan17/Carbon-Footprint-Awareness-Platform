@@ -6,6 +6,8 @@ import { useAuth } from './AuthContext.jsx'
 
 const CarbonContext = createContext(null)
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
 const STORAGE_KEY = 'carbonwise-data'
 
 // Global average: ~4 tons CO2/year per person (source: Our World in Data)
@@ -171,11 +173,11 @@ export function CarbonProvider({ children }) {
         const headers = { 'Authorization': `Bearer ${token}` }
 
         // Fetch entries
-        const entriesRes = await fetch('http://localhost:5000/api/entries', { headers })
+        const entriesRes = await fetch(`${API_URL}/entries`, { headers })
         const entries = entriesRes.ok ? await entriesRes.json() : []
 
         // Fetch completed tips
-        const tipsRes = await fetch('http://localhost:5000/api/tips', { headers })
+        const tipsRes = await fetch(`${API_URL}/tips`, { headers })
         const tips = tipsRes.ok ? await tipsRes.json() : []
 
         // Dispatch full set
@@ -210,7 +212,7 @@ export function CarbonProvider({ children }) {
   const addCarbonEntry = useCallback(async (entry) => {
     if (token) {
       try {
-        const res = await fetch('http://localhost:5000/api/entries', {
+        const res = await fetch(`${API_URL}/entries`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -234,7 +236,7 @@ export function CarbonProvider({ children }) {
   const deleteEntry = useCallback(async (id) => {
     if (token) {
       try {
-        const res = await fetch(`http://localhost:5000/api/entries/${id}`, {
+        const res = await fetch(`${API_URL}/entries/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -253,7 +255,7 @@ export function CarbonProvider({ children }) {
   const updateProfile = useCallback(async (profile) => {
     if (token) {
       try {
-        const res = await fetch('http://localhost:5000/api/profile', {
+        const res = await fetch(`${API_URL}/profile`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -278,7 +280,7 @@ export function CarbonProvider({ children }) {
   const clearHistory = useCallback(async () => {
     if (token) {
       try {
-        await fetch('http://localhost:5000/api/entries', {
+        await fetch(`${API_URL}/entries`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -321,7 +323,7 @@ export function CarbonProvider({ children }) {
     const isCompleted = completedTips.includes(tipId)
     if (token) {
       try {
-        const res = await fetch('http://localhost:5000/api/tips', {
+        const res = await fetch(`${API_URL}/tips`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
