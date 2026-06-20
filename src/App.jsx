@@ -15,33 +15,68 @@ const Tips = React.lazy(() => import('./pages/Tips.jsx'))
 const History = React.lazy(() => import('./pages/History.jsx'))
 const About = React.lazy(() => import('./pages/About.jsx'))
 
-function PageSkeleton() {
+function AppLoader() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 animate-pulse" aria-hidden="true">
-      {/* Hero banner skeleton */}
-      <div className="h-36 bg-[#141414]/85 rounded-none w-full border border-[#D4AF37]/20"></div>
-      
-      {/* Stats/Cards grid skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="h-44 bg-[#141414]/85 rounded-none border border-[#D4AF37]/20"></div>
-        <div className="h-44 bg-[#141414]/85 rounded-none border border-[#D4AF37]/20"></div>
-        <div className="h-44 bg-[#141414]/85 rounded-none border border-[#D4AF37]/20"></div>
-      </div>
-      
-      {/* Content area skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="h-8 bg-[#141414]/85 rounded-none w-1/3 border border-[#D4AF37]/20"></div>
-          <div className="h-64 bg-[#141414]/85 rounded-none border border-[#D4AF37]/20"></div>
+    <div className="min-h-screen flex flex-col items-center justify-center gap-8" aria-label="Loading">
+      {/* Spinning ring */}
+      <div className="relative w-20 h-20">
+        {/* Outer ring */}
+        <div
+          className="absolute inset-0 rounded-full border-4 border-transparent"
+          style={{
+            borderTopColor: '#D4AF37',
+            borderRightColor: '#D4AF37',
+            animation: 'spin 1s linear infinite',
+            boxShadow: '0 0 18px 4px rgba(212,175,55,0.35)',
+          }}
+        />
+        {/* Inner ring */}
+        <div
+          className="absolute inset-3 rounded-full border-4 border-transparent"
+          style={{
+            borderTopColor: '#4ade80',
+            borderLeftColor: '#4ade80',
+            animation: 'spin 0.7s linear infinite reverse',
+            boxShadow: '0 0 12px 3px rgba(74,222,128,0.3)',
+          }}
+        />
+        {/* Center leaf icon */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Leaf className="w-6 h-6 text-[#D4AF37]" style={{ filter: 'drop-shadow(0 0 6px rgba(212,175,55,0.8))' }} />
         </div>
-        <div className="space-y-6">
-          <div className="h-8 bg-[#141414]/85 rounded-none w-1/2 border border-[#D4AF37]/20"></div>
-          <div className="h-48 bg-[#141414]/85 rounded-none border border-[#D4AF37]/20"></div>
-          <div className="h-48 bg-[#141414]/85 rounded-none border border-[#D4AF37]/20"></div>
+      </div>
+
+      {/* Brand name */}
+      <div className="flex flex-col items-center gap-2">
+        <span className="text-2xl font-bold tracking-widest gradient-text font-display select-none">CarbonWise</span>
+        {/* Animated dots */}
+        <div className="flex gap-1.5 mt-1">
+          {[0, 1, 2].map(i => (
+            <div
+              key={i}
+              className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]"
+              style={{
+                animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+                opacity: 0.8,
+              }}
+            />
+          ))}
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+          40% { transform: translateY(-6px); opacity: 1; }
+        }
+      `}</style>
     </div>
   )
+}
+
+function PageSkeleton() {
+  return <AppLoader />
 }
 
 function App() {
@@ -72,10 +107,10 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen text-clay-text relative flex items-center justify-center">
+      <div className="min-h-screen text-clay-text relative">
         <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 bg-grid-pattern" aria-hidden="true" />
         <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 art-sunburst" aria-hidden="true" />
-        <PageSkeleton />
+        <AppLoader />
       </div>
     )
   }
