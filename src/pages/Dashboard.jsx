@@ -307,18 +307,18 @@ function Dashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
       {/* ── SECTION 1: HERO CONTEXT (Row 1) ───────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in-up">
-        {/* Welcome & Context Card */}
+      <div className="animate-fade-in-up">
+        {/* Hero Card */}
         <div
           ref={welcomeTilt.ref}
           onMouseMove={welcomeTilt.onMouseMove}
           onMouseLeave={welcomeTilt.onMouseLeave}
           style={welcomeTilt.style}
-          className={`${isMobile ? 'lg:col-span-12' : 'lg:col-span-8'} glass-card p-6 relative overflow-hidden flex flex-col justify-between h-full min-h-0 sm:min-h-[340px] space-y-6`}
+          className="glass-card p-6 relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[360px] space-y-6"
         >
           {/* Background ambient glows */}
-          <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-clay-success/5 blur-2xl pointer-events-none" />
+          <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-clay-primary/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -right-12 w-32 h-32 rounded-full bg-clay-success/10 blur-3xl pointer-events-none" />
 
           <div className="space-y-4">
             {/* Header: Greeting & Leaf Icon & Better Than badge */}
@@ -449,47 +449,20 @@ function Dashboard() {
               </button>
             </div>
           )}
-        </div>
 
-        {/* 3D Globe Card */}
-        {!isMobile && (
-          <div
-            ref={globeTilt.ref}
-            onMouseMove={globeTilt.onMouseMove}
-            onMouseLeave={globeTilt.onMouseLeave}
-            style={globeTilt.style}
-            className="lg:col-span-4 glass-card p-6 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]"
+          {/* Settings button — pinned inside the card on all sizes */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="absolute bottom-4 right-4 btn-premium flex items-center gap-1.5 px-3.5 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none"
+            id="dashboard-settings-btn"
+            aria-label="Edit profile and goals settings"
           >
-            <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
-            
-            {/* Globe container */}
-            <div
-              className="relative flex items-center justify-center p-2 rounded-full shadow-[0_0_40px_rgba(247,147,26,0.12),0_0_80px_rgba(247,147,26,0.06),inset_0_1px_0_rgba(255,255,255,0.08)] border border-[#F7931A]/20"
-              style={{
-                borderRadius: '50%',
-              }}
-            >
-              <Suspense fallback={<GlobeFallback />}>
-                <Globe3D
-                  latitude={countryData?.latlng?.[0] ?? null}
-                  longitude={countryData?.latlng?.[1] ?? null}
-                />
-              </Suspense>
-            </div>
-
-            {/* Floating Settings Button at bottom right */}
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="absolute bottom-4 right-4 btn-premium flex items-center gap-1.5 px-3.5 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none"
-              id="dashboard-settings-btn"
-              aria-label="Edit profile and goals settings"
-            >
-              <Settings className="w-3.5 h-3.5 text-white" />
-              Settings
-            </button>
-          </div>
-        )}
+            <Settings className="w-3.5 h-3.5 text-white" />
+            Settings
+          </button>
+        </div>
       </div>
+
 
       {/* ── SECTION 2: STATS BANNER (Row 2) ───────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">

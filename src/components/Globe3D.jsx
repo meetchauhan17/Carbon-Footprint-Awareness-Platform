@@ -16,7 +16,7 @@ import * as THREE from 'three'
  * @param {number|null} props.longitude  User's lon from countryData (optional)
  * @param {string}      props.countryCode 2-letter country code (optional, for marker)
  */
-export default function Globe3D({ latitude = null, longitude = null }) {
+export default function Globe3D({ latitude = null, longitude = null, size = 320 }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function Globe3D({ latitude = null, longitude = null }) {
       antialias: true,
       alpha: true,            // transparent background — sits over dark theme
     })
-    renderer.setSize(320, 320)
+    renderer.setSize(size, size)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)) // cap GPU cost
     renderer.setClearColor(0x000000, 0)                          // fully transparent
 
@@ -190,12 +190,12 @@ export default function Globe3D({ latitude = null, longitude = null }) {
       markerMats.forEach(m => m.dispose())
       renderer.dispose()
     }
-  }, [latitude, longitude])
+  }, [latitude, longitude, size])
 
   return (
     <div
       className="relative flex items-center justify-center"
-      style={{ width: 320, height: 320, flexShrink: 0 }}
+      style={{ width: size, height: size, flexShrink: 0 }}
       aria-label="Rotating 3D Earth globe showing global carbon emission hotspots"
       role="img"
     >
@@ -211,8 +211,8 @@ export default function Globe3D({ latitude = null, longitude = null }) {
       {/* Three.js canvas */}
       <canvas
         ref={canvasRef}
-        width={320}
-        height={320}
+        width={size}
+        height={size}
         style={{ borderRadius: '50%', display: 'block', position: 'relative', zIndex: 1 }}
       />
     </div>

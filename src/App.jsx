@@ -8,12 +8,59 @@ import Register from './pages/Register.jsx'
 import { Leaf } from 'lucide-react'
 import { checkWeeklyDigest, checkDailyTipSuggestion } from './utils/notifications.js'
 import { TIPS_DATA } from './data/tipsData.js'
+import { useCountryData } from './hooks/useCountryData.js'
 
-const Dashboard = React.lazy(() => import('./pages/Dashboard.jsx'))
+const Globe3D   = React.lazy(() => import('./components/Globe3D.jsx'))
+const Dashboard  = React.lazy(() => import('./pages/Dashboard.jsx'))
 const Calculator = React.lazy(() => import('./pages/Calculator.jsx'))
-const Tips = React.lazy(() => import('./pages/Tips.jsx'))
-const History = React.lazy(() => import('./pages/History.jsx'))
-const About = React.lazy(() => import('./pages/About.jsx'))
+const Tips       = React.lazy(() => import('./pages/Tips.jsx'))
+const History    = React.lazy(() => import('./pages/History.jsx'))
+const About      = React.lazy(() => import('./pages/About.jsx'))
+
+/** Full-screen globe background — fixed, behind all pages */
+function GlobalGlobe() {
+  const { state } = useCarbon()
+  const location  = state?.userProfile?.location || null
+  const { countryData } = useCountryData(location)
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {/* The spinning globe at 900 px */}
+      <div style={{ opacity: 0.13, filter: 'blur(0px)' }}>
+        <Suspense fallback={null}>
+          <Globe3D
+            size={900}
+            latitude={countryData?.latlng?.[0] ?? null}
+            longitude={countryData?.latlng?.[1] ?? null}
+          />
+        </Suspense>
+      </div>
+
+      {/* Radial vignette — darkens edges so content is always readable */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, #030304 80%)',
+        }}
+      />
+    </div>
+  )
+}
+
 
 function AppLoader() {
   return (
@@ -105,65 +152,62 @@ function App() {
     }
   }, [user, state?.carbonEntries, state?.completedTips])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen text-clay-text relative">
-        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 bg-grid-pattern" aria-hidden="true" />
-        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 art-sunburst" aria-hidden="true" />
-        <AppLoader />
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen text-clay-text relative flex flex-col">
-        {/* Bitcoin DeFi Network Grid and Ambient Sunburst Overlay */}
-        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 bg-grid-pattern" aria-hidden="true" />
-        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 art-sunburst" aria-hidden="true" />
-        
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-[#0F1115]/90 backdrop-blur-lg border-b border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="w-7 h-7 rotate-45 border border-[#F7931A]/40 flex items-center justify-center bg-[#0F1115] rounded-md">
-                <Leaf className="-rotate-45 w-4 h-4 text-[#F7931A]" />
-              </div>
-              <span className="text-xl font-bold gradient-text tracking-wider select-none font-display">CarbonWise</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Auth Form Container */}
-        <main className="flex-1 flex items-center justify-center">
-          {isRegister ? (
-            <Register onToggleAuthMode={() => setIsRegister(false)} />
-          ) : (
-            <Login onToggleAuthMode={() => setIsRegister(true)} />
-          )}
-        </main>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen text-clay-text relative">
-      {/* Bitcoin DeFi Network Grid and Ambient Sunburst Overlay */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 bg-grid-pattern" aria-hidden="true" />
-      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 art-sunburst" aria-hidden="true" />
+    <div className="min-h-screen text-clay-text relative flex flex-col">
+      {/* ── Fixed global backgrounds (z-index layering) ── */}
+      {/* 1. Full-screen spinning globe */}
+      <GlobalGlobe />
+      {/* 2. Subtle grid lines on top */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden bg-grid-pattern" aria-hidden="true" style={{ zIndex: 1 }} />
+      {/* 3. Warm sunburst glow at top */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden art-sunburst" aria-hidden="true" style={{ zIndex: 1 }} />
 
-      <Navbar />
-      <main id="main-content" className="pt-20 pb-20 md:pb-0">
-        <Suspense fallback={<PageSkeleton />}>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/calculator" element={<Calculator />} />
-            <Route path="/tips" element={<Tips />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/about" element={<About />} />
-          </Routes>
-        </Suspense>
-      </main>
+      {/* Main content layer */}
+      <div className="relative flex-1 flex flex-col" style={{ zIndex: 2 }}>
+        {loading ? (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <AppLoader />
+          </div>
+        ) : !user ? (
+          <div className="flex-1 flex flex-col">
+            {/* Header */}
+            <header className="sticky top-0 z-50 bg-[#0F1115]/90 backdrop-blur-lg border-b border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
+              <div className="max-w-7xl mx-auto px-6 h-16 flex items-center">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="w-7 h-7 rotate-45 border border-[#F7931A]/40 flex items-center justify-center bg-[#0F1115] rounded-md">
+                    <Leaf className="-rotate-45 w-4 h-4 text-[#F7931A]" />
+                  </div>
+                  <span className="text-xl font-bold gradient-text tracking-wider select-none font-display">CarbonWise</span>
+                </div>
+              </div>
+            </header>
+
+            {/* Main Auth Form Container */}
+            <main className="flex-1 flex items-center justify-center">
+              {isRegister ? (
+                <Register onToggleAuthMode={() => setIsRegister(false)} />
+              ) : (
+                <Login onToggleAuthMode={() => setIsRegister(true)} />
+              )}
+            </main>
+          </div>
+        ) : (
+          <>
+            <Navbar />
+            <main id="main-content" className="pt-20 pb-20 md:pb-0 flex-1 flex flex-col">
+              <Suspense fallback={<PageSkeleton />}>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/calculator" element={<Calculator />} />
+                  <Route path="/tips" element={<Tips />} />
+                  <Route path="/history" element={<History />} />
+                  <Route path="/about" element={<About />} />
+                </Routes>
+              </Suspense>
+            </main>
+          </>
+        )}
+      </div>
     </div>
   )
 }
