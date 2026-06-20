@@ -186,37 +186,39 @@ Carbon Footprint Awareness Platform/
 
 ## Backend API Reference
 
+*Note: Endpoints marked as **Required** need a valid JWT Bearer token sent in the `Authorization` header. Endpoints marked as **Public** can be accessed without logging in.*
+
 ### Authentication
 
-| Method | Endpoint | Auth | Description |
+| Method | Endpoint | Auth Required | Description |
 |---|---|---|---|
-| `POST` | `/api/auth/register` | ❌ | Register a new user |
-| `POST` | `/api/auth/login` | ❌ | Login and receive JWT token |
-| `GET` | `/api/auth/me` | ✅ | Get current user profile |
-| `POST` | `/api/auth/forgot-password` | ❌ | Send OTP to email |
-| `POST` | `/api/auth/reset-password` | ❌ | Verify OTP + set new password |
+| `POST` | `/api/auth/register` | Public | Register a new user |
+| `POST` | `/api/auth/login` | Public | Login and receive JWT token |
+| `GET` | `/api/auth/me` | Required | Get current user profile |
+| `POST` | `/api/auth/forgot-password` | Public | Send OTP to email |
+| `POST` | `/api/auth/reset-password` | Public | Verify OTP + set new password |
 
 ### Profile
 
-| Method | Endpoint | Auth | Description |
+| Method | Endpoint | Auth Required | Description |
 |---|---|---|---|
-| `PUT` | `/api/profile` | ✅ | Update name, location, goal, preferences |
+| `PUT` | `/api/profile` | Required | Update name, location, goal, preferences |
 
 ### Carbon Entries
 
-| Method | Endpoint | Auth | Description |
+| Method | Endpoint | Auth Required | Description |
 |---|---|---|---|
-| `GET` | `/api/entries` | ✅ | Get all entries for current user |
-| `POST` | `/api/entries` | ✅ | Log a new carbon entry |
-| `DELETE` | `/api/entries/:id` | ✅ | Delete a specific entry |
-| `DELETE` | `/api/entries` | ✅ | Clear all entries (reset history) |
+| `GET` | `/api/entries` | Required | Get all entries for current user |
+| `POST` | `/api/entries` | Required | Log a new carbon entry |
+| `DELETE` | `/api/entries/:id` | Required | Delete a specific entry |
+| `DELETE` | `/api/entries` | Required | Clear all entries (reset history) |
 
 ### Eco Tips
 
-| Method | Endpoint | Auth | Description |
+| Method | Endpoint | Auth Required | Description |
 |---|---|---|---|
-| `GET` | `/api/tips` | ✅ | Get list of completed tip IDs |
-| `POST` | `/api/tips` | ✅ | Toggle a tip as complete/incomplete |
+| `GET` | `/api/tips` | Required | Get list of completed tip IDs |
+| `POST` | `/api/tips` | Required | Toggle a tip as complete/incomplete |
 
 ---
 
