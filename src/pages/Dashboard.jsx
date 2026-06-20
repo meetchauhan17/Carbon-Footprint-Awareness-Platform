@@ -344,7 +344,7 @@ function Dashboard() {
                 <button
                   onClick={() => setIsSettingsOpen(true)}
                   className="btn-premium flex items-center gap-1 px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-white cursor-pointer font-bold text-[9px] sm:text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none rounded-full"
-                  id="dashboard-settings-btn-mobile"
+                  id="dashboard-settings-btn"
                   aria-label="Edit profile and goals settings"
                 >
                   <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
@@ -449,17 +449,6 @@ function Dashboard() {
               </button>
             </div>
           )}
-
-          {/* Settings button — pinned inside the card on all sizes */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="absolute bottom-4 right-4 btn-premium flex items-center gap-1.5 px-3.5 py-2 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none"
-            id="dashboard-settings-btn"
-            aria-label="Edit profile and goals settings"
-          >
-            <Settings className="w-3.5 h-3.5 text-white" />
-            Settings
-          </button>
         </div>
       </div>
 
