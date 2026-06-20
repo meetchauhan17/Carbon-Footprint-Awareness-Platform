@@ -412,7 +412,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
     console.log(`Password reset requested for: ${email}`);
 
-    // Send email (SMTP is required)
+    // Send email (SMTP transporter is required)
     if (!mailTransporter) {
       console.warn(`Forgot password requested for ${email} but SMTP transporter is not configured.`);
       return res.status(500).json({ error: 'Email delivery service is not configured.' });
