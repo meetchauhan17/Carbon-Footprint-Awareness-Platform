@@ -29,3 +29,9 @@ CREATE TABLE IF NOT EXISTS completed_tips (
     tip_id VARCHAR(100) NOT NULL,
     PRIMARY KEY (user_id, tip_id)
 );
+
+CREATE TABLE IF NOT EXISTS password_resets (
+    email VARCHAR(255) PRIMARY KEY REFERENCES users(email) ON DELETE CASCADE,
+    otp VARCHAR(6) NOT NULL,
+    expires_at TIMESTAMP NOT NULL
+);

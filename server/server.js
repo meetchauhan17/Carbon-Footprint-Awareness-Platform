@@ -3,9 +3,23 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 import { query } from './db.js';
 
 dotenv.config();
+
+// Setup NodeMailer Transporter
+const mailTransporter = process.env.SMTP_HOST
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_PORT === '465',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+  : null;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -362,6 +376,127 @@ app.post('/api/tips', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Toggle tip error:', error);
     res.status(500).json({ error: 'Server error toggling eco tip' });
+  }
+});
+
+// --- PASSWORD RESET ROUTES ---
+
+// Request Reset OTP
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    // Check if user exists
+    const userCheck = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    if (userCheck.rows.length === 0) {
+      // Return success message regardless of existence to prevent user enumeration
+      return res.json({ message: 'If this email exists in our system, an OTP verification code has been sent.' });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Expiration: 5 minutes from now
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    // Save/overwrite OTP in database
+    await query(
+      `INSERT INTO password_resets (email, otp, expires_at)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (email)
+       DO UPDATE SET otp = EXCLUDED.otp, expires_at = EXCLUDED.expires_at`,
+      [email.toLowerCase(), otp, expiresAt]
+    );
+
+    console.log(`\n--- [OTP SECURITY LOG] ---`);
+    console.log(`Password reset requested for: ${email}`);
+    console.log(`Generated OTP code: ${otp}`);
+    console.log(`--------------------------\n`);
+
+    // Send email if SMTP is configured
+    if (mailTransporter) {
+      const mailOptions = {
+        from: process.env.EMAIL_FROM || '"CarbonWise Support" <noreply@carbonwise.com>',
+        to: email,
+        subject: 'CarbonWise - Password Reset Verification Code',
+        text: `Hello,\n\nYou requested a password reset for your CarbonWise account. Your 6-digit OTP verification code is:\n\n${otp}\n\nThis code will expire in 5 minutes. If you did not request this reset, please ignore this email.\n\nBest regards,\nThe CarbonWise Team`,
+        html: `<div style="font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+          <h2 style="color: #EA580C; font-size: 24px; text-align: center;">CarbonWise</h2>
+          <p>Hello,</p>
+          <p>You requested a password reset for your CarbonWise account. Please use the following 6-digit OTP verification code:</p>
+          <div style="background: #f1f5f9; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #0F1115; border-radius: 8px; margin: 20px 0;">
+            ${otp}
+          </div>
+          <p style="color: #64748b; font-size: 13px;">This code is valid for 5 minutes. If you did not request this reset, please ignore this email.</p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="color: #94a3b8; font-size: 11px; text-align: center;">CarbonWise — Carbon Footprint Awareness Platform</p>
+        </div>`
+      };
+
+      try {
+        await mailTransporter.sendMail(mailOptions);
+        console.log(`OTP email sent successfully to ${email}`);
+      } catch (emailErr) {
+        console.error('Failed to send OTP email via SMTP:', emailErr.message);
+      }
+    }
+
+    res.json({ message: 'If this email exists in our system, an OTP verification code has been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Server error requesting password reset' });
+  }
+});
+
+// Verify OTP & Reset Password
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+
+  try {
+    // Find the active reset token
+    const resetCheck = await query('SELECT * FROM password_resets WHERE email = $1', [email.toLowerCase()]);
+    if (resetCheck.rows.length === 0) {
+      return res.status(400).json({ error: 'No active password reset request found for this email' });
+    }
+
+    const record = resetCheck.rows[0];
+
+    // Verify OTP
+    if (record.otp !== otp.trim()) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
+
+    // Verify expiration
+    const now = new Date();
+    const expiresAt = new Date(record.expires_at);
+    if (now > expiresAt) {
+      return res.status(400).json({ error: 'Verification code has expired. Please request a new one.' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+
+    // Update password in users table
+    await query('UPDATE users SET password_hash = $1 WHERE email = $2', [passwordHash, email.toLowerCase()]);
+
+    // Delete the consumed reset token
+    await query('DELETE FROM password_resets WHERE email = $1', [email.toLowerCase()]);
+
+    res.json({ message: 'Password reset successful. You can now log in with your new password.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Server error resetting password' });
   }
 });
 

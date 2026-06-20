@@ -135,13 +135,69 @@ export function AuthProvider({ children }) {
     setError(null);
   }, []);
 
+  // Forgot Password (Request OTP)
+  const forgotPassword = useCallback(async (email) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+
+      return data.message;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Reset Password (Verify OTP & Update Password)
+  const resetPassword = useCallback(async (email, otp, newPassword) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp, newPassword }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Reset failed');
+      }
+
+      return data.message;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Update Profile wrapper to update local auth context state
   const updateLocalUser = useCallback((updatedUser) => {
     setUser(prev => prev ? { ...prev, ...updatedUser } : updatedUser);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, error, login, register, logout, updateLocalUser }}>
+    <AuthContext.Provider value={{ user, token, loading, error, login, register, logout, updateLocalUser, forgotPassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
