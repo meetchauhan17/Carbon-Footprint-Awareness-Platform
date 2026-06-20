@@ -12,6 +12,29 @@ const __dirname = path.dirname(__filename);
 const { Client } = pg;
 
 async function init() {
+  if (process.env.DATABASE_URL) {
+    console.log('Using DATABASE_URL connection. Skipping database creation step...');
+    const dbClient = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+    try {
+      await dbClient.connect();
+      console.log('Connected to target database.');
+      const schemaPath = path.join(__dirname, 'schema.sql');
+      const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+      console.log('Applying schema migrations...');
+      await dbClient.query(schemaSql);
+      console.log('Database tables initialized successfully!');
+    } catch (error) {
+      console.error('Error applying schema migrations:', error.message);
+      process.exit(1);
+    } finally {
+      await dbClient.end();
+    }
+    return;
+  }
+
   const dbName = process.env.DB_DATABASE || 'carbonwise';
   
   // Connection config to default 'postgres' database
