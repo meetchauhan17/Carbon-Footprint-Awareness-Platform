@@ -96,6 +96,43 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [token]);
 
+  // Sync guest data helper
+  const syncGuestData = async (authToken) => {
+    try {
+      const stored = localStorage.getItem('carbonwise-data');
+      if (!stored) return;
+      
+      const parsed = JSON.parse(stored);
+      const entries = parsed.carbonEntries || [];
+      const tips = parsed.completedTips || [];
+      
+      if (entries.length === 0 && tips.length === 0) return;
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      };
+
+      for (const entry of entries) {
+        await fetch(`${API_URL}/entries`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(entry),
+        }).catch(() => {});
+      }
+
+      for (const tipId of tips) {
+        await fetch(`${API_URL}/tips`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ tipId, completed: true }),
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.error('Failed to sync guest data:', e);
+    }
+  };
+
   // Login
   const login = useCallback(async (email, password) => {
     setLoading(true);
@@ -114,6 +151,8 @@ export function AuthProvider({ children }) {
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
       }
+
+      await syncGuestData(data.token);
 
       localStorage.setItem('carbonwise-token', data.token);
       setToken(data.token);
@@ -146,6 +185,8 @@ export function AuthProvider({ children }) {
         throw new Error(data.error || 'Registration failed');
       }
 
+      await syncGuestData(data.token);
+
       localStorage.setItem('carbonwise-token', data.token);
       setToken(data.token);
       setUser(data.user);
@@ -161,9 +202,12 @@ export function AuthProvider({ children }) {
   // Logout
   const logout = useCallback(() => {
     localStorage.removeItem('carbonwise-token');
+    localStorage.removeItem('carbonwise-data'); // Prevent privacy leak to next user
     setToken(null);
     setUser(null);
     setError(null);
+    // Hard reload ensures CarbonContext and all React state is fully reset to guest defaults
+    window.location.href = '/'; 
   }, []);
 
   // Forgot Password (Request OTP)
