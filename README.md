@@ -1,134 +1,120 @@
 # CarbonWise — Carbon Footprint Awareness Platform
 
-[![React Version](https://img.shields.io/badge/react-v19.0-blue.svg)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/build-Vite%20v8.0-fast.svg)](https://vite.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/styling-Tailwind%20v4.0-38bdf8.svg)](https://tailwindcss.com/)
-[![Tests Status](https://img.shields.io/badge/tests-38%2F38%20passed-success.svg)](#how-to-test)
-[![Accessibility](https://img.shields.io/badge/accessibility-WCAG%20AA%20Compliant-green.svg)](#accessibility--standards)
-[![SEO](https://img.shields.io/badge/SEO-100%2F100-brightgreen.svg)](#seo--performance)
+[![React](https://img.shields.io/badge/React-v19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-v8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Cloud-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Deployed on Vercel](https://img.shields.io/badge/Frontend-Vercel-000000?logo=vercel&logoColor=white)](https://carbon-footprint-awareness-platform-alpha.vercel.app)
+[![Backend on Render](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://render.com)
+[![Tests](https://img.shields.io/badge/Tests-38%2F38%20Passed-success)](https://vitest.dev/)
+[![Accessibility](https://img.shields.io/badge/Accessibility-WCAG%20AA-green)](#accessibility--design-standards)
 
-A premium, interactive, and responsive web application designed to help individuals track, understand, and reduce their daily carbon footprint. Combining modern data visualization, real-time context integration (weather, quotes, country statistics), and an interactive 3D Globe with gamified achievements, CarbonWise transforms abstract emissions metrics into tangible, actionable daily habits.
+A **full-stack**, premium web application that helps individuals track, understand, and reduce their daily carbon footprint. CarbonWise combines a **React frontend** with a **Node.js + PostgreSQL backend**, delivering persistent cloud-synced data across devices, secure user authentication, OTP-based password recovery, 3D globe visualizations, real-time API integrations, and gamified achievements.
 
-Developed for **[Challenge 3] Carbon Footprint Awareness Platform - Hack2Skill Prompt Wars**.
+🌐 **Live Demo:** [https://carbon-footprint-awareness-platform-alpha.vercel.app](https://carbon-footprint-awareness-platform-alpha.vercel.app)
+
+Developed for **[Challenge 3] Carbon Footprint Awareness Platform — Hack2Skill Prompt Wars**.
 
 ---
 
 ## System Architecture
 
-The diagram below outlines the core reactive structure, starting from user inputs through the calculation pipeline to the persistence layers:
-
 ```mermaid
 graph TD
-    UI["Calculator Form / Quick Log"] -->|Input Values| CalcEngine["Carbon Calculation Engine"]
-    CalcEngine -->|Formula Coefficients| EPA["EPA / IPCC Database"]
-    CalcEngine -->|Carbon Entry Object| Context["React CarbonContext Provider"]
-    Context -->|JSON Entry Logs| LS["LocalStorage Cache"]
-    Context -->|Triggers Evaluation| BadgeEngine["Real-time Badge Evaluator"]
-    BadgeEngine -->|Milestone Match| UnlockedBadge["Earned Achievements & Badges List"]
-    Context -->|Feeds Data| Recharts["Lazy-Loaded Recharts Page (Area & Pie)"]
+    User["👤 User (Browser)"] --> Vercel["Vercel CDN\nReact + Vite Frontend"]
+    Vercel --> AuthCtx["AuthContext\nJWT Token Management"]
+    AuthCtx --> Render["Render Cloud\nNode.js + Express API"]
+    Render --> PG["PostgreSQL Database\n(Render Managed)"]
+    Vercel --> CarbonCtx["CarbonContext\nCarbon Entry State"]
+    CarbonCtx --> Render
+    Render --> Nodemailer["Nodemailer\nSMTP OTP Email Delivery"]
+    Vercel --> ExtAPIs["External APIs\nWeather · Countries · Quotes"]
 ```
 
 ---
 
 ## Key Features
 
-### Multi-Category Carbon Calculator
-*   Granular tracking across four core pillars of individual carbon footprints:
-    *   **Transport:** Log trips by car (petrol/diesel/electric), public transit, or air travel.
-    *   **Energy:** Log household electricity, natural gas, or LPG cylinder usage.
-    *   **Food:** Log diet types (meat-heavy, vegetarian, vegan) and organic choices.
-    *   **Shopping:** Log purchases of clothing, electronics, online deliveries, and general goods.
-*   Persistent state and history logs driven by **React Context** and **LocalStorage**.
+### 🔐 Full Authentication System
+- **Register / Login** with hashed passwords (bcrypt, 10 rounds)
+- **JWT tokens** (7-day expiry) for stateless session management
+- **OTP-based Password Reset** — 6-digit code delivered exclusively via email, valid for 5 minutes
+- All sensitive routes protected by `authenticateToken` middleware
 
-### Interactive 3D Earth Globe
-*   Built with raw **Three.js** and **WebGL**, displaying a rotating 3D Earth with custom ambient atmosphere glows, direction-based lighting, and interactive hotspots.
-*   Automatically fetches and maps coordinate hotspots based on the user's localized country data.
-*   Includes a robust, graceful fallback state to a 2D slate-blue canvas in the event of WebGL unavailability or texture loading failures.
+### 📊 Multi-Category Carbon Calculator
+Granular tracking across four core emission pillars:
+- **Transport:** Car (petrol/diesel/electric), public transit, air travel
+- **Energy:** Electricity, natural gas, LPG cylinders
+- **Food:** Meat-heavy, vegetarian, vegan diet types
+- **Shopping:** Clothing, electronics, online deliveries
 
-### Code-Split Analytics & Insights
-*   **7-Day Emissions Trend:** Interactive Area Chart displaying daily emissions stacked against the user's customized target goal line.
-*   **Category Breakdown:** Interactive Pie Chart visualizing weekly emissions distribution.
-*   Both charts are lazy-loaded on mount using React code-splitting chunk hooks (`React.lazy()`) to optimize PageSpeed performance.
+### ☁️ Cloud-Synced Data (PostgreSQL)
+- All carbon entries, completed eco-tips, and user profiles persisted to a **Render PostgreSQL** cloud database
+- Data syncs automatically on login — accessible from any device
+- Full CRUD: add, delete individual entries, clear all history
 
-### Gamified Achievements & Streaks
-*   **17 Unlockable Milestones:** Badges earned for low-carbon travel, consistent logging, hitting weekly targets, completing setup, and executing eco-tips.
-*   **Flame Streak Counter:** Tracks consecutive daily logs that fall below the user's daily budget.
-*   Features a responsive completion meter and badge showcase dialog.
+### 🌍 Interactive 3D Earth Globe
+- Built with raw **Three.js + WebGL** — rotating 3D Earth with ambient atmosphere glow and interactive country hotspots
+- Graceful fallback to a 2D slate-blue canvas on WebGL-unsupported devices
+- Completely bypassed on mobile (`< 1024px`) to preserve PageSpeed scores
 
-### Action Hub & Eco Tips
-*   30+ highly-actionable environmental recommendations categorized by target impact (High, Medium, Low) and theme.
-*   Includes daily seeded suggestions, detailed carbon reduction explanations, and interactive completion logs.
+### 📈 Code-Split Analytics & Charts
+- **7-Day Area Chart** — emissions trend vs. personal goal line
+- **Category Pie Chart** — weekly breakdown by emission type
+- Both lazy-loaded via `React.lazy()` for maximum performance
 
----
+### 🏆 Gamified Achievements & Streaks
+- **17 unlockable badges** for milestones like low-carbon travel, consistent logging, hitting weekly targets, and completing eco-tips
+- **Flame streak counter** — tracks consecutive days below daily budget
+- Responsive completion meter + badge showcase dialog
 
-## WebGL & Shader Fallback Architecture
+### 💡 Eco Tips Action Hub
+- 30+ actionable environmental recommendations
+- Categorized by impact level (High / Medium / Low)
+- Daily seeded suggestions with persistent completion tracking (cloud-saved)
 
-To handle cases where WebGL is unavailable or the network fails to resolve assets, the rotating globe utilizes a fail-safe pipeline:
+### 🌐 Real-Time External API Integrations
+| API | Data Provided |
+|---|---|
+| **Open-Meteo** | Live weather + actionable suggestions based on conditions |
+| **REST Countries** | Country flag, coordinates, per-capita carbon benchmark |
+| **Quotable API** | Rotating environmental motivation quotes |
 
-```mermaid
-graph TD
-    Init["Mount Globe3D Canvas"] -->|Verify Browser| WebGL["WebGL Context Available?"]
-    WebGL -->|No| Fallback["2D Slate-Blue Sphere fallback (GlobeFallback)"]
-    WebGL -->|Yes| LoadTex["Fetch earth.jpg (Local Texture)"]
-    LoadTex -->|Error / CDN Block| Fallback
-    LoadTex -->|Success| CompileShader["Build Ambient Glow, Atmosphere & Hotspots"]
-    CompileShader --> Render["Render Auto-Rotating 3D Earth Globe"]
-```
-
----
-
-## Performance & Architecture Highlights
-
-> [!IMPORTANT]
-> **3D Globe Mobile Viewport Bypass:** 
-> Running `Three.js` (WebGL) and compiling complex shaders on mobile viewports blocks CPU threads, degrading the mobile PageSpeed Performance score. 
-> To resolve this, CarbonWise uses client-side viewport detection logic (`isMobile` hooks targeting screen widths `< 1024px`). On mobile devices, the browser completely bypasses importing and rendering the **~510.92 KB** `Globe3D` module, saving substantial network bandwidth and main-thread processing cycles. The Settings button is relocated to the Welcome Card header for accessibility.
-
-> [!TIP]
-> **Code-Splitting & Asset Optimization:** 
-> All heavy non-critical components (charts, modals, and WebGL elements) are code-split into distinct dynamic modules via `React.lazy()` and rendered under React `<Suspense>` loaders. This reduced the main bundle size by **28%** (from 333KB to 240KB). Additionally, we embedded a highly compressed, low-latency, local Earth texture map (92.57 KB) inside `public/textures/earth.jpg`, resolving external CDN blocks and minimizing load latency.
-
-> [!NOTE]
-> **Progressive Web App (PWA) & Service Worker Cache Control:** 
-> Configured with service worker caching rules to support full offline accessibility for calculator actions, history logging, and achievement tracking. Includes a custom developer-mode bypass in `index.html` that automatically unregisters caching service workers on `localhost` / `127.0.0.1` to prevent dynamic chunk caching issues during rapid hot reloading.
-
----
-
-## Real-Time External API Integrations
-
-To provide localized environmental context without blocking critical paint times, CarbonWise integrates three external data streams using a deferred load strategy (fetches are automatically delayed by **2000ms** after mount):
-
-1.  **Weather Context (Open-Meteo API):** 
-    *   Fetches current temperature and weather conditions based on the user's configured location.
-    *   Translates weather states into actionable suggestions (e.g. suggesting opening windows instead of running air conditioning on mild days).
-2.  **Geographic & Population Data (REST Countries API):**
-    *   Retrieves country flag metrics, latitudinal/longitudinal coordinates, and per-capita carbon averages.
-    *   Provides motivational benchmarks comparing the user's footprint against their nation's per-capita emission rates.
-3.  **Environmental Motivation (Quotable API / Local Fallback):**
-    *   Integrates a rotating quote carousel featuring environmental wisdom from global leaders and scientists, encouraging user logging streaks.
-
----
-
-## High-Performance 3D Interaction & Haptic Rules
-
-CarbonWise features interactive cards with responsive 3D hover tilt and holographic reflections:
-
-*   **RequestAnimationFrame Throttling:** Cursor coordinate tracking in the `use3DTilt` hook runs inside a `requestAnimationFrame` loop. This avoids triggering synchronous layout reflows on high-refresh-rate displays.
-*   **Sensory and Motion Accommodation:**
-    *   **Haptic Bypass:** The `use3DTilt` hook checks `window.matchMedia('(prefers-reduced-motion: reduce)')`. If reduced motion is requested, all rotations, keyframe animations, and shine overlays are strictly disabled.
-    *   **Touch Screen Safeguards:** Touch-only devices automatically skip attaching mousemove and hover listeners, saving battery and CPU usage on mobile devices while providing clean static cards.
+All fetches deferred **2000ms** post-mount to avoid blocking critical paint.
 
 ---
 
 ## Tech Stack
 
-*   **Core Framework:** [React v19](https://react.dev/) + [Vite v8](https://vite.dev/)
-*   **Routing:** [React Router v7](https://reactrouter.com/)
-*   **Data Visualization:** [Recharts](https://recharts.org/)
-*   **Graphics & WebGL:** [Three.js](https://threejs.org/)
-*   **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-*   **Icons:** [Lucide React](https://lucide.dev/)
-*   **Testing Suite:** [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/)
+### Frontend
+| Technology | Purpose |
+|---|---|
+| [React v19](https://react.dev/) | UI framework with hooks & context |
+| [Vite v8](https://vite.dev/) | Build tool with HMR |
+| [React Router v7](https://reactrouter.com/) | Client-side routing |
+| [Tailwind CSS v4](https://tailwindcss.com/) | Utility-first styling |
+| [Three.js](https://threejs.org/) | WebGL 3D Earth globe |
+| [Recharts](https://recharts.org/) | Area & Pie data charts |
+| [Lucide React](https://lucide.dev/) | Icon library |
+| [Vitest](https://vitest.dev/) | Unit testing |
+
+### Backend
+| Technology | Purpose |
+|---|---|
+| [Node.js + Express](https://expressjs.com/) | REST API server |
+| [PostgreSQL](https://www.postgresql.org/) | Relational database (Render managed) |
+| [bcryptjs](https://github.com/dcodeIO/bcrypt.js) | Password hashing (10 rounds) |
+| [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) | JWT auth tokens |
+| [Nodemailer](https://nodemailer.com/) | OTP email delivery via SMTP |
+| [pg](https://node-postgres.com/) | PostgreSQL client for Node.js |
+| [dotenv](https://github.com/motdotla/dotenv) | Environment variable management |
+
+### Deployment
+| Service | Role |
+|---|---|
+| [Vercel](https://vercel.com) | Frontend hosting (CDN + auto-deploy) |
+| [Render](https://render.com) | Backend API + PostgreSQL database |
 
 ---
 
@@ -137,113 +123,305 @@ CarbonWise features interactive cards with responsive 3D hover tilt and holograp
 ```text
 Carbon Footprint Awareness Platform/
 ├── public/
-│   └── textures/
-│       └── earth.jpg           # Local 3D Earth texture map (92.57 KB)
+│   ├── textures/
+│   │   └── earth.jpg              # Local 3D Earth texture (92.57 KB)
+│   └── sw.js                      # Service Worker (offline cache)
 ├── src/
 │   ├── components/
 │   │   ├── charts/
-│   │   │   ├── DashboardAreaChart.jsx   # Lazy-loaded trend chart
-│   │   │   └── DashboardPieChart.jsx    # Lazy-loaded breakdown chart
+│   │   │   ├── DashboardAreaChart.jsx   # Lazy-loaded 7-day trend chart
+│   │   │   └── DashboardPieChart.jsx    # Lazy-loaded category breakdown
 │   │   ├── BadgesGrid.jsx
 │   │   ├── CarbonCard.jsx
 │   │   ├── EmissionGauge.jsx
-│   │   ├── Globe3D.jsx         # WebGL Three.js rotating sphere
-│   │   ├── GlobeFallback.jsx   # Elegant slate-blue fallback container
+│   │   ├── Globe3D.jsx            # WebGL Three.js rotating globe
+│   │   ├── GlobeFallback.jsx      # 2D canvas fallback
 │   │   ├── LocationAutocomplete.jsx
 │   │   └── Navbar.jsx
 │   ├── context/
-│   │   └── CarbonContext.jsx   # Central state manager (history, badges, profile)
+│   │   ├── AuthContext.jsx        # JWT auth state, login/register/forgot-password
+│   │   └── CarbonContext.jsx      # Carbon entry state + cloud sync
 │   ├── hooks/
-│   │   ├── use3DTilt.js        # Throttled 3D card tilt & holo shine effect
-│   │   ├── useCountryData.js   # Deferred country statistics fetch hook
-│   │   ├── useWeather.js       # Deferred localized weather API integration
-│   │   └── useQuote.js         # Deferred Quote carousel integration
+│   │   ├── use3DTilt.js           # Throttled 3D card tilt + holo shine
+│   │   ├── useCountryData.js      # Deferred country statistics
+│   │   ├── useWeather.js          # Deferred weather API
+│   │   └── useQuote.js            # Deferred quote carousel
 │   ├── pages/
 │   │   ├── About.jsx
-│   │   ├── Calculator.jsx      # Input tracking forms & calculators
-│   │   ├── Dashboard.jsx       # Carbon metrics showcase & action panel
-│   │   ├── History.jsx         # Historic log tables & data export
-│   │   └── Tips.jsx            # Seeded environmental recommendations hub
+│   │   ├── Calculator.jsx         # Emission input forms
+│   │   ├── Dashboard.jsx          # Metrics + globe + charts
+│   │   ├── History.jsx            # Log table + export
+│   │   ├── Login.jsx              # Login + Forgot Password OTP flow
+│   │   └── Tips.jsx               # Eco tips hub
 │   ├── utils/
-│   │   ├── carbonCalculator.js # EPA & IPCC coefficients & formulas
-│   │   └── calculations.js     # Formats and conversions
-│   ├── App.jsx
-│   ├── index.css               # Core variables, tailwind directives, custom glassmorphism styles
+│   │   ├── carbonCalculator.js    # EPA/IPCC emission coefficients
+│   │   ├── calculations.js        # Format and conversion helpers
+│   │   └── notifications.js       # Weekly digest + eco tip scheduler
+│   ├── data/
+│   │   └── tipsData.js            # 30+ eco tip definitions
+│   ├── App.jsx                    # Routes + AppLoader + Suspense
+│   ├── index.css                  # Design tokens + glassmorphism styles
 │   └── main.jsx
-├── vercel.json                 # SPA routing and cache control headers
+├── server/
+│   ├── db.js                      # PostgreSQL pool connection
+│   ├── init-db.js                 # Auto-migration on startup
+│   ├── schema.sql                 # Database schema
+│   ├── server.js                  # Express REST API
+│   ├── .env.example               # Environment variable template
+│   └── package.json
+├── vercel.json                    # SPA routing + cache-control headers
 └── package.json
+```
+
+---
+
+## Backend API Reference
+
+### Authentication
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | ❌ | Register a new user |
+| `POST` | `/api/auth/login` | ❌ | Login and receive JWT token |
+| `GET` | `/api/auth/me` | ✅ | Get current user profile |
+| `POST` | `/api/auth/forgot-password` | ❌ | Send OTP to email |
+| `POST` | `/api/auth/reset-password` | ❌ | Verify OTP + set new password |
+
+### Profile
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `PUT` | `/api/profile` | ✅ | Update name, location, goal, preferences |
+
+### Carbon Entries
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/entries` | ✅ | Get all entries for current user |
+| `POST` | `/api/entries` | ✅ | Log a new carbon entry |
+| `DELETE` | `/api/entries/:id` | ✅ | Delete a specific entry |
+| `DELETE` | `/api/entries` | ✅ | Clear all entries (reset history) |
+
+### Eco Tips
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/tips` | ✅ | Get list of completed tip IDs |
+| `POST` | `/api/tips` | ✅ | Toggle a tip as complete/incomplete |
+
+---
+
+## Database Schema
+
+```sql
+-- Users with profile preferences
+CREATE TABLE users (
+  id                          SERIAL PRIMARY KEY,
+  email                       TEXT UNIQUE NOT NULL,
+  password_hash               TEXT NOT NULL,
+  name                        TEXT DEFAULT '',
+  location                    TEXT DEFAULT '',
+  monthly_goal                NUMERIC DEFAULT 150,
+  diet_preference             TEXT DEFAULT 'omnivore',
+  vehicle_type                TEXT DEFAULT 'petrol',
+  notifications_weekly_report BOOLEAN DEFAULT true,
+  notifications_goal_alerts   BOOLEAN DEFAULT true,
+  notifications_eco_tips      BOOLEAN DEFAULT false,
+  created_at                  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Carbon footprint log entries
+CREATE TABLE carbon_entries (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  date       TIMESTAMPTZ DEFAULT NOW(),
+  category   TEXT NOT NULL,
+  total_co2  NUMERIC NOT NULL,
+  details    JSONB DEFAULT '{}'
+);
+
+-- OTP records for password reset
+CREATE TABLE password_resets (
+  email      TEXT PRIMARY KEY,
+  otp        TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL
+);
+
+-- Eco tips completion tracker
+CREATE TABLE completed_tips (
+  user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  tip_id     TEXT NOT NULL,
+  PRIMARY KEY (user_id, tip_id)
+);
 ```
 
 ---
 
 ## Emission Factors & Calculation Methodology
 
-Calculations are aligned with international guidelines from the **US Environmental Protection Agency (EPA) Emission Factors Hub**, **IPCC AR6 Reports**, and **CarbonIndependent.org**:
+Calculations follow **EPA Emission Factors Hub**, **IPCC AR6**, and **CarbonIndependent.org**:
 
-| Category | Item / Activity | Emission Coefficient | Metric |
-| :--- | :--- | :--- | :--- |
-| **Transport** | Car (Petrol / Gas) | `0.21` | kg CO₂ per km |
-| | Car (Diesel) | `0.23` | kg CO₂ per km |
-| | Car (Electric) | `0.05` | kg CO₂ per km (India grid avg) |
-| | Public Transit (Bus/Train) | `0.04` | kg CO₂ per km |
-| | Flight | `0.15` | kg CO₂ per km |
-| **Energy** | Electricity (Grid) | `0.82` | kg CO₂ per kWh (India CEA avg) |
-| | Natural Gas | `2.02` | kg CO₂ per m³ |
-| | LPG Cylinder | `3.00` | kg CO₂ per kg |
-| **Food** | High Meat Diet | `7.20` | kg CO₂ per day |
-| | Vegetarian Diet | `3.80` | kg CO₂ per day |
-| | Vegan Diet | `2.90` | kg CO₂ per day |
-| **Shopping** | Clothing Item | `15.0` | kg CO₂ per item |
-| | Electronic Device | `120.0` | kg CO₂ per item |
-| | Online Delivery | `0.50` | kg CO₂ per order |
+| Category | Activity | Coefficient | Unit |
+|---|---|---|---|
+| **Transport** | Car (Petrol) | `0.21` | kg CO₂/km |
+| | Car (Diesel) | `0.23` | kg CO₂/km |
+| | Car (Electric) | `0.05` | kg CO₂/km |
+| | Public Transit | `0.04` | kg CO₂/km |
+| | Flight | `0.15` | kg CO₂/km |
+| **Energy** | Electricity (India grid) | `0.82` | kg CO₂/kWh |
+| | Natural Gas | `2.02` | kg CO₂/m³ |
+| | LPG Cylinder | `3.00` | kg CO₂/kg |
+| **Food** | High Meat Diet | `7.20` | kg CO₂/day |
+| | Vegetarian | `3.80` | kg CO₂/day |
+| | Vegan | `2.90` | kg CO₂/day |
+| **Shopping** | Clothing Item | `15.0` | kg CO₂/item |
+| | Electronics | `120.0` | kg CO₂/item |
+| | Online Delivery | `0.50` | kg CO₂/order |
 
-### Key Baselines:
-*   **Global Target Baseline:** `11.0 kg CO₂ / day` (~4 tons per capita annually).
-*   **Monthly Budget Default:** `150.0 kg CO₂ / month`.
+**Baselines:** Global target `11.0 kg CO₂/day` · Monthly default budget `150 kg CO₂/month`
 
 ---
 
-## Accessibility & Design Standards
+## Performance & Architecture Highlights
 
-*   **WCAG AA Compliance:** High contrast theme utilizing curated colors (`#F7931A` orange-amber accents, `#10B981` success greens, and `#EF4444` alerts). Every input field includes descriptive `<label>` tags and matching `aria-label` hooks.
-*   **Haptic / Motion Rules:** Incorporates the `prefers-reduced-motion` CSS media query and JavaScript event checks. Users with motion sensitivities automatically receive static, non-rotating layouts with tilt hooks and keyframe animations disabled.
-*   **Glassmorphic Design System:** Leverages custom CSS backdrop filters, sleek gradient borders, and ambient neon glows.
+> [!IMPORTANT]
+> **3D Globe Mobile Bypass:**
+> Three.js WebGL shaders block CPU on mobile, degrading PageSpeed. CarbonWise detects viewports `< 1024px` and completely skips importing the `~510 KB` Globe3D module, preserving bandwidth and main-thread performance.
+
+> [!TIP]
+> **Code-Splitting:**
+> All heavy components (charts, modals, WebGL) are code-split via `React.lazy()` + `<Suspense>`. This reduced the main bundle by **28%** (333 KB → 240 KB). A local Earth texture (`public/textures/earth.jpg`) eliminates external CDN dependencies.
+
+> [!NOTE]
+> **Cache Control (vercel.json):**
+> `index.html` is served with `no-cache, no-store, must-revalidate` so users always receive the latest deployment instantly — no `Ctrl+Shift+R` needed. Hashed JS/CSS assets are cached for 1 year (`max-age=31536000, immutable`).
+
+> [!NOTE]
+> **OTP Security:**
+> Password reset OTPs are never logged to the console or returned in API responses. They are stored hashed in PostgreSQL, expire in 5 minutes, and are consumed (deleted) immediately after a successful reset.
 
 ---
 
 ## How to Run Locally
 
-### 1. Installation
-Install dependencies via npm:
+### Prerequisites
+- Node.js v18+
+- PostgreSQL 14+ running locally
+- Gmail App Password (or any SMTP credentials) for OTP emails
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/meetchauhan17/Carbon-Footprint-Awareness-Platform.git
+cd "Carbon-Footprint-Awareness-Platform"
+```
+
+### 2. Install Frontend Dependencies
 ```bash
 npm install
 ```
 
-### 2. Development Mode (with hot reloading)
-Start the development server:
-```bash
-npm run dev
+### 3. Configure Frontend Environment
+Create `.env` in the root:
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
-Open `http://localhost:5173` (or the fallback port shown in your terminal) in your browser.
 
-### 3. Production Preview
-To compile the application with full tree-shaking, minification, and bundling, then test the real-world performance:
+### 4. Install Backend Dependencies
 ```bash
-npm run build
-npm run preview
+cd server
+npm install
 ```
-Open `http://localhost:4173` to test the production build locally.
+
+### 5. Configure Backend Environment
+Create `server/.env` (see `server/.env.example`):
+```env
+PORT=5000
+DB_USER=postgres
+DB_PASSWORD=your_postgres_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=carbonwise
+JWT_SECRET=your_jwt_secret_here
+
+# SMTP (required for OTP password reset)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password
+EMAIL_FROM="CarbonWise Support" <your_email@gmail.com>
+```
+
+> **Gmail App Password:** Go to Google Account → Security → 2-Step Verification → App Passwords → Generate one for "Mail".
+
+### 6. Start Backend Server
+```bash
+# From the server/ directory
+npm start
+# Auto-creates tables and starts on port 5000
+```
+
+### 7. Start Frontend Dev Server
+```bash
+# From the project root
+npm run dev
+# Open http://localhost:5173
+```
+
+---
+
+## Deployment Guide
+
+### Frontend → Vercel
+1. Push to GitHub — Vercel auto-deploys on every push to `main`
+2. In **Vercel Dashboard → Settings → Environment Variables**, add:
+   ```
+   VITE_API_URL = https://your-backend.onrender.com/api
+   ```
+3. Trigger a **Redeploy** after adding the variable
+
+### Backend → Render
+1. Create a new **Web Service** pointing to the `server/` folder
+2. Set **Build Command:** `npm install`
+3. Set **Start Command:** `npm start`
+4. Add all environment variables in **Render Dashboard → Environment**:
+   ```
+   DATABASE_URL    = (provided by Render PostgreSQL)
+   JWT_SECRET      = your_secret
+   SMTP_HOST       = smtp.gmail.com
+   SMTP_PORT       = 587
+   SMTP_USER       = your_email@gmail.com
+   SMTP_PASS       = your_app_password
+   EMAIL_FROM      = "CarbonWise Support" <your_email@gmail.com>
+   ```
+5. Create a **PostgreSQL** service in Render and link its `DATABASE_URL`
+
+---
+
+## Accessibility & Design Standards
+
+- **WCAG AA Compliant** — high contrast theme with curated `#F7931A` amber and `#10B981` green accents
+- All inputs have descriptive `<label>` tags + `aria-label` attributes
+- `prefers-reduced-motion` respected — disables all rotations, keyframe animations, and 3D tilt effects
+- Touch-only devices skip mouse listeners — saving battery and CPU
 
 ---
 
 ## How to Test
 
-Run the full automated unit testing suite powered by Vitest:
 ```bash
+# Run all 38 unit tests
 npm run test
-```
 
-Generate a detailed code coverage report:
-```bash
+# Generate code coverage report
 npm run test:coverage
 ```
+
+---
+
+## Acknowledgements
+
+- Emission factors from **US EPA**, **IPCC AR6**, and **CarbonIndependent.org**
+- Weather data from **[Open-Meteo](https://open-meteo.com/)** (free, no API key required)
+- Country data from **[REST Countries](https://restcountries.com/)**
+- Environmental quotes from **[Quotable API](https://api.quotable.io/)**
+- Earth texture from **NASA Blue Marble** imagery (local, no CDN dependency)
