@@ -31,3 +31,7 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Backend environment files
+server/.env
+

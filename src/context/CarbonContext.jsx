@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useEffect, useCallback, useMemo,
 import { getCategoryBreakdown, getWeeklyData, getMonthlyData, getTotalCO2 } from '../utils/calculations.js'
 import { evaluateBadges } from '../utils/badges.js'
 import { checkGoalAlert } from '../utils/notifications.js'
+import { useAuth } from './AuthContext.jsx'
 
 const CarbonContext = createContext(null)
 
@@ -11,43 +12,6 @@ const STORAGE_KEY = 'carbonwise-data'
 const GLOBAL_AVERAGE_YEARLY_KG = 4000
 
 
-
-// ─── Sample Data Generator ────────────────────────────────────────────
-function generateSampleData() {
-  const entries = []
-  const sampleActivities = [
-    { category: 'transport', item: 'car',         label: 'Car',                quantity: 25,  totalCO2: 5.25  },
-    { category: 'transport', item: 'bus',         label: 'Bus',                quantity: 15,  totalCO2: 1.34  },
-    { category: 'transport', item: 'train',       label: 'Train',              quantity: 40,  totalCO2: 1.64  },
-    { category: 'energy',    item: 'electricity', label: 'Electricity (kWh)',   quantity: 12,  totalCO2: 6.0   },
-    { category: 'energy',    item: 'naturalGas',  label: 'Natural Gas (m³)',    quantity: 3,   totalCO2: 6.0   },
-    { category: 'food',      item: 'beef',        label: 'Beef',               quantity: 0.5, totalCO2: 13.5  },
-    { category: 'food',      item: 'chicken',     label: 'Chicken',            quantity: 0.8, totalCO2: 5.52  },
-    { category: 'food',      item: 'vegetables',  label: 'Vegetables',         quantity: 2,   totalCO2: 4.0   },
-    { category: 'food',      item: 'dairy',       label: 'Dairy',              quantity: 1,   totalCO2: 3.2   },
-    { category: 'waste',     item: 'landfill',    label: 'Landfill',           quantity: 2,   totalCO2: 1.16  },
-    { category: 'waste',     item: 'recycled',    label: 'Recycled',           quantity: 3,   totalCO2: 0.09  },
-    { category: 'transport', item: 'car',         label: 'Car',                quantity: 18,  totalCO2: 3.78  },
-    { category: 'energy',    item: 'electricity', label: 'Electricity (kWh)',   quantity: 8,   totalCO2: 4.0   },
-    { category: 'food',      item: 'fish',        label: 'Fish',               quantity: 0.4, totalCO2: 2.44  },
-  ]
-
-  // Spread entries across the last 7 days (2 entries per day)
-  for (let i = 0; i < sampleActivities.length; i++) {
-    const daysAgo = Math.floor(i / 2) // 2 entries per day
-    const date = new Date()
-    date.setDate(date.getDate() - daysAgo)
-    date.setHours(8 + (i % 3) * 4, Math.floor(Math.random() * 60), 0, 0) // varied hours
-
-    entries.push({
-      ...sampleActivities[i],
-      id: Date.now() - (i * 100000), // unique IDs spread in time
-      date: date.toISOString(),
-    })
-  }
-
-  return entries
-}
 
 // ─── Load from localStorage ───────────────────────────────────────────
 function loadFromStorage() {
@@ -81,12 +45,7 @@ function buildInitialState() {
     return { completedTips: [], ...stored, carbonEntries, userProfile, totalFootprint, weeklyData, monthlyData, badges }
   }
 
-  // First load → seed with sample data
-  const sampleEntries = generateSampleData()
-  const totalFootprint = getTotalCO2(sampleEntries)
-  const weeklyData = getWeeklyData(sampleEntries)
-  const monthlyData = getMonthlyData(sampleEntries)
-
+  // First load → initialize with empty database
   const state = {
     userProfile: {
       name: '',
@@ -96,14 +55,13 @@ function buildInitialState() {
       vehicleType: 'petrol',
       notifications: { weeklyReport: true, goalAlerts: true, ecoTips: false }
     },
-    carbonEntries: sampleEntries,
-    totalFootprint,
-    weeklyData,
-    monthlyData,
+    carbonEntries: [],
+    totalFootprint: 0,
+    weeklyData: [],
+    monthlyData: [],
     badges: [],
     completedTips: [],
   }
-  state.badges = evaluateBadges(state)
   return state
 }
 
@@ -113,8 +71,30 @@ function buildInitialState() {
 function carbonReducer(state, action) {
   let next
   switch (action.type) {
+    case 'SET_DATA': {
+      const { carbonEntries = [], completedTips = [], userProfile = {} } = action.payload
+      const totalFootprint = getTotalCO2(carbonEntries)
+      const weeklyData = getWeeklyData(carbonEntries)
+      const monthlyData = getMonthlyData(carbonEntries)
+      next = {
+        ...state,
+        carbonEntries,
+        completedTips,
+        userProfile: { ...state.userProfile, ...userProfile },
+        totalFootprint,
+        weeklyData,
+        monthlyData,
+      }
+      next.badges = evaluateBadges(next)
+      return next
+    }
+    case 'SET_COMPLETED_TIPS': {
+      next = { ...state, completedTips: action.payload }
+      next.badges = evaluateBadges(next)
+      return next
+    }
     case 'ADD_ENTRY': {
-      const newEntry = {
+      const newEntry = action.payload.id ? action.payload : {
         ...action.payload,
         id: Date.now(),
         date: new Date().toISOString(),
@@ -172,11 +152,48 @@ function carbonReducer(state, action) {
 // ─── Provider ─────────────────────────────────────────────────────────
 export function CarbonProvider({ children }) {
   const [state, dispatch] = useReducer(carbonReducer, null, buildInitialState)
+  const { token, user, updateLocalUser } = useAuth()
 
-  // Persist to localStorage on every state change
+  // Persist to localStorage on every state change (fallback)
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state])
+
+  // Sync data from local PostgreSQL backend when authenticated
+  useEffect(() => {
+    async function syncFromDb() {
+      if (!token) {
+        // If not logged in, reset/clear DB-dependent state (or use local guest data)
+        return
+      }
+
+      try {
+        const headers = { 'Authorization': `Bearer ${token}` }
+
+        // Fetch entries
+        const entriesRes = await fetch('http://localhost:5000/api/entries', { headers })
+        const entries = entriesRes.ok ? await entriesRes.json() : []
+
+        // Fetch completed tips
+        const tipsRes = await fetch('http://localhost:5000/api/tips', { headers })
+        const tips = tipsRes.ok ? await tipsRes.json() : []
+
+        // Dispatch full set
+        dispatch({
+          type: 'SET_DATA',
+          payload: {
+            carbonEntries: entries,
+            completedTips: tips,
+            userProfile: user || {}
+          }
+        })
+      } catch (err) {
+        console.error('Error syncing data from local PostgreSQL backend:', err)
+      }
+    }
+
+    syncFromDb()
+  }, [token, user])
 
   // Trigger goal alerts on new entries added during the session
   const prevEntriesLength = useRef(state?.carbonEntries?.length || 0)
@@ -190,35 +207,99 @@ export function CarbonProvider({ children }) {
   }, [state?.carbonEntries, state?.userProfile?.monthlyGoal])
 
   // ── Exposed action functions ──────────────────────────────────────
-  const addCarbonEntry = useCallback((entry) => {
+  const addCarbonEntry = useCallback(async (entry) => {
+    if (token) {
+      try {
+        const res = await fetch('http://localhost:5000/api/entries', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(entry)
+        })
+        if (res.ok) {
+          const savedEntry = await res.json()
+          dispatch({ type: 'ADD_ENTRY', payload: savedEntry })
+          return
+        }
+      } catch (err) {
+        console.error('Failed to save carbon entry to DB:', err)
+      }
+    }
+    // Fallback/Guest
     dispatch({ type: 'ADD_ENTRY', payload: entry })
-  }, [])
+  }, [token])
 
-  const deleteEntry = useCallback((id) => {
+  const deleteEntry = useCallback(async (id) => {
+    if (token) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/entries/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          dispatch({ type: 'DELETE_ENTRY', payload: id })
+          return
+        }
+      } catch (err) {
+        console.error('Failed to delete entry from DB:', err)
+      }
+    }
+    // Fallback/Guest
     dispatch({ type: 'DELETE_ENTRY', payload: id })
-  }, [])
+  }, [token])
 
-  const updateProfile = useCallback((profile) => {
+  const updateProfile = useCallback(async (profile) => {
+    if (token) {
+      try {
+        const res = await fetch('http://localhost:5000/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(profile)
+        })
+        if (res.ok) {
+          const updatedProfile = await res.json()
+          updateLocalUser(updatedProfile)
+          dispatch({ type: 'UPDATE_PROFILE', payload: updatedProfile })
+          return
+        }
+      } catch (err) {
+        console.error('Failed to update profile in DB:', err)
+      }
+    }
+    // Fallback/Guest
     dispatch({ type: 'UPDATE_PROFILE', payload: profile })
-  }, [])
+  }, [token, updateLocalUser])
 
-  const clearHistory = useCallback(() => {
+  const clearHistory = useCallback(async () => {
+    if (token) {
+      try {
+        await fetch('http://localhost:5000/api/entries', {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      } catch (err) {
+        console.error('Failed to clear history from DB:', err)
+      }
+    }
     dispatch({ type: 'CLEAR_HISTORY' })
-  }, [])
+  }, [token])
 
   const getAverageFootprint = useCallback(() => {
-    if (state.carbonEntries.length === 0) return 0
+    if (!state?.carbonEntries || state.carbonEntries.length === 0) return 0
     return parseFloat((state.totalFootprint / state.carbonEntries.length).toFixed(2))
-  }, [state.totalFootprint, state.carbonEntries.length])
+  }, [state?.totalFootprint, state?.carbonEntries?.length])
 
   const compareToGlobalAverage = useCallback(() => {
-    // Global average: 4 tons CO2/year = ~333.33 kg/month = ~10.96 kg/day
     const globalMonthlyKg = GLOBAL_AVERAGE_YEARLY_KG / 12
-
-    // Get last 30 days of user entries
     const cutoff = new Date()
     cutoff.setDate(cutoff.getDate() - 30)
-    const last30 = state.carbonEntries.filter(e => new Date(e.date) >= cutoff)
+    const entries = state?.carbonEntries || []
+    const last30 = entries.filter(e => new Date(e.date) >= cutoff)
     const userMonthlyKg = last30.reduce((sum, e) => sum + e.totalCO2, 0)
 
     const difference = userMonthlyKg - globalMonthlyKg
@@ -233,11 +314,33 @@ export function CarbonProvider({ children }) {
       percentDiff,
       status: difference <= 0 ? 'below' : 'above',
     }
-  }, [state.carbonEntries])
+  }, [state?.carbonEntries])
 
-  const toggleTipCompleted = useCallback((tipId) => {
+  const toggleTipCompleted = useCallback(async (tipId) => {
+    const completedTips = state?.completedTips || []
+    const isCompleted = completedTips.includes(tipId)
+    if (token) {
+      try {
+        const res = await fetch('http://localhost:5000/api/tips', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ tipId, completed: !isCompleted })
+        })
+        if (res.ok) {
+          const updatedTips = await res.json()
+          dispatch({ type: 'SET_COMPLETED_TIPS', payload: updatedTips })
+          return
+        }
+      } catch (err) {
+        console.error('Failed to toggle eco tip in DB:', err)
+      }
+    }
+    // Fallback/Guest
     dispatch({ type: 'TOGGLE_TIP_COMPLETED', payload: tipId })
-  }, [])
+  }, [token, state?.completedTips])
 
   // ── Memoized context value ────────────────────────────────────────
   const value = useMemo(() => ({

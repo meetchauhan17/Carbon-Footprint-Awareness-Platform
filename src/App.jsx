@@ -1,7 +1,11 @@
-import React, { Suspense, useEffect } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import { useCarbon } from './context/CarbonContext.jsx'
+import { useAuth } from './context/AuthContext.jsx'
+import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
+import { Leaf } from 'lucide-react'
 import { checkWeeklyDigest, checkDailyTipSuggestion } from './utils/notifications.js'
 import { TIPS_DATA } from './data/tipsData.js'
 
@@ -42,8 +46,12 @@ function PageSkeleton() {
 
 function App() {
   const { state } = useCarbon()
+  const { user, loading } = useAuth()
+  const [isRegister, setIsRegister] = useState(false)
 
   useEffect(() => {
+    if (!user) return
+
     // Run initial checks on app load after 3 seconds to unblock main thread
     const t = setTimeout(() => {
       checkWeeklyDigest()
@@ -60,7 +68,48 @@ function App() {
       clearTimeout(t)
       clearInterval(interval)
     }
-  }, [state?.carbonEntries, state?.completedTips])
+  }, [user, state?.carbonEntries, state?.completedTips])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen text-clay-text relative flex items-center justify-center">
+        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 bg-grid-pattern" aria-hidden="true" />
+        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 art-sunburst" aria-hidden="true" />
+        <PageSkeleton />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen text-clay-text relative flex flex-col">
+        {/* Bitcoin DeFi Network Grid and Ambient Sunburst Overlay */}
+        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 bg-grid-pattern" aria-hidden="true" />
+        <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 art-sunburst" aria-hidden="true" />
+        
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-[#0F1115]/90 backdrop-blur-lg border-b border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="w-7 h-7 rotate-45 border border-[#F7931A]/40 flex items-center justify-center bg-[#0F1115] rounded-md">
+                <Leaf className="-rotate-45 w-4 h-4 text-[#F7931A]" />
+              </div>
+              <span className="text-xl font-bold gradient-text tracking-wider select-none font-display">CarbonWise</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Auth Form Container */}
+        <main className="flex-1 flex items-center justify-center">
+          {isRegister ? (
+            <Register onToggleAuthMode={() => setIsRegister(false)} />
+          ) : (
+            <Login onToggleAuthMode={() => setIsRegister(true)} />
+          )}
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen text-clay-text relative">
@@ -69,7 +118,7 @@ function App() {
       <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10 art-sunburst" aria-hidden="true" />
 
       <Navbar />
-      <main id="main-content" className="pt-20">
+      <main id="main-content" className="pt-20 pb-20 md:pb-0">
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             <Route path="/" element={<Dashboard />} />

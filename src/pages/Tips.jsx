@@ -47,7 +47,7 @@ function TipCard({ tip, i, isCompleted, toggleTipCompleted, DIFFICULTY_STYLES })
         ...tilt.style,
         animationDelay: `${50 + (i % 6) * 50}ms`
       }}
-      className={`glass-card flex flex-col justify-between p-6 transition-all duration-300 relative group overflow-hidden ${
+      className={`glass-card flex flex-col justify-between p-3.5 sm:p-5 md:p-6 transition-all duration-300 relative group overflow-hidden h-full ${
         isCompleted
           ? 'border-[#F7931A] bg-[#F7931A]/5 shadow-[0_0_25px_rgba(247,147,26,0.15)] holo-shine'
           : ''
@@ -59,42 +59,42 @@ function TipCard({ tip, i, isCompleted, toggleTipCompleted, DIFFICULTY_STYLES })
         </div>
       )}
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <CategoryBadge category={tip.category} showIcon={true} />
-          <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${DIFFICULTY_STYLES[tip.difficulty]}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+      <div className="space-y-2.5 sm:space-y-4">
+        <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
+          <CategoryBadge category={tip.category} showIcon={true} className="scale-90 origin-left sm:scale-100" />
+          <span className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border w-max ${DIFFICULTY_STYLES[tip.difficulty]}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             {tip.difficulty}
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-[#EA580C]/10 border border-[#EA580C]/30 flex items-center justify-center shrink-0 group-hover:border-[#F7931A]/60 group-hover:shadow-[0_0_15px_rgba(247,147,26,0.3)] transition-all duration-300">
-            <EmojiIcon icon={tip.icon} className="w-5 h-5" />
+        <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 sm:gap-3.5">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#EA580C]/10 border border-[#EA580C]/30 flex items-center justify-center shrink-0 group-hover:border-[#F7931A]/60 group-hover:shadow-[0_0_15px_rgba(247,147,26,0.3)] transition-all duration-300">
+            <EmojiIcon icon={tip.icon} className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </div>
-          <h3 className={`font-bold text-sm sm:text-base leading-snug tracking-wide font-display ${
+          <h3 className={`font-bold text-xs sm:text-base leading-snug tracking-wide font-display ${
             isCompleted ? 'text-clay-muted line-through decoration-[#F7931A]/40' : 'text-white'
           }`}>
             {tip.title}
           </h3>
         </div>
 
-        <p className={`text-xs leading-relaxed ${isCompleted ? 'text-white/60 font-medium' : 'text-clay-muted font-medium'}`}>
+        <p className={`text-[10px] sm:text-xs leading-normal sm:leading-relaxed ${isCompleted ? 'text-white/60 font-medium' : 'text-clay-muted font-medium'}`}>
           {tip.description}
         </p>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between gap-3">
+      <div className="mt-4 pt-3 border-t border-white/5 flex flex-col xs:flex-row xs:items-center justify-between gap-2.5">
         <div className="shrink-0">
-          <p className="text-[9px] font-bold text-clay-muted uppercase tracking-wider font-display">Potential Savings</p>
-          <p className="text-xs font-bold text-[#F7931A] leading-none mt-1.5 font-mono">
-            Saves {tip.co2Saved} kg CO₂
+          <p className="text-[8px] sm:text-[9px] font-bold text-clay-muted uppercase tracking-wider font-display">Potential Savings</p>
+          <p className="text-[10px] sm:text-xs font-bold text-[#F7931A] leading-none mt-1 font-mono">
+            Saves {tip.co2Saved} kg
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => toggleTipCompleted(tip.id)}
-          className={`flex items-center gap-1.5 px-4 py-2 h-10 rounded-full text-xs font-bold font-display cursor-pointer focus:outline-none transition-all duration-200 ${
+          className={`flex items-center justify-center gap-1 px-2.5 py-1.5 h-8 sm:h-10 sm:px-4 sm:py-2 rounded-full text-[9px] sm:text-xs font-bold font-display cursor-pointer focus:outline-none transition-all duration-200 w-full xs:w-auto ${
             isCompleted
               ? 'border border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981] hover:bg-[#10B981]/20'
               : 'btn-premium'
@@ -104,10 +104,13 @@ function TipCard({ tip, i, isCompleted, toggleTipCompleted, DIFFICULTY_STYLES })
           {isCompleted ? (
             <>
               <Check className="w-3.5 h-3.5" />
-              Completed
+              <span>Completed</span>
             </>
           ) : (
-            'Mark as Done'
+            <>
+              <span className="xs:inline hidden">Mark as Done</span>
+              <span className="xs:hidden">Done</span>
+            </>
           )}
         </button>
       </div>
@@ -242,7 +245,7 @@ function Tips() {
       <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
         
         {/* Category Pills (Tabs) */}
-        <div className="flex flex-wrap gap-2 pb-2 border-b border-white/5">
+        <div className="flex overflow-x-auto pb-3 border-b border-white/5 no-scrollbar whitespace-nowrap gap-2 snap-x snap-proximity scroll-smooth">
           {CATEGORY_TABS.map(tab => {
             const count = categoryCounts[tab.id] || 0
             const isActive = activeCategory === tab.id
@@ -251,7 +254,7 @@ function Tips() {
                 key={tab.id}
                 id={`tips-tab-${tab.id.replace(/\s/g, '-')}`}
                 onClick={() => setActiveCategory(tab.id)}
-                className={`flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-bold tracking-wide cursor-pointer focus:outline-none transition-all duration-200 hover:scale-102 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide cursor-pointer focus:outline-none transition-all duration-200 shrink-0 snap-start hover:scale-102 ${
                   isActive
                     ? 'bg-gradient-to-r from-[#EA580C] to-[#F7931A] text-white shadow-[0_0_15px_rgba(234,88,12,0.4)]'
                     : 'bg-[#0F1115] text-[#94A3B8] hover:text-white border border-white/10 hover:border-[#F7931A]/40'
@@ -272,7 +275,7 @@ function Tips() {
         </div>
 
         {/* Search & Sort Panel */}
-        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between w-full">
           {/* Search bar */}
           <div className="relative w-full sm:max-w-md">
             <label htmlFor="tips-search-input" className="sr-only">Search tips</label>
@@ -288,15 +291,15 @@ function Tips() {
           </div>
 
           {/* Sort selection */}
-          <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+          <div className="flex items-center gap-2 justify-between sm:justify-end w-full sm:w-auto">
             <label htmlFor="tips-sort-select" className="text-[10px] font-bold text-clay-muted uppercase tracking-wider shrink-0 font-display">Sort By:</label>
-            <div className="relative">
+            <div className="relative flex-1 sm:flex-initial">
               <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-clay-muted pointer-events-none" />
               <select
                 id="tips-sort-select"
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
-                className="pl-9 pr-8 py-3 bg-black/50 border-0 border-b-2 border-white/20 rounded-lg text-xs text-white focus:outline-none focus:border-[#F7931A] focus:shadow-[0_10px_20px_-10px_rgba(247,147,26,0.3)] transition-all duration-200 appearance-none cursor-pointer font-bold font-display"
+                className="w-full sm:w-auto pl-9 pr-8 py-3 bg-black/50 border-0 border-b-2 border-white/20 rounded-lg text-xs text-white focus:outline-none focus:border-[#F7931A] focus:shadow-[0_10px_20px_-10px_rgba(247,147,26,0.3)] transition-all duration-200 appearance-none cursor-pointer font-bold font-display"
               >
                 <option value="co2" className="bg-[#0F1115]">CO₂ Saved Impact</option>
                 <option value="difficulty" className="bg-[#0F1115]">Difficulty (Easy first)</option>
@@ -311,7 +314,7 @@ function Tips() {
 
       {/* ── TIPS GRID ────────────────────────────────────────────── */}
       {filteredAndSortedTips.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
           {filteredAndSortedTips.map((tip, i) => {
             const isCompleted = completedTips.includes(tip.id)
             return (

@@ -52,16 +52,16 @@ describe('CarbonContext', () => {
     vi.restoreAllMocks()
   })
 
-  it('should initialize with sample data when localStorage is empty', () => {
+  it('should initialize with empty data when localStorage is empty', () => {
     render(
       <CarbonProvider>
         <TestConsumer />
       </CarbonProvider>
     )
 
-    // Should have some sample entries
+    // Should have 0 entries
     const count = parseInt(screen.getByTestId('entries-count').textContent)
-    expect(count).toBeGreaterThan(0)
+    expect(count).toBe(0)
   })
 
   it('should add a carbon entry correctly', () => {
@@ -90,7 +90,15 @@ describe('CarbonContext', () => {
       </CarbonProvider>
     )
 
+    // Add an entry first
+    const addBtn = screen.getByTestId('add-btn')
+    act(() => {
+      addBtn.click()
+    })
+
     const initialCount = parseInt(screen.getByTestId('entries-count').textContent)
+    expect(initialCount).toBe(1)
+
     // Find the first delete button
     const deleteBtns = screen.getAllByText('Delete')
     
@@ -99,7 +107,7 @@ describe('CarbonContext', () => {
     })
 
     const newCount = parseInt(screen.getByTestId('entries-count').textContent)
-    expect(newCount).toBe(initialCount - 1)
+    expect(newCount).toBe(0)
   })
 
   it('should persist data in localStorage', () => {
@@ -133,6 +141,6 @@ describe('CarbonContext', () => {
     )
 
     const avg = parseFloat(screen.getByTestId('average-footprint').textContent)
-    expect(avg).toBeGreaterThan(0)
+    expect(avg).toBe(0)
   })
 })

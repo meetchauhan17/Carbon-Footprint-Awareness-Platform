@@ -232,30 +232,30 @@ function About() {
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex gap-3 pb-2 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+      <div className="flex gap-2.5 pb-2 animate-fade-in-up overflow-x-auto no-scrollbar snap-x snap-mandatory" style={{ animationDelay: '100ms' }}>
         <button
           onClick={() => setActiveTab('about')}
-          className={`flex items-center gap-2.5 h-12 px-6 text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer focus:outline-none rounded-full ${
+          className={`flex items-center justify-center gap-2 h-11 px-4 sm:px-6 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer focus:outline-none rounded-full shrink-0 snap-center ${
             activeTab === 'about'
               ? 'btn-premium text-white'
               : 'bg-[#0F1115]/80 text-[#94A3B8] hover:text-white border border-white/10 hover:bg-[#0F1115]'
           }`}
           aria-label="View about carbonwise"
         >
-          <Info className="w-4 h-4" />
-          About CarbonWise
+          <Info className="w-3.5 h-3.5" />
+          <span>About</span><span className="hidden sm:inline">&nbsp;CarbonWise</span>
         </button>
         <button
           onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2.5 h-12 px-6 text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer focus:outline-none rounded-full ${
+          className={`flex items-center justify-center gap-2 h-11 px-4 sm:px-6 text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer focus:outline-none rounded-full shrink-0 snap-center ${
             activeTab === 'profile'
               ? 'btn-premium text-white'
               : 'bg-[#0F1115]/80 text-[#94A3B8] hover:text-white border border-white/10 hover:bg-[#0F1115]'
           }`}
           aria-label="View profile settings"
         >
-          <User className="w-4 h-4" />
-          My Profile &amp; Settings
+          <User className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">My&nbsp;</span><span>Profile &amp; Settings</span>
         </button>
       </div>
 
@@ -303,51 +303,57 @@ function About() {
           {/* Section: Why it matters (3 Stats) */}
           <div className="space-y-4">
             <h3 className="text-xs font-bold text-[#94A3B8] uppercase tracking-wider font-display">Why It Matters</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex overflow-x-auto pb-2 gap-4 no-scrollbar snap-x snap-mandatory md:grid md:grid-cols-3 md:pb-0">
               
               {/* Stat 1 */}
-              <div
-                ref={globalAvgTilt.ref}
-                onMouseMove={globalAvgTilt.onMouseMove}
-                onMouseLeave={globalAvgTilt.onMouseLeave}
-                style={globalAvgTilt.style}
-                className="glass-card p-6 text-center rounded-2xl"
-              >
-                <p className="text-4xl font-bold text-[#EA580C] font-display">4.0 Tons</p>
-                <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Global Average</p>
-                <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
-                  The current average annual carbon emissions per person worldwide.
-                </p>
+              <div className="w-[80vw] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none">
+                <div
+                  ref={globalAvgTilt.ref}
+                  onMouseMove={globalAvgTilt.onMouseMove}
+                  onMouseLeave={globalAvgTilt.onMouseLeave}
+                  style={globalAvgTilt.style}
+                  className="glass-card p-6 text-center rounded-2xl h-full flex flex-col justify-center"
+                >
+                  <p className="text-4xl font-bold text-[#EA580C] font-display">4.0 Tons</p>
+                  <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Global Average</p>
+                  <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
+                    The current average annual carbon emissions per person worldwide.
+                  </p>
+                </div>
               </div>
 
               {/* Stat 2 */}
-              <div
-                ref={targetTilt.ref}
-                onMouseMove={targetTilt.onMouseMove}
-                onMouseLeave={targetTilt.onMouseLeave}
-                style={targetTilt.style}
-                className="glass-card p-6 text-center rounded-2xl"
-              >
-                <p className="text-4xl font-bold text-[#10B981] font-display">2.0 Tons</p>
-                <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Target Footprint</p>
-                <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
-                  The target annual emissions per person required to halt global warming trends.
-                </p>
+              <div className="w-[80vw] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none">
+                <div
+                  ref={targetTilt.ref}
+                  onMouseMove={targetTilt.onMouseMove}
+                  onMouseLeave={targetTilt.onMouseLeave}
+                  style={targetTilt.style}
+                  className="glass-card p-6 text-center rounded-2xl h-full flex flex-col justify-center"
+                >
+                  <p className="text-4xl font-bold text-[#10B981] font-display">2.0 Tons</p>
+                  <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Target Footprint</p>
+                  <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
+                    The target annual emissions per person required to halt global warming trends.
+                  </p>
+                </div>
               </div>
 
               {/* Stat 3 */}
-              <div
-                ref={thresholdTilt.ref}
-                onMouseMove={thresholdTilt.onMouseMove}
-                onMouseLeave={thresholdTilt.onMouseLeave}
-                style={thresholdTilt.style}
-                className="glass-card p-6 text-center rounded-2xl"
-              >
-                <p className="text-4xl font-bold text-[#FFD600] font-display">1.5°C</p>
-                <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Threshold Limit</p>
-                <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
-                  The maximum global temperature rise limit to avoid severe climate impacts.
-                </p>
+              <div className="w-[80vw] md:w-auto shrink-0 snap-center md:shrink md:snap-align-none">
+                <div
+                  ref={thresholdTilt.ref}
+                  onMouseMove={thresholdTilt.onMouseMove}
+                  onMouseLeave={thresholdTilt.onMouseLeave}
+                  style={thresholdTilt.style}
+                  className="glass-card p-6 text-center rounded-2xl h-full flex flex-col justify-center"
+                >
+                  <p className="text-4xl font-bold text-[#FFD600] font-display">1.5°C</p>
+                  <p className="text-sm font-bold text-white mt-2 font-display uppercase tracking-wide">Threshold Limit</p>
+                  <p className="text-xs text-[#94A3B8] mt-1.5 leading-relaxed font-sans font-medium">
+                    The maximum global temperature rise limit to avoid severe climate impacts.
+                  </p>
+                </div>
               </div>
 
             </div>
@@ -634,17 +640,17 @@ function About() {
                 Notification Preferences
               </span>
               
-              <div className="flex items-center justify-between py-2.5 border-b border-white/10 last:border-0">
-                <div>
+              <div className="flex items-center justify-between gap-4 py-3 border-b border-white/10 last:border-0">
+                <div className="flex-1 min-w-0">
                   <p className="font-bold text-white text-sm font-display">Weekly Summary Reports</p>
-                  <p className="text-xs text-[#94A3B8] mt-0.5 font-sans font-medium">Receive reports containing weekly average trends</p>
+                  <p className="text-[11px] sm:text-xs text-[#94A3B8] mt-0.5 font-sans font-medium leading-relaxed">Receive reports containing weekly average trends</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   <button
                     type="button"
                     disabled={isDisabled}
                     onClick={() => handleTestNotification('weekly')}
-                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="h-8 px-2.5 sm:px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
                     title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Send a test weekly summary report"}
                   >
                     Test
@@ -658,25 +664,25 @@ function About() {
                     aria-label="Toggle weekly summary reports"
                   >
                     {weeklyReport && !isDisabled ? (
-                      <ToggleRight className="w-10 h-10 text-[#F7931A] transition-all" />
+                      <ToggleRight className="w-8 h-8 sm:w-10 sm:h-10 text-[#F7931A] transition-all" />
                     ) : (
-                      <ToggleLeft className="w-10 h-10 text-white/20 transition-all" />
+                      <ToggleLeft className="w-8 h-8 sm:w-10 sm:h-10 text-white/20 transition-all" />
                     )}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between py-2.5 border-b border-white/10 last:border-0">
-                <div>
+              <div className="flex items-center justify-between gap-4 py-3 border-b border-white/10 last:border-0">
+                <div className="flex-1 min-w-0">
                   <p className="font-bold text-white text-sm font-display">Goal Alert Notifications</p>
-                  <p className="text-xs text-[#94A3B8] mt-0.5 font-sans font-medium">Get notified if monthly footprint exceeds target budget</p>
+                  <p className="text-[11px] sm:text-xs text-[#94A3B8] mt-0.5 font-sans font-medium leading-relaxed">Get notified if monthly footprint exceeds target budget</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   <button
                     type="button"
                     disabled={isDisabled}
                     onClick={() => handleTestNotification('goal')}
-                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="h-8 px-2.5 sm:px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
                     title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Send a test goal alert"}
                   >
                     Test
@@ -690,25 +696,25 @@ function About() {
                     aria-label="Toggle goal alerts notifications"
                   >
                     {goalAlerts && !isDisabled ? (
-                      <ToggleRight className="w-10 h-10 text-[#F7931A] transition-all" />
+                      <ToggleRight className="w-8 h-8 sm:w-10 sm:h-10 text-[#F7931A] transition-all" />
                     ) : (
-                      <ToggleLeft className="w-10 h-10 text-white/20 transition-all" />
+                      <ToggleLeft className="w-8 h-8 sm:w-10 sm:h-10 text-white/20 transition-all" />
                     )}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between py-2.5 border-b border-white/10 last:border-0">
-                <div>
+              <div className="flex items-center justify-between gap-4 py-3 border-b border-white/10 last:border-0">
+                <div className="flex-1 min-w-0">
                   <p className="font-bold text-white text-sm font-display">Eco Tip Recommendations</p>
-                  <p className="text-xs text-[#94A3B8] mt-0.5 font-sans font-medium">Receive daily notifications recommending eco tips</p>
+                  <p className="text-[11px] sm:text-xs text-[#94A3B8] mt-0.5 font-sans font-medium leading-relaxed">Receive daily notifications recommending eco tips</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   <button
                     type="button"
                     disabled={isDisabled}
                     onClick={() => handleTestNotification('tip')}
-                    className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="h-8 px-2.5 sm:px-3 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 border border-white/10 hover:border-[#F7931A]/40 bg-white/5 hover:bg-[#F7931A]/10 text-[#94A3B8] hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
                     title={isDisabled ? (isNotificationSupported ? "Notifications are blocked in your browser settings." : "Notifications are not supported in this browser.") : "Send a test eco tip recommendation"}
                   >
                     Test
@@ -722,9 +728,9 @@ function About() {
                     aria-label="Toggle eco tip recommendations"
                   >
                     {ecoTips && !isDisabled ? (
-                      <ToggleRight className="w-10 h-10 text-[#F7931A] transition-all" />
+                      <ToggleRight className="w-8 h-8 sm:w-10 sm:h-10 text-[#F7931A] transition-all" />
                     ) : (
-                      <ToggleLeft className="w-10 h-10 text-white/20 transition-all" />
+                      <ToggleLeft className="w-8 h-8 sm:w-10 sm:h-10 text-white/20 transition-all" />
                     )}
                   </button>
                 </div>
@@ -735,7 +741,7 @@ function About() {
             <div className="pt-4 flex items-center justify-end">
               <button
                 type="submit"
-                className="btn-premium flex items-center gap-2.5 px-8 h-14 cursor-pointer focus:outline-none font-display"
+                className="btn-premium w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 h-14 cursor-pointer focus:outline-none font-display"
                 aria-label="Save profile changes"
               >
                 <Save className="w-4.5 h-4.5" />
@@ -767,7 +773,7 @@ function About() {
               <button
                 type="button"
                 onClick={handleClearData}
-                className="btn-3d-destructive flex items-center gap-2.5 h-12 px-6 text-xs focus:outline-none"
+                className="btn-3d-destructive w-full sm:w-auto flex items-center justify-center gap-2.5 h-12 px-6 text-xs focus:outline-none"
                 aria-label="Wipe all app data"
               >
                 <Trash2 className="w-4.5 h-4.5" />

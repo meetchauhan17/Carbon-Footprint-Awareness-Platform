@@ -6,7 +6,7 @@ import {
   Car, Zap, Utensils, ShoppingBag, ChevronRight, ChevronLeft,
   Plus, Trash2, CheckCircle2, AlertCircle, Leaf,
   Plane, Train, Bus, Bike, Flame, Droplets, Sparkles, AlertTriangle,
-  Salad, Drumstick, Fish, Beef, Shirt, Smartphone, Laptop, Package, Check
+  Salad, Drumstick, Fish, Beef, Shirt, Smartphone, Laptop, Package, Check, FastForward
 } from 'lucide-react'
 import { useCarbon } from '../context/CarbonContext.jsx'
 import EmissionGauge from '../components/EmissionGauge.jsx'
@@ -150,20 +150,20 @@ function FoodMealOption({ m, selected, onClick }) {
       style={tilt.style}
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3.5 text-left transition-all duration-200 cursor-pointer focus:outline-none border ${
+      className={`flex items-center gap-2.5 sm:gap-3 px-3 py-3 sm:px-4 sm:py-3.5 text-left transition-all duration-200 cursor-pointer focus:outline-none border sm:odd:last:col-span-2 rounded-xl ${
         selected
-          ? 'bg-[#F7931A]/10 text-white border-[#F7931A] shadow-[0_0_15px_rgba(247,147,26,0.2)] rounded-xl'
-          : 'bg-[#0F1115]/60 text-clay-muted border-white/10 hover:text-white hover:border-[#F7931A]/40 rounded-xl'
+          ? 'bg-[#F7931A]/10 text-white border-[#F7931A] shadow-[0_0_15px_rgba(247,147,26,0.2)]'
+          : 'bg-[#0F1115]/60 text-clay-muted border-white/10 hover:text-white hover:border-[#F7931A]/40'
       }`}
       aria-label={`Select ${m.label} diet`}
     >
-      <span className="text-xl shrink-0"><EmojiIcon icon={m.icon} className="w-6 h-6" /></span>
+      <span className="text-xl shrink-0"><EmojiIcon icon={m.icon} className="w-5 h-5 sm:w-6 sm:h-6" /></span>
       <div className="min-w-0">
         <p className={`text-xs font-bold font-display ${selected ? 'text-[#F7931A]' : 'text-white'}`}>{m.label}</p>
-        <p className="text-[10px] font-medium font-mono text-clay-muted">{m.co2} kg CO₂ / meal</p>
+        <p className="text-[9px] sm:text-[10px] font-medium font-mono text-clay-muted mt-0.5">{m.co2} kg CO₂ / meal</p>
       </div>
       {selected && (
-        <CheckCircle2 className="w-4.5 h-4.5 text-[#F7931A] ml-auto shrink-0 animate-[spin_0.3s_ease-out]" />
+        <CheckCircle2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#F7931A] ml-auto shrink-0 animate-[spin_0.3s_ease-out]" />
       )}
     </button>
   )
@@ -730,6 +730,22 @@ function Calculator() {
     else setStep(5) // summary
   }, [step, validate])
 
+  const handleSkip = useCallback(() => {
+    setErrors('') // clear any validation errors
+    if (step === 1) {
+      setTrips([{ id: Date.now(), mode: 'car_petrol', km: '' }])
+    } else if (step === 2) {
+      setEnergy({ electricity: '', natural_gas: '', lpg: '', renewable: false })
+    } else if (step === 3) {
+      setFood(prev => ({ ...prev, meals: 0 }))
+    } else if (step === 4) {
+      setShopping({ clothing: 0, electronics_small: 0, electronics_large: 0, online_orders: 0 })
+    }
+    
+    if (step < 4) setStep(s => s + 1)
+    else setStep(5)
+  }, [step])
+
   const handleBack = useCallback(() => {
     if (step === 5) setStep(4)
     else setStep(s => Math.max(1, s - 1))
@@ -796,16 +812,23 @@ function Calculator() {
 
         {/* Navigation buttons (hidden on summary) */}
         {step <= 4 && (
-          <div className="flex gap-3.5 mt-6">
+          <div className="flex items-center gap-2 sm:gap-3.5 mt-6 pt-6 border-t border-white/5">
             {step > 1 && (
               <button type="button" onClick={handleBack}
-                className="btn-3d-secondary h-14 px-6 flex items-center gap-2.5"
+                className="btn-3d-secondary h-14 px-4 sm:px-6 flex items-center gap-2 shrink-0"
                 aria-label="Back to previous step"
               >
                 <ChevronLeft className="w-4.5 h-4.5" />
-                Back
+                <span className="hidden sm:inline">Back</span>
               </button>
             )}
+            <button type="button" onClick={handleSkip}
+              className="btn-3d-secondary h-14 px-4 sm:px-6 flex items-center justify-center gap-2 shrink-0 text-clay-muted hover:text-white"
+              aria-label="Skip this step"
+            >
+              <span className="hidden sm:inline">Skip</span>
+              <FastForward className="w-4.5 h-4.5" />
+            </button>
             <button type="button" onClick={handleNext}
               id={`calc-next-step-${step}`}
               className="btn-premium flex-1 flex items-center justify-center gap-2 h-14"

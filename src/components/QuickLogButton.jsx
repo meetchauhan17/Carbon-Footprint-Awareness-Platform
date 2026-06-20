@@ -37,23 +37,23 @@ export default function QuickLogButton({
       id={`quick-log-${log.id}`}
       type="button"
       onClick={onClick}
-      className={`glass-card flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-left w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-clay-primary focus:outline-none ${
+      className={`glass-card flex items-center gap-2 sm:gap-3.5 px-2.5 py-3 sm:px-4 sm:py-3.5 rounded-xl text-left w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-clay-primary focus:outline-none ${
         flashed
           ? 'border-[#F7931A] bg-[#F7931A]/10 scale-[0.95]'
           : 'active:scale-[0.95]'
       } ${className}`}
       aria-label={`Log activity: ${log.label}. Emission: ${log.co2} kg CO2.`}
     >
-      <div className="flex items-center justify-center w-10 h-10 border border-[#F7931A]/20 bg-[#030304] rounded-lg shrink-0 transition-all shadow-[0_0_12px_rgba(247,147,26,0.06)]">
-          <EmojiIcon icon={log.emoji || log.icon || Leaf} className="w-5 h-5" />
+      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 border border-[#F7931A]/20 bg-[#030304] rounded-lg shrink-0 transition-all shadow-[0_0_12px_rgba(247,147,26,0.06)]">
+          <EmojiIcon icon={log.emoji || log.icon || Leaf} className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>
 
-      <div className="min-w-0 flex-1 ml-1.5 font-sans">
-        <p className="text-sm font-bold text-clay-text leading-snug truncate font-display">{log.label}</p>
-        <p className="text-xs text-clay-muted mt-0.5 leading-none font-medium truncate font-sans">{log.note}</p>
+      <div className="min-w-0 flex-1 ml-0.5 sm:ml-1.5 font-sans">
+        <p className="text-xs sm:text-sm font-bold text-clay-text leading-snug truncate font-display">{log.label}</p>
+        <p className="text-[10px] sm:text-xs text-clay-muted mt-0.5 leading-none font-medium truncate font-sans">{log.note}</p>
       </div>
 
-      <span className={`text-[9px] font-bold px-2 py-0.5 shrink-0 uppercase tracking-widest border select-none ${badgeClasses}`}>
+      <span className={`text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 sm:px-2 sm:py-0.5 shrink-0 uppercase tracking-wider sm:tracking-widest border select-none ${badgeClasses}`}>
         {log.co2 > 0 ? '+' : ''}{log.co2} kg
       </span>
     </button>

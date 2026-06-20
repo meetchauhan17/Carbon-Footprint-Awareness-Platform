@@ -154,15 +154,15 @@ function DashboardBadgeCard({ badge }) {
       onMouseMove={tilt.onMouseMove}
       onMouseLeave={tilt.onMouseLeave}
       style={tilt.style}
-      className="flex items-center gap-3.5 p-3.5 bg-[#0F1115] border border-white/10 rounded-2xl animate-fade-in-up transition-all shadow-[0_0_20px_rgba(247,147,26,0.05)] holo-shine"
+      className="flex items-center gap-2 sm:gap-3.5 p-2 sm:p-3.5 bg-[#0F1115] border border-white/10 rounded-2xl animate-fade-in-up transition-all shadow-[0_0_20px_rgba(247,147,26,0.05)] holo-shine"
     >
-      <span className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 bg-[#030304] border border-[#F7931A]/20 shadow-[0_0_10px_rgba(247,147,26,0.06)]">
-        <EmojiIcon icon={badge.icon} className="w-6 h-6" />
+      <span className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center shrink-0 bg-[#030304] border border-[#F7931A]/20 shadow-[0_0_10px_rgba(247,147,26,0.06)]">
+        <EmojiIcon icon={badge.icon} className="w-5 h-5 sm:w-6 sm:h-6" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-bold text-white truncate font-display">{badge.name}</p>
-        <p className="text-[10px] text-clay-muted font-medium truncate mt-0.5 font-sans">{badge.description}</p>
-        <span className="text-[9px] font-bold text-[#10B981] bg-[#030304] border border-[#10B981]/25 px-2.5 py-0.5 rounded-md mt-1.5 inline-block shadow-sm font-mono">
+        <p className="text-[11px] sm:text-xs font-bold text-white truncate font-display">{badge.name}</p>
+        <p className="text-[9px] sm:text-[10px] text-clay-muted font-medium truncate mt-0.5 font-sans">{badge.description}</p>
+        <span className="text-[8px] sm:text-[9px] font-bold text-[#10B981] bg-[#030304] border border-[#10B981]/25 px-2 py-0.5 rounded-md mt-1 sm:mt-1.5 inline-block shadow-sm font-mono">
           Unlocked {badge.earnedDate}
         </span>
       </div>
@@ -181,7 +181,7 @@ function DashboardTipCard({ tip, i, impactBadge }) {
         ...tilt.style,
         animationDelay: `${750 + i * 80}ms`
       }}
-      className="glass-card p-5 group animate-fade-in-up flex flex-col justify-between"
+      className="glass-card p-5 group animate-fade-in-up flex flex-col justify-between h-full"
     >
       <div className="flex items-start gap-3 mb-3">
         <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-[#030304] border border-white/5 shadow-[0_0_12px_rgba(247,147,26,0.05)]">
@@ -220,6 +220,8 @@ function Dashboard() {
 
   const [flashedId, setFlashedId] = useState(null)
   const [isBadgesOpen, setIsBadgesOpen] = useState(false)
+  const [activeTipIndex, setActiveTipIndex] = useState(0)
+  const [activeChartTab, setActiveChartTab] = useState('trend')
 
   // 3D tilt interaction hooks for dashboard containers
   const welcomeTilt = use3DTilt({ maxTilt: 6, scale: 1.01 })
@@ -312,7 +314,7 @@ function Dashboard() {
           onMouseMove={welcomeTilt.onMouseMove}
           onMouseLeave={welcomeTilt.onMouseLeave}
           style={welcomeTilt.style}
-          className={`${isMobile ? 'lg:col-span-12' : 'lg:col-span-8'} glass-card p-6 relative overflow-hidden flex flex-col justify-between h-full min-h-[340px] space-y-6`}
+          className={`${isMobile ? 'lg:col-span-12' : 'lg:col-span-8'} glass-card p-6 relative overflow-hidden flex flex-col justify-between h-full min-h-0 sm:min-h-[340px] space-y-6`}
         >
           {/* Background ambient glows */}
           <div className="absolute -top-12 -left-12 w-32 h-32 rounded-full bg-clay-primary/5 blur-2xl pointer-events-none" />
@@ -320,110 +322,106 @@ function Dashboard() {
 
           <div className="space-y-4">
             {/* Header: Greeting & Leaf Icon & Better Than badge */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-clay-primary uppercase tracking-widest bg-clay-primary/10 px-3 py-1 rounded-full border border-clay-primary/20 inline-block font-mono">
+            <div className="flex justify-between items-start gap-3 sm:gap-4">
+              <div className="space-y-1 min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-bold text-clay-primary uppercase tracking-widest bg-clay-primary/10 px-2.5 py-0.5 rounded-full border border-clay-primary/20 inline-block font-mono">
                   {greeting}{userName ? `, ${userName}` : ''}!
                 </p>
-                <h1 className="text-2xl sm:text-3xl font-bold text-[#FFFFFF] leading-tight font-display flex items-center gap-2">
-                  Here's your carbon snapshot <span className="gradient-text inline-flex items-center"><EmojiIcon icon={Leaf} className="w-7 h-7 text-clay-success animate-clay-breathe" /></span>
+                <h1 className="text-lg sm:text-3xl font-bold text-[#FFFFFF] leading-tight font-display flex items-center gap-1.5 flex-wrap">
+                  Here's your carbon snapshot <span className="gradient-text inline-flex items-center"><EmojiIcon icon={Leaf} className="w-5 h-5 sm:w-7 sm:h-7 text-clay-success animate-clay-breathe" /></span>
                 </h1>
-                <p className="text-clay-muted text-xs font-semibold font-sans">
+                <p className="text-clay-muted text-[10px] sm:text-xs font-semibold font-sans">
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </p>
               </div>
-              {(betterThanPct !== null || isMobile) && (
-                <div className="flex items-center gap-2 self-start sm:self-center">
-                  {betterThanPct !== null && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)] font-mono">
-                      <Award className="w-3.5 h-3.5 text-clay-primary animate-clay-breathe" />
-                      <span>Top {betterThanPct}%</span>
-                    </div>
-                  )}
-                  {isMobile && (
-                    <button
-                      onClick={() => setIsSettingsOpen(true)}
-                      className="btn-premium flex items-center gap-1.5 px-3.5 py-1.5 text-white cursor-pointer font-bold text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none rounded-full"
-                      id="dashboard-settings-btn-mobile"
-                      aria-label="Edit profile and goals settings"
-                    >
-                      <Settings className="w-3.5 h-3.5 text-white" />
-                      <span>Settings</span>
-                    </button>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                {betterThanPct !== null && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1.5 bg-[#0F1115] border border-[#F7931A]/35 text-[#F7931A] text-[9px] sm:text-xs font-bold rounded-full select-none uppercase tracking-wider shadow-[0_0_12px_rgba(247,147,26,0.1)] font-mono">
+                    <Award className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-clay-primary animate-clay-breathe" />
+                    <span>Top {betterThanPct}%</span>
+                  </div>
+                )}
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="btn-premium flex items-center gap-1 px-2.5 py-1 sm:px-3.5 sm:py-1.5 text-white cursor-pointer font-bold text-[9px] sm:text-xs focus-visible:ring-4 focus-visible:ring-clay-primary/30 focus:outline-none shadow-lg border-none rounded-full"
+                  id="dashboard-settings-btn-mobile"
+                  aria-label="Edit profile and goals settings"
+                >
+                  <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+                  <span>Settings</span>
+                </button>
+              </div>
             </div>
 
             {/* Integrated mini weather & country comparison side-by-side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-2 gap-3 pt-2">
               {/* Integrated Mini Weather */}
-              <div className="bg-[#0D0F13]/80 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:border-sky-500/20 transition-all duration-300">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shrink-0">
+              <div className="bg-[#0D0F13]/80 border border-white/5 rounded-xl p-3 flex flex-col justify-between hover:border-sky-500/20 transition-all duration-300 min-h-[96px]">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shrink-0">
                     {weatherLoading ? (
-                      <CloudSun className="w-4 h-4 text-sky-400 animate-pulse" />
+                      <CloudSun className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
                     ) : (
-                      <Thermometer className="w-4 h-4 text-sky-500" />
+                      <Thermometer className="w-3.5 h-3.5 text-sky-500" />
                     )}
                   </div>
                   <div className="min-w-0 font-sans">
                     {weatherLoading ? (
-                      <div className="h-3.5 w-16 bg-gray-100/5 rounded animate-pulse" />
+                      <div className="h-3 w-12 bg-gray-100/5 rounded animate-pulse" />
                     ) : temperature !== null ? (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-base font-bold text-white">{temperature}°C</span>
-                        <span className="text-[10px] text-clay-muted truncate max-w-[80px]">({resolvedCity})</span>
+                      <div className="flex items-baseline gap-0.5 flex-wrap">
+                        <span className="text-xs sm:text-base font-bold text-white">{temperature}°C</span>
+                        <span className="text-[8px] sm:text-[10px] text-clay-muted truncate max-w-[60px] sm:max-w-[80px]">({resolvedCity.split(',')[0]})</span>
                       </div>
                     ) : (
-                      <span className="text-[10px] text-clay-muted">Weather N/A</span>
+                      <span className="text-[9px] sm:text-[10px] text-clay-muted">N/A</span>
                     )}
                   </div>
                 </div>
                 {weatherLoading ? (
-                  <div className="h-3 w-28 bg-gray-100/5 rounded animate-pulse mt-2" />
+                  <div className="h-2.5 w-20 bg-gray-100/5 rounded animate-pulse mt-2" />
                 ) : weatherTip && temperature !== null ? (
-                  <p className="text-[11px] text-sky-400 mt-2 font-semibold flex items-center gap-1 font-sans">
-                    <EmojiIcon icon={weatherTip.icon} className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{weatherTip.message}</span>
+                  <p className="text-[9px] sm:text-[11px] text-sky-400 mt-2 font-semibold flex items-center gap-1 font-sans">
+                    <EmojiIcon icon={weatherTip.icon} className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+                    <span className="truncate">{weatherTip.message.split('—')[1]?.trim() || weatherTip.message}</span>
                   </p>
                 ) : (
-                  <p className="text-[11px] text-clay-muted mt-2 font-semibold font-sans">
-                    No tips available
+                  <p className="text-[9px] sm:text-[11px] text-clay-muted mt-2 font-semibold font-sans">
+                    No tips
                   </p>
                 )}
               </div>
 
               {/* Integrated Mini Country Comparison */}
-              <div className="bg-[#0D0F13]/80 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:border-clay-primary/20 transition-all duration-300">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shrink-0">
-                    <Globe className="w-4 h-4 text-clay-primary" />
+              <div className="bg-[#0D0F13]/80 border border-white/5 rounded-xl p-3 flex flex-col justify-between hover:border-clay-primary/20 transition-all duration-300 min-h-[96px]">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#030304] flex items-center justify-center border border-white/5 shrink-0">
+                    <Globe className="w-3.5 h-3.5 text-clay-primary" />
                   </div>
                   <div className="min-w-0 font-sans">
                     {countryLoading ? (
-                      <div className="h-3.5 w-20 bg-gray-100/5 rounded animate-pulse" />
+                      <div className="h-3 w-16 bg-gray-100/5 rounded animate-pulse" />
                     ) : motivationalMsg ? (
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1">
                         {countryData?.flag && (
-                          <img src={countryData.flag} alt="" className="w-4 h-3 rounded-sm object-cover" />
+                          <img src={countryData.flag} alt="" className="w-3.5 h-2.5 rounded-sm object-cover" />
                         )}
-                        <span className="text-xs font-bold text-white truncate max-w-[100px]">{motivationalMsg.country}</span>
+                        <span className="text-xs font-bold text-white truncate max-w-[60px] sm:max-w-[100px]">{motivationalMsg.country}</span>
                       </div>
                     ) : (
-                      <span className="text-[10px] text-clay-muted">Set location in profile</span>
+                      <span className="text-[9px] sm:text-[10px] text-clay-muted">Set location</span>
                     )}
                   </div>
                 </div>
                 {countryLoading ? (
-                  <div className="h-3 w-24 bg-gray-100/5 rounded animate-pulse mt-2" />
+                  <div className="h-2.5 w-16 bg-gray-100/5 rounded animate-pulse mt-2" />
                 ) : motivationalMsg ? (
-                  <p className="text-[11px] text-clay-primary mt-2 font-semibold truncate font-sans">
-                    {co2PerCapita} t/yr per capita avg
+                  <p className="text-[9px] sm:text-[11px] text-clay-primary mt-2 font-semibold truncate font-sans">
+                    {co2PerCapita} t/yr avg
                   </p>
                 ) : (
-                  <p className="text-[11px] text-clay-muted mt-2 font-semibold font-sans">
-                    No country data
+                  <p className="text-[9px] sm:text-[11px] text-clay-muted mt-2 font-semibold font-sans">
+                    No data
                   </p>
                 )}
               </div>
@@ -494,7 +492,7 @@ function Dashboard() {
       </div>
 
       {/* ── SECTION 2: STATS BANNER (Row 2) ───────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {/* Today's Footprint */}
         <CarbonCard
           label="Today's Footprint"
@@ -536,7 +534,7 @@ function Dashboard() {
             borderLeft: `3px solid ${goalProgress >= 100 ? '#DB2777' : goalProgress >= 75 ? '#ea580c' : '#10B981'}`,
             animationDelay: '200ms'
           }}
-          className="glass-card shimmer-container p-5 flex flex-col justify-between animate-fade-in-up"
+          className="col-span-2 md:col-span-1 glass-card shimmer-container p-5 flex flex-col justify-between animate-fade-in-up"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1 space-y-1">
@@ -554,7 +552,7 @@ function Dashboard() {
             </div>
 
             {/* Mini EmissionGauge */}
-            <div className="shrink-0 scale-75 -my-6 -mx-4">
+            <div className="shrink-0 scale-90 sm:scale-75 -my-4 sm:-my-6 -mx-2 sm:-mx-4">
               <EmissionGauge
                 value={goalProgress}
                 max={100}
@@ -621,9 +619,35 @@ function Dashboard() {
       )}
 
       {/* ── SECTION 3: ANALYTICS ROW (Row 3) ──────────────────────── */}
+      {/* Mobile Tab Switcher */}
+      <div className="lg:hidden flex gap-2.5 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveChartTab('trend')}
+          className={`flex-1 h-10 px-4 text-xs font-bold rounded-full border transition-all cursor-pointer ${
+            activeChartTab === 'trend'
+              ? 'btn-premium text-white border-none'
+              : 'bg-[#0F1115]/80 text-[#94A3B8] border-white/10 hover:text-white hover:bg-[#0F1115]'
+          }`}
+        >
+          Trend Line
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveChartTab('breakdown')}
+          className={`flex-1 h-10 px-4 text-xs font-bold rounded-full border transition-all cursor-pointer ${
+            activeChartTab === 'breakdown'
+              ? 'btn-premium text-white border-none'
+              : 'bg-[#0F1115]/80 text-[#94A3B8] border-white/10 hover:text-white hover:bg-[#0F1115]'
+          }`}
+        >
+          Breakdown
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Line chart — 7-day trend */}
-        <div className="lg:col-span-8 glass-card p-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+        <div className={`${activeChartTab === 'trend' ? 'block' : 'hidden'} lg:block lg:col-span-8 glass-card p-6 animate-fade-in-up`} style={{ animationDelay: '300ms' }}>
           <div className="flex items-center justify-between mb-4 font-sans">
             <div>
               <h2 className="text-base font-bold text-clay-text font-display">7-Day Emissions Trend</h2>
@@ -652,7 +676,7 @@ function Dashboard() {
         </div>
 
         {/* Pie chart — category breakdown this week */}
-        <div className="lg:col-span-4 glass-card p-6 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+        <div className={`${activeChartTab === 'breakdown' ? 'block' : 'hidden'} lg:block lg:col-span-4 glass-card p-6 animate-fade-in-up`} style={{ animationDelay: '400ms' }}>
           <div className="mb-4 text-center">
             <h2 className="text-base font-bold text-clay-text font-display">This Week by Category</h2>
             <p className="text-xs text-clay-muted font-semibold mt-0.5 font-sans">Where your emissions are coming from</p>
@@ -689,9 +713,9 @@ function Dashboard() {
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-5 h-5 text-clay-warning" />
                 <h2 className="text-base font-bold text-white font-display">Quick Log</h2>
-                <span className="text-xs text-clay-muted font-medium ml-1 font-sans">— tap to instantly log an activity</span>
+                <span className="text-xs text-clay-muted font-medium ml-1 font-sans">— tap to instantly log</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
                 {QUICK_LOGS.map(log => (
                   <QuickLogButton
                     key={log.id}
@@ -716,6 +740,15 @@ function Dashboard() {
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-clay-warning animate-clay-breathe" />
                 <h2 className="text-base font-bold text-white font-display">Today's Eco Tips</h2>
+                <button
+                  type="button"
+                  onClick={() => setActiveTipIndex(prev => (prev + 1) % 3)}
+                  className="sm:hidden flex items-center justify-center w-7 h-7 rounded-full bg-white/5 border border-white/10 hover:border-[#F7931A]/40 text-[#94A3B8] hover:text-white transition-all active:scale-95 cursor-pointer"
+                  title="Show another tip"
+                  aria-label="Show next eco tip"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
               </div>
               <Link
                 to="/tips"
@@ -724,10 +757,17 @@ function Dashboard() {
                 See all tips <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Desktop layout */}
+            <div className="hidden sm:grid sm:grid-cols-3 gap-3.5">
               {tips3.map((tip, i) => (
-                <DashboardTipCard key={tip.title} tip={tip} i={i} impactBadge={IMPACT_BADGE} />
+                <div key={tip.title} className="w-auto">
+                  <DashboardTipCard tip={tip} i={i} impactBadge={IMPACT_BADGE} />
+                </div>
               ))}
+            </div>
+            {/* Mobile layout */}
+            <div className="sm:hidden block">
+              <DashboardTipCard tip={tips3[activeTipIndex]} i={activeTipIndex} impactBadge={IMPACT_BADGE} />
             </div>
           </div>
         </div>
@@ -775,9 +815,9 @@ function Dashboard() {
               />
             </div>
 
-            {/* Badges Grid (2x2 on desktop / sm grid on mobile) */}
+            {/* Badges Grid (2x2 on desktop / 2-column grid on mobile) */}
             {badges && badges.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-1">
                 {badges.slice(0, 4).map(badge => (
                   <DashboardBadgeCard key={badge.id} badge={badge} />
                 ))}

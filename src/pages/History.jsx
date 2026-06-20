@@ -464,7 +464,7 @@ function History() {
             subtext="carbon output logged"
             valueColor="text-[#F7931A]"
             delay="250ms"
-            className="sm:col-span-2 lg:col-span-1"
+            className="col-span-2 sm:col-span-1"
           />
 
         </div>
@@ -575,9 +575,9 @@ function History() {
             </div>
 
             {/* Heatmap Legend */}
-            <div className="mt-6 pt-5 border-t border-white/5 flex items-center justify-between flex-wrap gap-4 font-display tracking-widest uppercase">
+            <div className="mt-6 pt-5 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 font-display tracking-widest uppercase">
               <span className="text-[10px] font-bold text-clay-muted uppercase tracking-wider">Legend</span>
-              <div className="flex items-center gap-3.5 flex-wrap font-sans">
+              <div className="flex items-center gap-2 sm:gap-3.5 flex-wrap justify-center font-sans">
                 <div className="flex items-center gap-1.5">
                   <span className="w-3.5 h-3.5 bg-[#0F1115] border border-white/5 rounded-md" />
                   <span className="text-[10px] text-clay-muted font-bold">None</span>
@@ -717,7 +717,7 @@ function History() {
             onMouseMove={filtersTilt.onMouseMove}
             onMouseLeave={filtersTilt.onMouseLeave}
             style={filtersTilt.style}
-            className="glass-card p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 rounded-[32px] animate-fade-in-up"
+            className="glass-card p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5 rounded-[32px] animate-fade-in-up"
           >
             
             {/* From Date */}
