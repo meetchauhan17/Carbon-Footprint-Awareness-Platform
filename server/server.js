@@ -410,37 +410,38 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       [email.toLowerCase(), otp, expiresAt]
     );
 
-    console.log(`\n--- [OTP SECURITY LOG] ---`);
     console.log(`Password reset requested for: ${email}`);
-    console.log(`Generated OTP code: ${otp}`);
-    console.log(`--------------------------\n`);
 
-    // Send email if SMTP is configured
-    if (mailTransporter) {
-      const mailOptions = {
-        from: process.env.EMAIL_FROM || '"CarbonWise Support" <noreply@carbonwise.com>',
-        to: email,
-        subject: 'CarbonWise - Password Reset Verification Code',
-        text: `Hello,\n\nYou requested a password reset for your CarbonWise account. Your 6-digit OTP verification code is:\n\n${otp}\n\nThis code will expire in 5 minutes. If you did not request this reset, please ignore this email.\n\nBest regards,\nThe CarbonWise Team`,
-        html: `<div style="font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-          <h2 style="color: #EA580C; font-size: 24px; text-align: center;">CarbonWise</h2>
-          <p>Hello,</p>
-          <p>You requested a password reset for your CarbonWise account. Please use the following 6-digit OTP verification code:</p>
-          <div style="background: #f1f5f9; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #0F1115; border-radius: 8px; margin: 20px 0;">
-            ${otp}
-          </div>
-          <p style="color: #64748b; font-size: 13px;">This code is valid for 5 minutes. If you did not request this reset, please ignore this email.</p>
-          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-          <p style="color: #94a3b8; font-size: 11px; text-align: center;">CarbonWise — Carbon Footprint Awareness Platform</p>
-        </div>`
-      };
+    // Send email (SMTP is required)
+    if (!mailTransporter) {
+      console.warn(`Forgot password requested for ${email} but SMTP transporter is not configured.`);
+      return res.status(500).json({ error: 'Email delivery service is not configured.' });
+    }
 
-      try {
-        await mailTransporter.sendMail(mailOptions);
-        console.log(`OTP email sent successfully to ${email}`);
-      } catch (emailErr) {
-        console.error('Failed to send OTP email via SMTP:', emailErr.message);
-      }
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || '"CarbonWise Support" <noreply@carbonwise.com>',
+      to: email,
+      subject: 'CarbonWise - Password Reset Verification Code',
+      text: `Hello,\n\nYou requested a password reset for your CarbonWise account. Your 6-digit OTP verification code is:\n\n${otp}\n\nThis code will expire in 5 minutes. If you did not request this reset, please ignore this email.\n\nBest regards,\nThe CarbonWise Team`,
+      html: `<div style="font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #EA580C; font-size: 24px; text-align: center;">CarbonWise</h2>
+        <p>Hello,</p>
+        <p>You requested a password reset for your CarbonWise account. Please use the following 6-digit OTP verification code:</p>
+        <div style="background: #f1f5f9; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #0F1115; border-radius: 8px; margin: 20px 0;">
+          ${otp}
+        </div>
+        <p style="color: #64748b; font-size: 13px;">This code is valid for 5 minutes. If you did not request this reset, please ignore this email.</p>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+        <p style="color: #94a3b8; font-size: 11px; text-align: center;">CarbonWise — Carbon Footprint Awareness Platform</p>
+      </div>`
+    };
+
+    try {
+      await mailTransporter.sendMail(mailOptions);
+      console.log(`OTP email sent successfully to ${email}`);
+    } catch (emailErr) {
+      console.error('Failed to send OTP email via SMTP:', emailErr.message);
+      return res.status(500).json({ error: 'Failed to send verification email.' });
     }
 
     res.json({ message: 'If this email exists in our system, an OTP verification code has been sent.' });
