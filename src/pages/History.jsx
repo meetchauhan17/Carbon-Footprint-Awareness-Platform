@@ -389,7 +389,7 @@ function History() {
   const userGoalDaily = (state.userProfile?.monthlyGoal ?? 150) / 30
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 font-sans">
+    <main id="history-main" aria-label="Carbon footprint history" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 font-sans">
       
       {/* ── HEADER ─────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up">
@@ -1005,7 +1005,7 @@ function History() {
         onConfirm={handleConfirmDeleteDay}
         onCancel={() => setDeleteDayDate(null)}
       />
-    </div>
+    </main>
   )
 }
 

@@ -204,7 +204,7 @@ function About() {
   }, [clearHistory])
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <main id="about-main" aria-label="About CarbonWise" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       
       {/* Toast Notification */}
       <ToastNotification message={toastMessage} show={showToast} onClose={() => setShowToast(false)} />
@@ -785,7 +785,7 @@ function About() {
         </div>
       )}
 
-    </div>
+    </main>
   )
 }
 

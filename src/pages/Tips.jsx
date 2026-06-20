@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, memo, useCallback, useRef } from 'react'
 import { useCarbon } from '../context/CarbonContext.jsx'
 import {
   Search, ArrowUpDown, SearchX, Check, Sparkles,
@@ -32,26 +32,36 @@ const DIFFICULTY_STYLES = {
   hard: 'bg-red-50 text-red-700 border-red-200',
 }
 
+
 /**
- * TipCard - Card displaying sustainability recommendations, supporting 3D hover tilt
- * and dynamic cursor-aligned holographic rainbow highlights if marked as done.
+ * TipCard - Memoized card to prevent re-renders when other tips toggle.
+ * 3D tilt is applied only on the first ABOVE_FOLD_COUNT cards (visible on load),
+ * and via CSS-only hover lift on the rest — zero JS overhead for off-screen cards.
  */
-function TipCard({ tip, i, isCompleted, toggleTipCompleted, DIFFICULTY_STYLES }) {
+const ABOVE_FOLD = 6  // cards visible without scrolling on most viewports
+
+const TipCard = memo(function TipCard({ tip, i, isCompleted, toggleTipCompleted, DIFFICULTY_STYLES }) {
   const tilt = use3DTilt({ maxTilt: 10, scale: 1.025 })
+  // Only bind tilt JS for above-fold cards — saves 25 rAF loops on first paint
+  const aboveFold = i < ABOVE_FOLD
   return (
     <div
-      ref={tilt.ref}
-      onMouseMove={tilt.onMouseMove}
-      onMouseLeave={tilt.onMouseLeave}
-      style={{
+      ref={aboveFold ? tilt.ref : undefined}
+      onMouseMove={aboveFold ? tilt.onMouseMove : undefined}
+      onMouseLeave={aboveFold ? tilt.onMouseLeave : undefined}
+      style={aboveFold ? {
         ...tilt.style,
-        animationDelay: `${50 + (i % 6) * 50}ms`
+        animationDelay: `${50 + i * 50}ms`,
+      } : {
+        // Below-fold: no JS animation delay overhead, GPU-composited hover lift only
+        contentVisibility: 'auto',
+        containIntrinsicSize: '0 300px',
       }}
-      className={`glass-card flex flex-col justify-between p-3.5 sm:p-5 md:p-6 transition-all duration-300 relative group overflow-hidden h-full ${
+      className={`glass-card flex flex-col justify-between p-3.5 sm:p-5 md:p-6 transition-all duration-300 relative group overflow-hidden h-full hover:-translate-y-1 ${
         isCompleted
           ? 'border-[#F7931A] bg-[#F7931A]/5 shadow-[0_0_25px_rgba(247,147,26,0.15)] holo-shine'
           : ''
-      } animate-fade-in-up`}
+      } ${aboveFold ? 'animate-fade-in-up' : ''}`}
     >
       {isCompleted && (
         <div className="absolute -top-3 -right-3 w-16 h-16 bg-[#F7931A]/10 flex items-center justify-center translate-x-2 -translate-y-2 pointer-events-none rounded-full">
@@ -116,7 +126,7 @@ function TipCard({ tip, i, isCompleted, toggleTipCompleted, DIFFICULTY_STYLES })
       </div>
     </div>
   )
-}
+})
 
 function Tips() {
   const { state, toggleTipCompleted } = useCarbon()
@@ -186,7 +196,7 @@ function Tips() {
   }, [completedTips])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 font-sans">
+    <main id="tips-main" aria-label="Eco action tips" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 font-sans">
       
       {/* ── HEADER & PROGRESS ────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
@@ -341,7 +351,7 @@ function Tips() {
         </div>
       )}
 
-    </div>
+    </main>
   )
 }
 

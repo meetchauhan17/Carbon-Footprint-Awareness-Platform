@@ -304,7 +304,7 @@ function Dashboard() {
   const userName = userProfile?.name || null
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <main id="dashboard-main" aria-label="Carbon footprint dashboard" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
       {/* ── SECTION 1: HERO CONTEXT (Row 1) ───────────────────────── */}
       <div className="animate-fade-in-up">
@@ -923,7 +923,7 @@ function Dashboard() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   )
 }
 
