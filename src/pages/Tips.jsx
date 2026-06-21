@@ -1,10 +1,8 @@
-import { useState, useMemo, memo, useCallback, useRef } from 'react'
+import { useState, useMemo, memo } from 'react'
 import { useCarbon } from '../context/CarbonContext.jsx'
 import {
   Search, ArrowUpDown, SearchX, Check, Sparkles,
-  Car, Bus, Bike, Settings, Globe, Gauge, Snowflake, Lightbulb, Shirt,
-  Thermometer, Plug, Droplets, Sun, Leaf, Calendar, Utensils, Wrench, Package,
-  Home, Trophy, Map, Hammer, Salad, ShoppingBag, BookOpen
+  Car, Leaf, Utensils, Home, Trophy, ShoppingBag
 } from 'lucide-react'
 
 import ProgressBar from '../components/ProgressBar.jsx'
@@ -128,9 +126,11 @@ const TipCard = memo(function TipCard({ tip, i, isCompleted, toggleTipCompleted,
   )
 })
 
+const EMPTY_ARRAY = []
+
 function Tips() {
   const { state, toggleTipCompleted } = useCarbon()
-  const completedTips = state.completedTips || []
+  const completedTips = state.completedTips || EMPTY_ARRAY
 
   // UI state
   const [activeCategory, setActiveCategory] = useState('all')

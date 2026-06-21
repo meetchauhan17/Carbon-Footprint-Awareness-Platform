@@ -3,6 +3,14 @@ import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 
 export default [
+  {
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'node_modules/**',
+      'server/node_modules/**',
+    ],
+  },
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx}'],
@@ -16,6 +24,7 @@ export default [
         sourceType: 'module',
       },
       globals: {
+        // Browser globals
         document: 'readonly',
         window: 'readonly',
         console: 'readonly',
@@ -36,6 +45,18 @@ export default [
         Storage: 'readonly',
         Blob: 'readonly',
         URL: 'readonly',
+        
+        // Node / CommonJS globals
+        process: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+
+        // Service Worker globals
+        self: 'readonly',
+        caches: 'readonly',
       }
     },
     rules: {

@@ -4,14 +4,12 @@ import { Link, useNavigate } from 'react-router-dom'
 const DashboardAreaChart = lazy(() => import('../components/charts/DashboardAreaChart.jsx'));
 const DashboardPieChart  = lazy(() => import('../components/charts/DashboardPieChart.jsx'));
 // Three.js globe — largest lazy chunk, only loads on Dashboard
-const Globe3D = lazy(() => import('../components/Globe3D.jsx'));
-import GlobeFallback from '../components/GlobeFallback.jsx'
 import {
-  Car, Zap, Utensils, ShoppingBag, Target, TrendingUp,
+  Car, Zap, TrendingUp,
   Award, Flame, Leaf, ArrowRight, Lightbulb,
-  CheckCircle2, Calendar, Settings,
+  CheckCircle2, Settings,
   Thermometer, Globe, CloudSun, Quote, RefreshCw,
-  Bike, Salad, Bus, Plug, Trash2, Shirt, Wrench, BarChart2, Package, Snowflake
+  Bike, Salad, Bus, Plug, Trash2, Shirt, Wrench, Package, Snowflake
 } from 'lucide-react'
 import { useCarbon } from '../context/CarbonContext.jsx'
 import { useCarbonStats } from '../hooks/useCarbonStats.js'
@@ -228,19 +226,10 @@ function Dashboard() {
   // rAF listeners on initial paint and improve Lighthouse Performance score.
   const welcomeTilt = use3DTilt({ maxTilt: 6, scale: 1.01 })
   
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : true)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [settingsName, setSettingsName] = useState(userProfile?.name || '')
   const [settingsLocation, setSettingsLocation] = useState(userProfile?.location || '')
   const [settingsGoal, setSettingsGoal] = useState(monthlyGoal)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   useEffect(() => {
     if (isSettingsOpen) {

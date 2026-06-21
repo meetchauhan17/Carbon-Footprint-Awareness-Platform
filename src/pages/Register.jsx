@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Mail, Lock, User, UserPlus, AlertCircle, Loader, MapPin } from 'lucide-react';
+import { Mail, Lock, User, UserPlus, AlertCircle, Loader } from 'lucide-react';
 import { use3DTilt } from '../hooks/use3DTilt.js';
 import LocationAutocomplete from '../components/LocationAutocomplete.jsx';
 

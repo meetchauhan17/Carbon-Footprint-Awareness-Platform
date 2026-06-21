@@ -56,6 +56,7 @@ export default function EmissionGauge({
 
     animId = requestAnimationFrame(update)
     return () => cancelAnimationFrame(animId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   const r = 78
@@ -70,7 +71,6 @@ export default function EmissionGauge({
   // Determine levels and gradients based on target values
   const level = getDailyLevel(safeValue)
   const strokeColor = colorOverride || level.color
-  const glowColor = colorOverride || level.glow
 
   return (
     <div

@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Calculator from './Calculator'
-import { useCarbon } from '../context/CarbonContext.jsx'
 
 // Mock react-router-dom's useNavigate
 const mockNavigate = vi.fn()

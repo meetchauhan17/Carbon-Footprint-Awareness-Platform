@@ -666,14 +666,14 @@ function Calculator() {
   // ── Validation ──────────────────────────────────────────────────
   const [errors, setErrors] = useState('')
 
-  function validate() {
+  const validate = useCallback(() => {
     if (step === 3 && food.meals < 1) {
       setErrors('Please enter at least 1 meal.')
       return false
     }
     setErrors('')
     return true
-  }
+  }, [step, food.meals])
 
   // ── Compute live result (memoized) ──────────────────────────────
   const result = useMemo(() => {

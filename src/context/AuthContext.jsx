@@ -96,6 +96,7 @@ export function AuthProvider({ children }) {
     }
 
     loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   // Sync guest data helper

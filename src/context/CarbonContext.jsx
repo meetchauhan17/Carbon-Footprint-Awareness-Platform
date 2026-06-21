@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useRef, useState } from 'react'
-import { getCategoryBreakdown, getWeeklyData, getMonthlyData, getTotalCO2 } from '../utils/calculations.js'
+import { getWeeklyData, getMonthlyData, getTotalCO2 } from '../utils/calculations.js'
 import { evaluateBadges } from '../utils/badges.js'
 import { checkGoalAlert } from '../utils/notifications.js'
 import { useAuth } from './AuthContext.jsx'
@@ -304,7 +304,7 @@ export function CarbonProvider({ children }) {
   const getAverageFootprint = useCallback(() => {
     if (!state?.carbonEntries || state.carbonEntries.length === 0) return 0
     return parseFloat((state.totalFootprint / state.carbonEntries.length).toFixed(2))
-  }, [state?.totalFootprint, state?.carbonEntries?.length])
+  }, [state])
 
   const compareToGlobalAverage = useCallback(() => {
     const globalMonthlyKg = GLOBAL_AVERAGE_YEARLY_KG / 12

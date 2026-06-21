@@ -16,7 +16,6 @@ export default function QuickLogButton({
 
   if (!log) return null
 
-  const IconComponent = log.emoji
 
   // Color badge based on emissions count
   let badgeClasses = 'bg-[#0F1115] text-[#EF4444] border border-[#EF4444]/25 rounded-md font-mono'

@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useCallback, Fragment, Suspense, lazy } from 'react'
 import { useCarbon } from '../context/CarbonContext.jsx'
-import { formatCO2 } from '../utils/calculations.js'
 import {
   Calendar, ChevronLeft, ChevronRight, Download, Trash2,
-  ChevronDown, ChevronUp, AlertCircle,
-  Clock, SlidersHorizontal, Eye, ShieldAlert, Sparkles,
+  ChevronDown, ChevronUp,
+  Clock, SlidersHorizontal, ShieldAlert, Sparkles,
   Car, Zap, Leaf, ShoppingBag, Filter
 } from 'lucide-react'
 
