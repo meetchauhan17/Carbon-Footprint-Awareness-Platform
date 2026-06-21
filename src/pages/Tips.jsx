@@ -346,7 +346,7 @@ function Tips() {
           </div>
           <h3 className="text-base font-bold text-white mb-1 font-display">No Tips Found</h3>
           <p className="text-xs text-clay-muted font-medium">
-            We couldn't find any tips matching "{searchQuery}" under {activeCategory === 'all' ? 'all categories' : activeCategory}. Try tweaking your search.
+            We couldn&apos;t find any tips matching &quot;{searchQuery}&quot; under {activeCategory === 'all' ? 'all categories' : activeCategory}. Try tweaking your search.
           </p>
         </div>
       )}

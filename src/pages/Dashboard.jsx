@@ -244,9 +244,9 @@ function Dashboard() {
 
   useEffect(() => {
     if (isSettingsOpen) {
-      setSettingsName(userProfile?.name || '')
-      setSettingsLocation(userProfile?.location || '')
-      setSettingsGoal(monthlyGoal)
+      setSettingsName(prev => prev === (userProfile?.name || '') ? prev : (userProfile?.name || ''))
+      setSettingsLocation(prev => prev === (userProfile?.location || '') ? prev : (userProfile?.location || ''))
+      setSettingsGoal(prev => prev === monthlyGoal ? prev : monthlyGoal)
     }
   }, [isSettingsOpen, userProfile, monthlyGoal])
 
@@ -326,7 +326,7 @@ function Dashboard() {
                   {greeting}{userName ? `, ${userName}` : ''}!
                 </p>
                 <h1 className="text-lg sm:text-3xl font-bold text-[#FFFFFF] leading-tight font-display flex items-center gap-1.5 flex-wrap">
-                  Here's your carbon snapshot <span className="gradient-text inline-flex items-center"><EmojiIcon icon={Leaf} className="w-5 h-5 sm:w-7 sm:h-7 text-clay-success animate-clay-breathe" /></span>
+                  Here&apos;s your carbon snapshot <span className="gradient-text inline-flex items-center"><EmojiIcon icon={Leaf} className="w-5 h-5 sm:w-7 sm:h-7 text-clay-success animate-clay-breathe" /></span>
                 </h1>
                 <p className="text-clay-muted text-[10px] sm:text-xs font-semibold font-sans">
                   {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -433,7 +433,7 @@ function Dashboard() {
                 <Quote className="w-4 h-4 text-clay-success shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1 font-sans">
                   <p className="text-xs text-clay-text italic leading-relaxed font-medium line-clamp-2">
-                    "{quote.content}"
+                    &quot;{quote.content}&quot;
                   </p>
                   <p className="text-[10px] text-[#F7931A] font-bold mt-0.5 font-mono">— {quote.author}</p>
                 </div>
@@ -689,7 +689,7 @@ function Dashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-clay-warning animate-clay-breathe" />
-                <h2 className="text-base font-bold text-white font-display">Today's Eco Tips</h2>
+                <h2 className="text-base font-bold text-white font-display">Today&apos;s Eco Tips</h2>
                 <button
                   type="button"
                   onClick={() => setActiveTipIndex(prev => (prev + 1) % 3)}
@@ -887,7 +887,7 @@ function Dashboard() {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-white font-display">Achievements Showcase</h2>
-                  <p className="text-xs text-clay-muted font-bold font-sans">You've unlocked {badges?.length || 0} of 17 milestones</p>
+                  <p className="text-xs text-clay-muted font-bold font-sans">You&apos;ve unlocked {badges?.length || 0} of 17 milestones</p>
                 </div>
               </div>
               <button

@@ -347,7 +347,7 @@ function StepEnergy({ energy, setEnergy }) {
     <div className="space-y-6 font-sans">
       <div>
         <h2 className="text-xl font-bold text-white font-display mb-1">Home Energy</h2>
-        <p className="text-xs text-clay-muted font-sans font-medium">Enter today's energy usage from your home</p>
+        <p className="text-xs text-clay-muted font-sans font-medium">Enter today&apos;s energy usage from your home</p>
       </div>
 
       <div className="space-y-4">
@@ -566,8 +566,8 @@ function Summary({ result, onSave, saving }) {
   return (
     <div className="space-y-6 animate-fade-in-up font-sans">
       <div className="text-center">
-        <h2 className="text-2xl font-bold gradient-text mb-1">Today's Footprint</h2>
-        <p className="text-xs text-clay-muted font-medium">Here's the full breakdown of your emissions</p>
+        <h2 className="text-2xl font-bold gradient-text mb-1">Today&apos;s Footprint</h2>
+        <p className="text-xs text-clay-muted font-medium">Here&apos;s the full breakdown of your emissions</p>
       </div>
 
       {/* Circular gauge */}
@@ -641,7 +641,7 @@ function Summary({ result, onSave, saving }) {
         {saving ? (
           <><Check className="w-4 h-4 text-emerald-500" /> Saved! Redirecting…</>
         ) : (
-          <><Leaf className="w-5 h-5" /> Save Today's Entry</>
+          <><Leaf className="w-5 h-5" /> Save Today&apos;s Entry</>
         )}
       </button>
     </div>

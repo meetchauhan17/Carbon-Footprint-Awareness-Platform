@@ -70,6 +70,17 @@ export function useCountryData(locationStr) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  const applyCountryData = useCallback((data, searchTerm) => {
+    setCountryData(data)
+    const co2 = lookupCO2(data.name || searchTerm)
+    setCo2PerCapita(co2)
+    if (co2 !== null) {
+      setMotivationalMsg(buildMotivationalMsg(data.name || searchTerm, co2))
+    } else {
+      setMotivationalMsg(null)
+    }
+  }, [])
+
   const fetchCountryData = useCallback(async (location) => {
     if (!location || location.trim().length < 2) {
       setCountryData(null)
@@ -153,18 +164,7 @@ export function useCountryData(locationStr) {
     } finally {
       setIsLoading(false)
     }
-  }, [])
-
-  function applyCountryData(data, searchTerm) {
-    setCountryData(data)
-    const co2 = lookupCO2(data.name || searchTerm)
-    setCo2PerCapita(co2)
-    if (co2 !== null) {
-      setMotivationalMsg(buildMotivationalMsg(data.name || searchTerm, co2))
-    } else {
-      setMotivationalMsg(null)
-    }
-  }
+  }, [applyCountryData])
 
   useEffect(() => {
     const t = setTimeout(() => {

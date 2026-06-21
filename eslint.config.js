@@ -20,10 +20,22 @@ export default [
         window: 'readonly',
         console: 'readonly',
         localStorage: 'readonly',
+        sessionStorage: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
         fetch: 'readonly',
         global: 'readonly',
+        AbortController: 'readonly',
+        URLSearchParams: 'readonly',
+        Notification: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        performance: 'readonly',
+        Storage: 'readonly',
+        Blob: 'readonly',
+        URL: 'readonly',
       }
     },
     rules: {
@@ -32,6 +44,8 @@ export default [
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'no-unused-vars': 'warn',
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
     },
     settings: {
       react: {

@@ -136,9 +136,8 @@ export function useWeather(location) {
   }, []) // stable — reads location via ref
 
   useEffect(() => {
-    // Clear cached resolved city when location changes so UI updates
-    setResolvedCity(null)
-    setTemperature(null)
+    if (resolvedCity !== null) setResolvedCity(null)
+    if (temperature !== null) setTemperature(null)
     // Defer 4s: avoids API call competing with first paint / LCP
     const t = setTimeout(() => {
       fetchWeather()

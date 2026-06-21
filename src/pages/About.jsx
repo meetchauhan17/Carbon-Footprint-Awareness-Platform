@@ -53,9 +53,9 @@ function About() {
 
   useEffect(() => {
     if (isNotificationSupported) {
-      setPermission(Notification.permission)
+      setPermission(prev => prev === Notification.permission ? prev : Notification.permission)
       const interval = setInterval(() => {
-        setPermission(Notification.permission)
+        setPermission(prev => prev === Notification.permission ? prev : Notification.permission)
       }, 2000)
       return () => clearInterval(interval)
     }
@@ -151,19 +151,18 @@ function About() {
   const [showToast, setShowToast] = useState(false)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
-  // Initialize form states from context
   useEffect(() => {
     if (userProfile) {
-      setName(userProfile.name || '')
-      setLocation(userProfile.location || '')
-      setMonthlyGoal(userProfile.monthlyGoal || 150)
-      setDietPreference(userProfile.dietPreference || 'omnivore')
-      setVehicleType(userProfile.vehicleType || 'petrol')
+      setName(prev => prev === (userProfile.name || '') ? prev : (userProfile.name || ''))
+      setLocation(prev => prev === (userProfile.location || '') ? prev : (userProfile.location || ''))
+      setMonthlyGoal(prev => prev === (userProfile.monthlyGoal || 150) ? prev : (userProfile.monthlyGoal || 150))
+      setDietPreference(prev => prev === (userProfile.dietPreference || 'omnivore') ? prev : (userProfile.dietPreference || 'omnivore'))
+      setVehicleType(prev => prev === (userProfile.vehicleType || 'petrol') ? prev : (userProfile.vehicleType || 'petrol'))
       
       const notifs = userProfile.notifications || { weeklyReport: true, goalAlerts: true, ecoTips: false }
-      setWeeklyReport(notifs.weeklyReport ?? true)
-      setGoalAlerts(notifs.goalAlerts ?? true)
-      setEcoTips(notifs.ecoTips ?? false)
+      setWeeklyReport(prev => prev === (notifs.weeklyReport ?? true) ? prev : (notifs.weeklyReport ?? true))
+      setGoalAlerts(prev => prev === (notifs.goalAlerts ?? true) ? prev : (notifs.goalAlerts ?? true))
+      setEcoTips(prev => prev === (notifs.ecoTips ?? false) ? prev : (notifs.ecoTips ?? false))
     }
   }, [userProfile])
 

@@ -5,7 +5,7 @@ import {
   Calendar, ChevronLeft, ChevronRight, Download, Trash2,
   ChevronDown, ChevronUp, AlertCircle,
   Clock, SlidersHorizontal, Eye, ShieldAlert, Sparkles,
-  Car, Zap, Leaf, ShoppingBag
+  Car, Zap, Leaf, ShoppingBag, Filter
 } from 'lucide-react'
 
 import ConfirmDialog from '../components/ConfirmDialog.jsx'

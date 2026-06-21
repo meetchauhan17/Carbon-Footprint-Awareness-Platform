@@ -384,7 +384,7 @@ function Login({ onToggleAuthMode }) {
             {/* Footer Link */}
             <div className="text-center">
               <p className="text-xs text-[#94A3B8] font-sans font-medium">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <button
                   onClick={onToggleAuthMode}
                   className="text-[#F7931A] hover:underline font-bold transition-all bg-transparent border-0 cursor-pointer"

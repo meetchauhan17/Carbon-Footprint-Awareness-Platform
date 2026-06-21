@@ -14,7 +14,9 @@ const getInitialUser = () => {
         return parsed.userProfile;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Failed to parse initial user:', e);
+  }
   return null;
 };
 

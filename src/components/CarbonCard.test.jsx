@@ -110,6 +110,27 @@ describe('CarbonCard Component', () => {
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
 
+  it('triggers onClick handler when Enter or Space key is pressed', () => {
+    const handleClick = vi.fn()
+    render(
+      <CarbonCard
+        label="Interactive Card"
+        value="10"
+        onClick={handleClick}
+      />
+    )
+
+    const card = screen.getByRole('button')
+    
+    // Press Enter
+    fireEvent.keyDown(card, { key: 'Enter', code: 'Enter' })
+    expect(handleClick).toHaveBeenCalledTimes(1)
+
+    // Press Space
+    fireEvent.keyDown(card, { key: ' ', code: 'Space' })
+    expect(handleClick).toHaveBeenCalledTimes(2)
+  })
+
   it('renders the custom Icon component when provided', () => {
     render(
       <CarbonCard

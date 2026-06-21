@@ -32,8 +32,8 @@ export default function LocationAutocomplete({
   // Fetch suggestions with debouncing
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
-      setSuggestions([])
-      setIsOpen(false)
+      if (suggestions.length > 0) setSuggestions([])
+      if (isOpen) setIsOpen(false)
       return
     }
 
